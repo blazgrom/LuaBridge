@@ -285,7 +285,8 @@ build/
 # End of https://www.gitignore.io/api/visualstudio
 
 
-#Visual studio solutions
+#MINE
 *.sln
 main.cpp
 lua5.1.dll
+*.lua
