@@ -3,91 +3,25 @@
 #include <string>
 #include <initializer_list>
 #include "lua.hpp"
-struct LuaFunctionParameter
-{
-	enum class DataTypes
-	{
-		String, Integer, FloatingPoint, Boolean
-	};
-	union Paramater
-	{
-		const char* _str;
-		int  _integer;
-		double _floatingpoint;
-		bool _boolean;
-	};
-public:
-	LuaFunctionParameter(const std::string& d)
-		:_data(),
-		_initialized(DataTypes::String)
-	{
-		_data._str = d.c_str();
-
-	}
-	LuaFunctionParameter(int d)
-		:_data(),
-		_initialized(DataTypes::Integer)
-	{
-		_data._integer = d;
-
-	}
-	LuaFunctionParameter(double d)
-		:_data(),
-		_initialized(DataTypes::FloatingPoint)
-
-	{
-		_data._floatingpoint = d;
-	}
-	LuaFunctionParameter(bool d)
-		:_data(),
-		_initialized(DataTypes::Integer)
-	{
-		_data._boolean = d;
-	}
-	DataTypes getInitializedType()const
-	{
-		return _initialized;
-	}
-	int getInteger() const
-	{
-		return _data._integer;
-	}
-	double getFloatingPoint() const
-	{
-		return _data._floatingpoint;
-	}
-	const char* getString() const
-	{
-		return _data._str;
-	}
-	bool getBoolean() const
-	{
-		return _data._boolean;
-	}
-private:
-	Paramater _data;
-	DataTypes _initialized;
-};
 class LuaScript
 {
 public:
 	
-	LuaScript(const std::string&luaFile)
+	explicit LuaScript(const std::string& fileName)
 		:
 		_lState(luaL_newstate())
 	{
-		luaL_openlibs(_lState);
-		//Load file and execute it
-		if (luaL_loadfile(_lState, luaFile.c_str())||lua_pcall(_lState,0,0,0))
-		{
-			std::string error_message = lua_tostring(_lState, -1);
-			lua_pop(_lState, 1);
-			throw std::exception(error_message.c_str());
-		}
+		loadFile(fileName.c_str());
+	}
+	explicit LuaScript(const char * fileName)
+		:
+		_lState(luaL_newstate())
+	{
+		loadFile(fileName);
 	}
 	//Gets a global variable from the file loaded during the creation of the object
 	template <typename T >
-	T getAs(const std::string& variableName)
+	T get(const std::string& variableName)
 	{
 		lua_getglobal(_lState, variableName.c_str());
 			auto value = getValue(T());
@@ -100,32 +34,14 @@ public:
 		setValue(value);
 		lua_setglobal(_lState, variableName.c_str());
 	}
-	void execute(const std::string& functionName, const std::initializer_list<LuaFunctionParameter> params,const std::string& resultVariableName)
+	//Call function
+	template <typename T, typename... Args>
+	void call(const std::string& functionName, T value, Args... args)
 	{
-		lua_getfield(_lState, LUA_GLOBALSINDEX, functionName.c_str());
-		for (const LuaFunctionParameter& param : params)
-		{
-			auto type = param.getInitializedType();
-			switch (type)
-			{
-			case LuaFunctionParameter::DataTypes::String:
-				pushValue(param.getString());
-				break;
-			case LuaFunctionParameter::DataTypes::Integer:
-				pushValue(param.getInteger());
-				break;
-			case LuaFunctionParameter::DataTypes::FloatingPoint:
-				pushValue(param.getFloatingPoint());
-				break;
-			case LuaFunctionParameter::DataTypes::Boolean:
-				pushValue(param.getBoolean());
-				break;
-			default:
-				break;
-			}
-		}
-		lua_call(_lState, params.size(), 1);
-		lua_setfield(_lState, LUA_GLOBALSINDEX, resultVariableName.c_str());
+		loadFunction(functionName);
+		int numberOfArguments = loadFunctionParameters(std::forward<T>(value), std::forward<Args>(args)...);
+		int numberOfReturnValues = 0;
+		callFunction(numberOfArguments, numberOfReturnValues, "error running function " + functionName);
 	}
 	~LuaScript()
 	{
@@ -134,6 +50,53 @@ public:
 
 private:
 	lua_State* _lState;
+	//Load functions
+	void loadFile(const char *fileName)
+	{
+		luaL_openlibs(_lState);
+		//Load file and execute it
+		if (luaL_dofile(_lState, fileName))
+		{
+			handleError();
+		}
+	}
+	void loadFunction(const std::string& functionName)
+	{
+		lua_getglobal(_lState, functionName.c_str());
+		if (!lua_isfunction(_lState, -1))
+		{
+			generateError(functionName + " is not a function");
+		}
+	}
+	template <typename T, typename... Args>
+	int loadFunctionParameters(T value, Args... args)
+	{
+		pushValue(value);
+		return 1 + loadFunctionParameters(args...);
+	}
+	int loadFunctionParameters()
+	{
+		//Function used only to break the variadric recursion
+		return 0;
+	}
+	void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage)
+	{
+		if (lua_pcall(_lState, numberOfArguments, numberOfReturnValues, 0) != 0) {
+			generateError(errorMessage);
+		}
+	}
+	//Error handling
+	void handleError()
+	{
+		std::string error_message = lua_tostring(_lState, -1);
+		lua_pop(_lState, 1);
+		throw std::invalid_argument(error_message.c_str());
+	}
+	void generateError(const std::string& errorMessage)
+	{
+		lua_pop(_lState, 1);
+		throw std::invalid_argument(errorMessage.c_str());
+	}
 	//Gets
 	lua_Number getValue(double)
 	{
