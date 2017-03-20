@@ -3,19 +3,35 @@
 #include <string>
 #include <initializer_list>
 #include "lua.hpp"
+struct LuaFunction
+{
+	explicit LuaFunction(const std::string& name, unsigned int rC = 0)
+		:
+		name(name),
+		resultCount(rC)
+	{
+
+	}
+	std::string name;
+	unsigned int resultCount;
+};
 class LuaScript
 {
 public:
-	
+
 	explicit LuaScript(const std::string& fileName)
 		:
-		_lState(luaL_newstate())
+		_lState(luaL_newstate()),
+		lastCalledFunctionResultCount(0),
+		countToPop(0)
 	{
 		loadFile(fileName.c_str());
 	}
 	explicit LuaScript(const char * fileName)
 		:
-		_lState(luaL_newstate())
+		_lState(luaL_newstate()),
+		lastCalledFunctionResultCount(0),
+		countToPop(0)
 	{
 		loadFile(fileName);
 	}
@@ -24,24 +40,51 @@ public:
 	T get(const std::string& variableName)
 	{
 		lua_getglobal(_lState, variableName.c_str());
-			auto value = getValue(T());
-			return static_cast<T> (value);
+		auto value = getValue(T());
+		return static_cast<T> (value);
 	}
 	//Sets a global variable in the file loaded during the creation of the object
 	template <typename T >
-	void set(const std::string& variableName,const T& value)
+	void set(const std::string& variableName, const T& value)
 	{
 		setValue(value);
 		lua_setglobal(_lState, variableName.c_str());
 	}
 	//Call function
 	template <typename T, typename... Args>
-	void call(const std::string& functionName, T value, Args... args)
+	void call(const LuaFunction&function, T value, Args... args)
 	{
-		loadFunction(functionName);
+		loadFunction(function.name);
 		int numberOfArguments = loadFunctionParameters(std::forward<T>(value), std::forward<Args>(args)...);
-		int numberOfReturnValues = 0;
-		callFunction(numberOfArguments, numberOfReturnValues, "error running function " + functionName);
+		lastCalledFunctionResultCount = function.resultCount;
+		countToPop = lastCalledFunctionResultCount;
+		callFunction(numberOfArguments, lastCalledFunctionResultCount, "error running function " + function.name);
+	}
+	void call(const LuaFunction&function)
+	{
+		loadFunction(function.name);
+		lastCalledFunctionResultCount = function.resultCount;
+		countToPop = lastCalledFunctionResultCount;
+		callFunction(0, lastCalledFunctionResultCount, "error running function " + function.name);
+	}
+	template <typename T>
+	T get_result()
+	{
+		if (lastCalledFunctionResultCount != 0)
+		{
+			auto result = getValue(T(), (lastCalledFunctionResultCount*-1));
+			--lastCalledFunctionResultCount;
+			if (lastCalledFunctionResultCount == 0)
+			{
+				popStack(countToPop); 
+				countToPop = 0;
+			}
+			return static_cast<T>(result);
+		}
+		else
+		{
+			throw std::invalid_argument("You cannot get return values,because there are none");
+		}
 	}
 	~LuaScript()
 	{
@@ -50,6 +93,8 @@ public:
 
 private:
 	lua_State* _lState;
+	unsigned int lastCalledFunctionResultCount;
+	unsigned int countToPop;
 	//Load functions
 	void loadFile(const char *fileName)
 	{
@@ -98,38 +143,38 @@ private:
 		throw std::invalid_argument(errorMessage.c_str());
 	}
 	//Gets
-	lua_Number getValue(double)
+	lua_Number getValue(double,int stackIndex=-1)
 	{
-		return  lua_tonumber(_lState, -1);
+		return  lua_tonumber(_lState, stackIndex);
 	}
-	lua_Number getValue(float t)
+	lua_Number getValue(float t, int stackIndex = -1)
 	{
-		return getValue(static_cast<double>(t));
+		return getValue(static_cast<double>(t),stackIndex);
 	}
-	lua_Number getValue(int)
+	lua_Number getValue(int, int stackIndex = -1)
 	{
-		return  lua_tointeger(_lState, -1);
+		return  lua_tointeger(_lState, stackIndex);
 	}
-	const char* getValue(std::string)
+	std::string getValue(std::string, int stackIndex = -1)
 	{
-		return lua_tostring(_lState, -1);
+		return lua_tostring(_lState, stackIndex);
 	}
-	bool getValue(bool)
+	bool getValue(bool, int stackIndex = -1)
 	{
-		return lua_toboolean(_lState, -1);
+		return lua_toboolean(_lState, stackIndex);
 	}
 	//Sets
 	void setValue(const bool val)
 	{
-		 lua_pushboolean(_lState, val);
+		lua_pushboolean(_lState, val);
 	}
 	void setValue(const std::string& val)
 	{
-		lua_pushlstring(_lState, val.c_str(),val.size());
+		lua_pushlstring(_lState, val.c_str(), val.size());
 	}
 	void setValue(const double val)
 	{
-		lua_pushnumber(_lState,val);
+		lua_pushnumber(_lState, val);
 	}
 	void setValue(const float val)
 	{
@@ -159,6 +204,11 @@ private:
 	void pushValue(float val)
 	{
 		pushValue(static_cast<double>(val));
+	}
+	//Utility
+	void popStack( int count)
+	{
+		lua_pop(_lState, count);
 	}
 };
 #endif // !LUA_SCRIPT_HPP
