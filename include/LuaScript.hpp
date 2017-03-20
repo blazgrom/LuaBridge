@@ -1,8 +1,14 @@
 #ifndef LUA_SCRIPT_HPP
 #define LUA_SCRIPT_HPP
 #include <string>
-#include <initializer_list>
+#include <tuple>
 #include "lua.hpp"
+#define DEBUG
+#ifdef DEBUG
+	#include <iostream>
+	#include <type_traits>
+#endif // DEBUG
+
 struct LuaFunction
 {
 	explicit LuaFunction(const std::string& name, unsigned int rC = 0)
@@ -34,6 +40,10 @@ public:
 		countToPop(0)
 	{
 		loadFile(fileName);
+	}
+	~LuaScript()
+	{
+		lua_close(_lState);
 	}
 	//Gets a global variable from the file loaded during the creation of the object
 	template <typename T >
@@ -67,12 +77,13 @@ public:
 		countToPop = lastCalledFunctionResultCount;
 		callFunction(0, lastCalledFunctionResultCount, "error running function " + function.name);
 	}
+	//Get function results
 	template <typename T>
 	T get_result()
 	{
 		if (lastCalledFunctionResultCount != 0)
 		{
-			auto result = getValue(T(), (lastCalledFunctionResultCount*-1));
+			auto result = getValue(T(), lastCalledFunctionResultCount*-1);
 			--lastCalledFunctionResultCount;
 			if (lastCalledFunctionResultCount == 0)
 			{
@@ -86,11 +97,21 @@ public:
 			throw std::invalid_argument("You cannot get return values,because there are none");
 		}
 	}
-	~LuaScript()
+	template <typename... Args>
+	std::tuple<Args ...> get_result_tuple()
 	{
-		lua_close(_lState);
+		std::tuple<Args ...> result;
+		auto r=createTupleElement(1,"wadaw");
+		/*auto tSize = std::tuple_size<std::tuple<Args ...>>::value;
+		auto a= std::tuple_element_t<2, std::tuple<Args ...>>() ;*/
+		//print(std::tuple_element_t<4, std::tuple<Args ...>>);
+		//std::get<0>(result) = get_result<decltype(std::get<0>(result))>();
+		return result;
 	}
-
+	void print(double)
+	{
+		std::cout << "double" << std::endl;
+	}
 private:
 	lua_State* _lState;
 	unsigned int lastCalledFunctionResultCount;
@@ -124,6 +145,19 @@ private:
 		//Function used only to break the variadric recursion
 		return 0;
 	}
+	template <typename T,typename... Args>
+	std::tuple<T> createTupleElement(T value, Args... args)
+	{
+		std::tuple<T> result;
+		std::get<0>(result) = get_result<T>();
+		result=std::tuple_cat(result, createTupleElement(args...));
+		return result;
+	}
+	void getTupleElemment()
+	{
+		return;
+	}
+	//Call functions
 	void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage)
 	{
 		if (lua_pcall(_lState, numberOfArguments, numberOfReturnValues, 0) != 0) {
@@ -134,12 +168,12 @@ private:
 	void handleError()
 	{
 		std::string error_message = lua_tostring(_lState, -1);
-		lua_pop(_lState, 1);
+		popStack(1);
 		throw std::invalid_argument(error_message.c_str());
 	}
 	void generateError(const std::string& errorMessage)
 	{
-		lua_pop(_lState, 1);
+		popStack(1);
 		throw std::invalid_argument(errorMessage.c_str());
 	}
 	//Gets
@@ -161,7 +195,7 @@ private:
 	}
 	bool getValue(bool, int stackIndex = -1)
 	{
-		return lua_toboolean(_lState, stackIndex);
+		return static_cast<bool>(lua_toboolean(_lState, stackIndex));
 	}
 	//Sets
 	void setValue(const bool val)
