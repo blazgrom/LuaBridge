@@ -27,18 +27,18 @@ public:
 	explicit LuaScript(const std::string& fileName)
 		:
 		_lState(luaL_newstate()),
-		lastCalledFunctionResultCount(0),
-		countToPop(0)
+		_fResultCount(0),
+		_popC(0)
 	{
-		loadFile(fileName.c_str());
+		load_lua_file(fileName.c_str());
 	}
 	explicit LuaScript(const char * fileName)
 		:
 		_lState(luaL_newstate()),
-		lastCalledFunctionResultCount(0),
-		countToPop(0)
+		_fResultCount(0),
+		_popC(0)
 	{
-		loadFile(fileName);
+		load_lua_file(fileName);
 	}
 	~LuaScript()
 	{
@@ -49,47 +49,50 @@ public:
 	T get(const std::string& variableName)
 	{
 		lua_getglobal(_lState, variableName.c_str());
-		auto value = getValue(T());
-		return static_cast<T> (value);
+		auto value = retrieve_lua_value<T>();
+		return value;
 	}
 	//Sets a global variable in the file loaded during the creation of the object
 	template <typename T >
 	void set(const std::string& variableName, const T& value)
 	{
-		setValue(value);
+		set_lua_value(value);
 		lua_setglobal(_lState, variableName.c_str());
 	}
 	//Call function
+	/*
+	*	TODO:
+	*	Find better way to implement the call functionality
+	*/
 	template <typename T, typename... Args>
 	void call(const LuaFunction&function, T value, Args... args)
 	{
-		loadFunction(function.name);
-		int numberOfArguments = loadFunctionParameters(std::forward<T>(value), std::forward<Args>(args)...);
-		lastCalledFunctionResultCount = function.resultCount;
-		countToPop = lastCalledFunctionResultCount;
-		callFunction(numberOfArguments, lastCalledFunctionResultCount, "error running function " + function.name);
+		load_lua_function(function.name);
+		int numberOfArguments = luad_function_params(std::forward<T>(value), std::forward<Args>(args)...);
+		_fResultCount = function.resultCount;
+		_popC = _fResultCount;
+		call_function(numberOfArguments, _fResultCount, "error running function " + function.name);
 	}
 	void call(const LuaFunction&function)
 	{
-		loadFunction(function.name);
-		lastCalledFunctionResultCount = function.resultCount;
-		countToPop = lastCalledFunctionResultCount;
-		callFunction(0, lastCalledFunctionResultCount, "error running function " + function.name);
+		load_lua_function(function.name);
+		_fResultCount = function.resultCount;
+		_popC = _fResultCount;
+		call_function(0, _fResultCount, "error running function " + function.name);
 	}
 	//Get function results
 	template <typename T>
 	T get_r()
 	{
-		if (lastCalledFunctionResultCount != 0)
+		if (_fResultCount != 0)
 		{
-			auto result = getValue(T(), lastCalledFunctionResultCount*-1);
-			--lastCalledFunctionResultCount;
-			if (lastCalledFunctionResultCount == 0)
+			auto result = retrieve_lua_value<T>(_fResultCount*-1);
+			--_fResultCount;
+			if (_fResultCount == 0)
 			{
-				popStack(countToPop); 
-				countToPop = 0;
+				pop_stack(_popC); 
+				_popC = 0;
 			}
-			return static_cast<T>(result);
 		}
 		else
 		{
@@ -99,45 +102,44 @@ public:
 	template <typename... Args>
 	std::tuple<Args ...> get_r_tuple()
 	{
-		if (check_tuple_size<Args ...>() != lastCalledFunctionResultCount)
+		if (check_tuple_size<Args ...>() != _fResultCount)
 		{
 			throw std::invalid_argument("You cannot get more return values than the function returns");
 		}
 		auto result= std::make_tuple(get_r<Args>()...);
-		popStack(countToPop);
-		countToPop = 0;
+		popStack(_popC);
+		_popC = 0;
 		return result;
 	}
-	
 private:
 	lua_State* _lState;
-	unsigned int lastCalledFunctionResultCount;
-	unsigned int countToPop;
+	unsigned int _fResultCount;//The result count of the last function that was called
+	unsigned int _popC;//Number of elements that must be popped from the stack
 	//Load functions
-	void loadFile(const char *fileName)
+	void load_lua_file(const char *fileName)
 	{
 		luaL_openlibs(_lState);
 		//Load file and execute it
 		if (luaL_dofile(_lState, fileName))
 		{
-			handleError();
+			handle_error();
 		}
 	}
-	void loadFunction(const std::string& functionName)
+	void load_lua_function(const std::string& functionName)
 	{
 		lua_getglobal(_lState, functionName.c_str());
 		if (!lua_isfunction(_lState, -1))
 		{
-			generateError(functionName + " is not a function");
+			generate_error(functionName + " is not a function");
 		}
 	}
 	template <typename T, typename... Args>
-	int loadFunctionParameters(T value, Args... args)
+	int luad_function_params(T value, Args... args)
 	{
-		pushValue(value);
-		return 1 + loadFunctionParameters(args...);
+		push(value);
+		return 1 + luad_function_params(args...);
 	}
-	int loadFunctionParameters()
+	int luad_function_params()
 	{
 		//Function used only to break the variadric recursion
 		return 0;
@@ -148,89 +150,132 @@ private:
 		return std::tuple_size<std::tuple<Args ...>>::value;
 	}
 	//Call functions
-	void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage)
+	void call_function(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage)
 	{
 		if (lua_pcall(_lState, numberOfArguments, numberOfReturnValues, 0) != 0) {
-			generateError(errorMessage);
+			generate_error(errorMessage);
 		}
 	}
 	//Error handling
-	void handleError()
+	void handle_error()
 	{
 		std::string error_message = lua_tostring(_lState, -1);
-		popStack(1);
+		pop_stack();
 		throw std::invalid_argument(error_message.c_str());
 	}
-	void generateError(const std::string& errorMessage)
+	void generate_error(const std::string& errorMessage)
 	{
-		popStack(1);
+		pop_stack();
 		throw std::invalid_argument(errorMessage.c_str());
 	}
-	//Gets
-	lua_Number getValue(double,int stackIndex=-1)
+	//Lua retrieve	
+	template <typename T>
+	T retrieve_lua_value(int stackIndex =-1 )
 	{
-		return  lua_tonumber(_lState, stackIndex);
+		/*
+		 *	TODO:
+		 *  Add user data to the list of luaintegration handled types
+		 *
+		 */
+		return T;
 	}
-	lua_Number getValue(float t, int stackIndex = -1)
+	template <>
+	lua_Number retrieve_lua_value<double>(int stackIndex)
 	{
-		return getValue(static_cast<double>(t),stackIndex);
+		return  static_cast<double>(lua_tonumber(_lState, stackIndex));
 	}
-	lua_Number getValue(int, int stackIndex = -1)
+	template <>
+	float retrieve_lua_value<float>(int stackIndex)
 	{
-		return  lua_tointeger(_lState, stackIndex);
+		return retrieve_lua_value<double>(stackIndex);
 	}
-	std::string getValue(std::string, int stackIndex = -1)
+	template <>
+	int retrieve_lua_value<int>(int stackIndex)
 	{
-		return lua_tostring(_lState, stackIndex);
+		return  static_cast<int>(lua_tointeger(_lState, stackIndex));
 	}
-	bool getValue(bool, int stackIndex = -1)
+	template<>
+	std::string retrieve_lua_value<std::string>( int stackIndex)
 	{
-		return static_cast<bool>(lua_toboolean(_lState, stackIndex));
+		return static_cast<std::string>(lua_tostring(_lState, stackIndex));
+	}
+	template <>
+	bool  retrieve_lua_value<bool>(int stackIndex )
+	{
+		return lua_toboolean(_lState, stackIndex) !=0;
 	}
 	//Sets
-	void setValue(const bool val)
+	template <typename T>
+	void set_lua_value(const T& val)
+	{
+		/*
+		*	TODO:
+		*  Add user data to the list of luaintegration handled types
+		*
+		*/
+	}
+	template <>
+	void set_lua_value<bool>(const bool& val)
 	{
 		lua_pushboolean(_lState, val);
 	}
-	void setValue(const std::string& val)
+	template <>
+	void set_lua_value<std::string>(const std::string& val)
 	{
 		lua_pushlstring(_lState, val.c_str(), val.size());
 	}
-	void setValue(const double val)
+	template<>
+	void set_lua_value<double>(const double& val)
 	{
 		lua_pushnumber(_lState, val);
 	}
-	void setValue(const float val)
+	template <>
+	void set_lua_value<float>(const float& val)
 	{
-		setValue(static_cast<double>(val));
+		set_lua_value(static_cast<double>(val));
 	}
-	void setValue(const int val)
+	template<>
+	void set_lua_value<int>(const int& val)
 	{
 		lua_pushinteger(_lState, val);
 	}
 	// Push
-	void pushValue(bool val)
+	template <typename T>
+	void push (T val)
+	{
+		/*
+		*	TODO:
+		*  Add user data to the list of luaintegration handled types
+		*
+		*/
+	}
+	template <>
+	void push<bool>(bool val)
 	{
 		lua_pushboolean(_lState, val);
 	}
-	void pushValue(const char* str)
+	template<>
+	void push<std::string>( std::string str)
 	{
-		lua_pushstring(_lState, str);
+		lua_pushstring(_lState, str.c_str());
 	}
-	void pushValue(int val)
+	template <>
+	void push<int>(int val)
 	{
 		lua_pushinteger(_lState, val);
 	}
-	void pushValue(double val)
+	template<>
+	void push<double>(double val)
 	{
 		lua_pushnumber(_lState, val);
 	}
-	void pushValue(float val)
+	template<>
+	void push<float>(float val)
 	{
-		pushValue(static_cast<double>(val));
+		push(static_cast<double>(val));
 	}
 	//Utility
-	void popStack( int count)
+	void pop_stack( int count=1)
 	{
 		lua_pop(_lState, count);
 	}
