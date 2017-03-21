@@ -94,6 +94,7 @@ namespace Script
 					pop_stack(_popC);
 					_popC = 0;
 				}
+				return result;
 			}
 			else
 			{
@@ -107,9 +108,7 @@ namespace Script
 			{
 				throw std::invalid_argument("You cannot get more return values than the function returns");
 			}
-			auto result = std::make_tuple(get_r<Args>()...);
-			popStack(_popC);
-			_popC = 0;
+			auto result = std::make_tuple(get_r<Args>() ...);
 			return result;
 		}
 	private:
@@ -282,5 +281,4 @@ namespace Script
 		}
 	};
 #endif // !LUA_SCRIPT_HPP
-
 }
