@@ -3,7 +3,6 @@
 #include <string>
 #include <tuple>
 #include "lua.hpp"
-#define DEBUG
 #ifdef DEBUG
 	#include <iostream>
 	#include <type_traits>
@@ -79,7 +78,7 @@ public:
 	}
 	//Get function results
 	template <typename T>
-	T get_result()
+	T get_r()
 	{
 		if (lastCalledFunctionResultCount != 0)
 		{
@@ -98,20 +97,18 @@ public:
 		}
 	}
 	template <typename... Args>
-	std::tuple<Args ...> get_result_tuple()
+	std::tuple<Args ...> get_r_tuple()
 	{
-		std::tuple<Args ...> result;
-		auto r=createTupleElement(1,"wadaw");
-		/*auto tSize = std::tuple_size<std::tuple<Args ...>>::value;
-		auto a= std::tuple_element_t<2, std::tuple<Args ...>>() ;*/
-		//print(std::tuple_element_t<4, std::tuple<Args ...>>);
-		//std::get<0>(result) = get_result<decltype(std::get<0>(result))>();
+		if (check_tuple_size<Args ...>() != lastCalledFunctionResultCount)
+		{
+			throw std::invalid_argument("You cannot get more return values than the function returns");
+		}
+		auto result= std::make_tuple(get_r<Args>()...);
+		popStack(countToPop);
+		countToPop = 0;
 		return result;
 	}
-	void print(double)
-	{
-		std::cout << "double" << std::endl;
-	}
+	
 private:
 	lua_State* _lState;
 	unsigned int lastCalledFunctionResultCount;
@@ -145,17 +142,10 @@ private:
 		//Function used only to break the variadric recursion
 		return 0;
 	}
-	template <typename T,typename... Args>
-	std::tuple<T> createTupleElement(T value, Args... args)
+	template <typename... Args>
+	int check_tuple_size()
 	{
-		std::tuple<T> result;
-		std::get<0>(result) = get_result<T>();
-		result=std::tuple_cat(result, createTupleElement(args...));
-		return result;
-	}
-	void getTupleElemment()
-	{
-		return;
+		return std::tuple_size<std::tuple<Args ...>>::value;
 	}
 	//Call functions
 	void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage)
