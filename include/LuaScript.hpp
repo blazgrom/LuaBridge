@@ -7,6 +7,11 @@
 	#include <iostream>
 	#include <type_traits>
 #endif // DEBUG
+	/*
+	 *	TODO:
+	 *	Find better way to implement the call functionality
+	 *   Add user data to the list of luaintegration handled types
+	 */
 namespace Script
 {
 	struct LuaFunction
@@ -60,11 +65,7 @@ namespace Script
 			set_lua_value(value);
 			lua_setglobal(_lState, variableName.c_str());
 		}
-		//Call function
-		/*
-		*	TODO:
-		*	Find better way to implement the call functionality
-		*/
+		//Call to a functiomn with X params
 		template <typename T, typename... Args>
 		void call(const LuaFunction&function, T value, Args... args) const
 		{
@@ -74,12 +75,27 @@ namespace Script
 			_popC = _fResultCount;
 			call_function(numberOfArguments, _fResultCount, "error running function " + function.name);
 		}
+		template <typename T,typename... returnTypes, typename... Args>
+		std::tuple<T,returnTypes...> call_r(const LuaFunction&function, T value, Args... args) const
+		{
+			check_parameters_number<T,Args...>(function.resultCount);
+			call(function, value, args ...);
+			return get_r_tuple<T,returnTypes ...>();
+		}
 		void call(const LuaFunction&function) const
 		{
 			load_lua_function(function.name);
 			_fResultCount = function.resultCount;
 			_popC = _fResultCount;
 			call_function(0, _fResultCount, "error running function " + function.name);
+		}
+		template <typename... T>
+		std::tuple<T...> call_r(const LuaFunction&function) const
+		{
+
+			check_parameters_number<T...>(function.resultCount);
+			call(function);
+			return get_r_tuple<T...>();
 		}
 		//Get function results
 		template <typename T>
@@ -104,10 +120,7 @@ namespace Script
 		template <typename... Args>
 		std::tuple<Args ...> get_r_tuple() const
 		{
-			if (check_tuple_size<Args ...>() != _fResultCount)
-			{
-				throw std::invalid_argument("You cannot get more return values than the function returns");
-			}
+			check_parameters_number<Args...>();
 			//The order of evaluation of an initializer list in c-tor is well defined!
 			return tuple<Args ...>{ get_r<Args>() ... };
 		}
@@ -144,11 +157,6 @@ namespace Script
 			//Function used only to break the variadric recursion
 			return 0;
 		}
-		template <typename... Args>
-		int check_tuple_size() const
-		{
-			return std::tuple_size<std::tuple<Args ...>>::value;
-		}
 		//Call functions
 		void call_function(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage) const
 		{
@@ -168,15 +176,27 @@ namespace Script
 			pop_stack();
 			throw std::invalid_argument(errorMessage.c_str());
 		}
+		template<typename... T>
+		void check_parameters_number() const
+		{
+			if (sizeof...(T) != _fResultCount)
+			{
+				throw std::invalid_argument("You cannot get more return values than the function returns");
+			}
+		}
+		template<typename... T>
+		void check_parameters_number(unsigned int count) const
+		{
+			if (sizeof...(T) != count)
+			{
+				throw std::invalid_argument("You cannot get more return values than the function returns");
+			}
+		}
 		//Lua retrieve	
 		template <typename T>
 		T retrieve_lua_value(int stackIndex = -1) const
 		{
-			/*
-			*	TODO:
-			*  Add user data to the list of luaintegration handled types
-			*
-			*/
+		
 			return T;
 		}
 		template <>
@@ -208,11 +228,6 @@ namespace Script
 		template <typename T>
 		void set_lua_value(const T& val) const
 		{
-			/*
-			*	TODO:
-			*  Add user data to the list of luaintegration handled types
-			*
-			*/
 		}
 		template <>
 		void set_lua_value<bool>(const bool& val) const
@@ -243,11 +258,6 @@ namespace Script
 		template <typename T>
 		void push(T val) const
 		{
-			/*
-			*	TODO:
-			*  Add user data to the list of luaintegration handled types
-			*
-			*/
 		}
 		template <>
 		void push<bool>(bool val) const
