@@ -108,8 +108,8 @@ namespace Script
 			{
 				throw std::invalid_argument("You cannot get more return values than the function returns");
 			}
-			auto result = std::make_tuple(get_r<Args>() ...);
-			return result;
+			//The order of evaluation of an initializer list in c-tor is well defined!
+			return tuple<Args ...>{ get_r<Args>() ... };
 		}
 	private:
 		lua_State* _lState;
