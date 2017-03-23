@@ -55,8 +55,7 @@ namespace Script
 		T get(const std::string& variableName) const
 		{
 			lua_getglobal(_lState, variableName.c_str());
-			auto value = retrieve_lua_value<T>();
-			return value;
+			return retrieve_lua_value<T>();
 		}
 		//Sets a global variable in the file loaded during the creation of the object
 		template <typename T >
@@ -70,16 +69,16 @@ namespace Script
 		void call(const LuaFunction&function, T value, Args... args) const
 		{
 			load_lua_function(function.name);
-			int numberOfArguments = luad_function_params(std::forward<T>(value), std::forward<Args>(args)...);
 			_fResultCount = function.resultCount;
 			_popC = _fResultCount;
+			int numberOfArguments = load_function_params(std::forward<T>(value), std::forward<Args>(args)...);
 			call_function(numberOfArguments, _fResultCount, "error running function " + function.name);
 		}
 		template <typename T,typename... returnTypes, typename... Args>
 		std::tuple<T,returnTypes...> call_r(const LuaFunction&function, T value, Args... args) const
 		{
 			check_parameters_number<T,Args...>(function.resultCount);
-			call(function, value, args ...);
+			call(function,std::forward<T>( value),std::forward<Args>(args) ...);
 			return get_r_tuple<T,returnTypes ...>();
 		}
 		void call(const LuaFunction&function) const
@@ -92,20 +91,17 @@ namespace Script
 		template <typename... T>
 		std::tuple<T...> call_r(const LuaFunction&function) const
 		{
-
 			check_parameters_number<T...>(function.resultCount);
 			call(function);
 			return get_r_tuple<T...>();
 		}
-		//Get function results
 		template <typename T>
 		T get_r() const
 		{
 			if (_fResultCount != 0)
 			{
 				auto result = retrieve_lua_value<T>(_fResultCount*-1);
-				--_fResultCount;
-				if (_fResultCount == 0)
+				if ((--_fResultCount) == 0)
 				{
 					pop_stack(_popC);
 					_popC = 0;
@@ -128,7 +124,6 @@ namespace Script
 		lua_State* _lState;
 		mutable unsigned int _fResultCount;//The result count of the last function that was called
 		mutable unsigned int _popC;//Number of elements that must be popped from the stack
-								   //Load functions
 		void load_lua_file(const char *fileName) const
 		{
 			luaL_openlibs(_lState);
@@ -147,12 +142,12 @@ namespace Script
 			}
 		}
 		template <typename T, typename... Args>
-		int luad_function_params(T value, Args... args) const
+		int load_function_params(T value, Args... args) const
 		{
-			push(value);
-			return 1 + luad_function_params(args...);
+			push_lua_value(value);
+			return 1 + load_function_params(args...);
 		}
-		int luad_function_params() const
+		int load_function_params() const
 		{
 			//Function used only to break the variadric recursion
 			return 0;
@@ -168,21 +163,12 @@ namespace Script
 		void handle_error() const
 		{
 			std::string error_message = lua_tostring(_lState, -1);
-			pop_stack();
-			throw std::invalid_argument(error_message.c_str());
+			generate_error(error_message);
 		}
 		void generate_error(const std::string& errorMessage) const
 		{
 			pop_stack();
 			throw std::invalid_argument(errorMessage.c_str());
-		}
-		template<typename... T>
-		void check_parameters_number() const
-		{
-			if (sizeof...(T) != _fResultCount)
-			{
-				throw std::invalid_argument("You cannot get more return values than the function returns");
-			}
 		}
 		template<typename... T>
 		void check_parameters_number(unsigned int count) const
@@ -192,6 +178,11 @@ namespace Script
 				throw std::invalid_argument("You cannot get more return values than the function returns");
 			}
 		}
+		template<typename... T>
+		void check_parameters_number() const
+		{
+			check_parameters_number(_fResultCount);
+		}
 		//Lua retrieve	
 		template <typename T>
 		T retrieve_lua_value(int stackIndex = -1) const
@@ -200,7 +191,7 @@ namespace Script
 			return T;
 		}
 		template <>
-		lua_Number retrieve_lua_value<double>(int stackIndex) const
+		double retrieve_lua_value<double>(int stackIndex) const
 		{
 			return  static_cast<double>(lua_tonumber(_lState, stackIndex));
 		}
@@ -256,33 +247,33 @@ namespace Script
 		}
 		// Push
 		template <typename T>
-		void push(T val) const
+		void push_lua_value(const T& val) const
 		{
 		}
 		template <>
-		void push<bool>(bool val) const
+		void push_lua_value<bool>(const bool& val) const
 		{
 			lua_pushboolean(_lState, val);
 		}
 		template<>
-		void push<std::string>(std::string str) const
+		void push_lua_value<std::string>(const std::string& str) const
 		{
 			lua_pushstring(_lState, str.c_str());
 		}
 		template <>
-		void push<int>(int val) const
+		void push_lua_value<int>(const int& val) const
 		{
 			lua_pushinteger(_lState, val);
 		}
 		template<>
-		void push<double>(double val) const
+		void push_lua_value<double>(const double& val) const
 		{
 			lua_pushnumber(_lState, val);
 		}
 		template<>
-		void push<float>(float val) const
+		void push_lua_value<float>(const float& val) const
 		{
-			push(static_cast<double>(val));
+			push_lua_value(static_cast<double>(val));
 		}
 		//Utility
 		void pop_stack(int count = 1) const
