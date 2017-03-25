@@ -2,17 +2,16 @@
 #define LUA_SCRIPT_HPP
 #include <string>
 #include <vector>
+#include <map>
 #include <tuple>
+#include <functional>
+#include <type_traits>
 #include "lua.hpp"
-#ifdef DEBUG
-	#include <iostream>
-	#include <type_traits>
-#endif // DEBUG
-	/*
-	 *	TODO:
-	 *	Find better way to implement the call functionality
-	 *   Add user data to the list of luaintegration handled types
-	 */
+/*
+ *	TODO:
+ *	Find better way to implement the call functionality
+ *   Add user data to the list of luaintegration handled types
+ */
 namespace Script
 {
 	struct LuaFunction
@@ -30,7 +29,6 @@ namespace Script
 	class LuaScript
 	{
 	public:
-
 		explicit LuaScript(const std::string& fileName)
 			:
 			_lState(luaL_newstate()),
@@ -55,8 +53,20 @@ namespace Script
 		template <typename T >
 		T get(const std::string& variableName) const
 		{
-			lua_getglobal(_lState, variableName.c_str());
-			return retrieveLuaValue<T>();
+			if (variableName.find('.') == std::string::npos)
+			{
+				lua_getglobal(_lState, variableName.c_str());
+				auto result= retrieveLuaValue<T>();
+				popStack();
+				return result;
+			}
+			else
+			{
+				auto lastDotPosition = variableName.find_last_of('.');
+				auto table = variableName.substr(0,lastDotPosition);
+				auto field = variableName.substr(lastDotPosition +1);
+				return getTableField<T>(table,field);
+			}
 		}
 		//Sets a global variable in the file loaded during the creation of the object
 		template <typename T >
@@ -106,29 +116,14 @@ namespace Script
 		std::vector<std::string> getTableKeys(const std::string& tableName)
 		{
 			std::vector<std::string> keys;
-			lua_getglobal(_lState, tableName.c_str());// table on top of stack
-			if (lua_istable(_lState, -1))
-			{
-				lua_getfield(_lState, -1, "0");
-				auto a = retrieveLuaValue<std::string>();
+			lua_getglobal(_lState, tableName.c_str());
+			if (lua_istable(_lState, -1)) {
+				auto f = [&keys](const std::string& key, const std::string & value) {
+					keys.push_back(key);
+				};
+				retrieveTableValues(f);
 			}
 			return keys;
-		}
-		std::string getTableField(const std::string& tableName, const std::string& fieldsName)
-		{
-			lua_getglobal(_lState, tableName.c_str());
-			lua_getfield(_lState, -1, fieldsName.c_str());
-			bool table = lua_istable(_lState, -1);
-			auto r = lua_tostring(_lState, -1);
-			lua_pop(_lState, 1);
-			return r;
-		}
-		void setTableField(const std::string& tableName, const std::string& fieldsName, const std::string& value)
-		{
-			lua_getglobal(_lState, tableName.c_str());
-			lua_pushstring(_lState, fieldsName.c_str());//Push key
-			lua_pushstring(_lState, value.c_str());
-			lua_settable(_lState, -3);
 		}
 	private:
 		lua_State* _lState;
@@ -182,7 +177,7 @@ namespace Script
 		}
 		template<typename... T>
 		void checkParametersNumber(unsigned int count) const
-		{ 
+		{
 			int a = sizeof...(T);
 			if (sizeof...(T) != count)
 			{
@@ -198,8 +193,23 @@ namespace Script
 		template <typename T>
 		T retrieveLuaValue(int stackIndex = -1) const
 		{
-		
-			return T;
+			if (lua_istable(_lState, -1))
+			{
+				std::map<std::string, std::string> data;
+				auto f = [&data](const std::string& key, const std::string & value) {
+					data[key] = value;
+				};
+				retrieveTableValues(f);
+				T result;
+				result.pack(data);
+				return result;
+			}
+			else
+			{
+				std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
+				std::string endText = typeid(T).name();
+				generateError(startText + endText);
+			}
 		}
 		template <>
 		double retrieveLuaValue<double>(int stackIndex) const
@@ -329,6 +339,35 @@ namespace Script
 				pushLuaValue(element.second);
 				lua_settable(_lState, -3);//automaticcaly pop the key and value 
 			}
+		}
+		void retrieveTableValues(std::function<void(const std::string&, const std::string&)> f) const
+		{
+			//The function assumes that the tables is on top of the stack
+			lua_pushnil(_lState);  /* first key */
+			while (lua_next(_lState, -2) != 0) {
+				/* uses 'key' (at index -2) and 'value' (at index -1) */
+				auto key = retrieveLuaValue<std::string>(-2);
+				if (!lua_istable(_lState, -1))
+				{
+					auto value = retrieveLuaValue<std::string>(-1);
+					f(key, value);
+				}
+				else
+				{
+					f(key, "");
+				}
+				lua_pop(_lState, 1);
+			}
+		}
+		template<typename T>
+		T getTableField(const std::string& tableName, const std::string& fieldsName) const
+		{
+
+			lua_getglobal(_lState, tableName.c_str());
+			lua_getfield(_lState, -1, fieldsName.c_str());
+			auto result = retrieveLuaValue<T>();
+			lua_pop(_lState, 1);
+			return result;
 		}
 	};
 #endif // !LUA_SCRIPT_HPP
