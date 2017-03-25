@@ -103,7 +103,33 @@ namespace Script
 			_popC = 0;
 			callFunction(0, 0, "error running function " + function.name);
 		}
-
+		std::vector<std::string> getTableKeys(const std::string& tableName)
+		{
+			std::vector<std::string> keys;
+			lua_getglobal(_lState, tableName.c_str());// table on top of stack
+			if (lua_istable(_lState, -1))
+			{
+				lua_getfield(_lState, -1, "0");
+				auto a = retrieveLuaValue<std::string>();
+			}
+			return keys;
+		}
+		std::string getTableField(const std::string& tableName, const std::string& fieldsName)
+		{
+			lua_getglobal(_lState, tableName.c_str());
+			lua_getfield(_lState, -1, fieldsName.c_str());
+			bool table = lua_istable(_lState, -1);
+			auto r = lua_tostring(_lState, -1);
+			lua_pop(_lState, 1);
+			return r;
+		}
+		void setTableField(const std::string& tableName, const std::string& fieldsName, const std::string& value)
+		{
+			lua_getglobal(_lState, tableName.c_str());
+			lua_pushstring(_lState, fieldsName.c_str());//Push key
+			lua_pushstring(_lState, value.c_str());
+			lua_settable(_lState, -3);
+		}
 	private:
 		lua_State* _lState;
 		mutable unsigned int _fResultCount;//The result count of the last function that was called
@@ -204,6 +230,7 @@ namespace Script
 		template <typename T>
 		void setLuaValue(const T& val) const
 		{
+			createTable(val);
 		}
 		template <>
 		void setLuaValue<bool>(const bool& val) const
@@ -234,14 +261,7 @@ namespace Script
 		template <typename T>
 		void pushLuaValue(const T& val) const
 		{
-			auto data = val.unpack();
-			lua_newtable(_lState);
-			for (auto element : data)
-			{
-				pushLuaValue(element.first);
-				pushLuaValue(element.second);
-				lua_settable(_lState, -3);//automaticcaly pop the key and value 
-			}
+			createTable(val);
 		}
 		template <>
 		void pushLuaValue<bool>(const bool& val) const
@@ -296,6 +316,18 @@ namespace Script
 			else
 			{
 				throw std::invalid_argument("You cannot get return values,because there are none");
+			}
+		}
+		template <typename T>
+		void createTable(const T& val) const
+		{
+			auto data = val.unpack();
+			lua_newtable(_lState);
+			for (auto element : data)
+			{
+				pushLuaValue(element.first);
+				pushLuaValue(element.second);
+				lua_settable(_lState, -3);//automaticcaly pop the key and value 
 			}
 		}
 	};
