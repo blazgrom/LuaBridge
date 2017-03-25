@@ -1,6 +1,7 @@
 #ifndef LUA_SCRIPT_HPP
 #define LUA_SCRIPT_HPP
 #include <string>
+#include <vector>
 #include <tuple>
 #include "lua.hpp"
 #ifdef DEBUG
@@ -102,6 +103,7 @@ namespace Script
 			_popC = 0;
 			callFunction(0, 0, "error running function " + function.name);
 		}
+
 	private:
 		lua_State* _lState;
 		mutable unsigned int _fResultCount;//The result count of the last function that was called
@@ -232,6 +234,14 @@ namespace Script
 		template <typename T>
 		void pushLuaValue(const T& val) const
 		{
+			auto data = val.unpack();
+			lua_newtable(_lState);
+			for (auto element : data)
+			{
+				pushLuaValue(element.first);
+				pushLuaValue(element.second);
+				lua_settable(_lState, -3);//automaticcaly pop the key and value 
+			}
 		}
 		template <>
 		void pushLuaValue<bool>(const bool& val) const
