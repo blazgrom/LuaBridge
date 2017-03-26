@@ -10,7 +10,6 @@
 /*
  *	TODO:
  *	Find better way to implement the call functionality
- *   Add user data to the list of luaintegration handled types
  */
 namespace Script
 {
@@ -35,7 +34,7 @@ namespace Script
 			_fResultCount(0),
 			_popC(0)
 		{
-			loadLuaFile(fileName.c_str());
+			loadLuaFile(fileName);
 		}
 		explicit LuaScript(const char * fileName)
 			:
@@ -113,7 +112,7 @@ namespace Script
 			_popC = 0;
 			callFunction(0, 0, "error running function " + function.name);
 		}
-		std::vector<std::string> getTableKeys(const std::string& tableName)
+		std::vector<std::string> getKeys(const std::string& tableName) const
 		{
 			std::vector<std::string> keys;
 			lua_getglobal(_lState, tableName.c_str());
@@ -129,11 +128,11 @@ namespace Script
 		lua_State* _lState;
 		mutable unsigned int _fResultCount;//The result count of the last function that was called
 		mutable unsigned int _popC;//Number of elements that must be popped from the stack
-		void loadLuaFile(const char *fileName) const
+		void loadLuaFile(const std::string&fileName) const
 		{
 			luaL_openlibs(_lState);
 			//Load file and execute it
-			if (luaL_dofile(_lState, fileName))
+			if (luaL_dofile(_lState, fileName.c_str))
 			{
 				handleError();
 			}
@@ -152,10 +151,11 @@ namespace Script
 			pushLuaValue(value);
 			return 1 + loadFunctionParams(args...);
 		}
-		int loadFunctionParams() const
+		template <typename T>
+		int loadFunctionParams(T value) const
 		{
-			//Function used only to break the variadric recursion
-			return 0;
+			pushLuaValue(value);
+			return 1;
 		}
 		//Call functions
 		void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage) const
@@ -219,7 +219,7 @@ namespace Script
 		template <>
 		float retrieveLuaValue<float>(int stackIndex) const
 		{
-			return retrieveLuaValue<double>(stackIndex);
+			return static_cast<float>(retrieveLuaValue<double>(stackIndex));
 		}
 		template <>
 		int retrieveLuaValue<int>(int stackIndex) const
@@ -331,13 +331,12 @@ namespace Script
 		template <typename T>
 		void createTable(const T& val) const
 		{
-			auto data = val.unpack();
 			lua_newtable(_lState);
-			for (auto element : data)
+			for (auto element : val.unpack())
 			{
 				pushLuaValue(element.first);
 				pushLuaValue(element.second);
-				lua_settable(_lState, -3);//automaticcaly pop the key and value 
+				lua_settable(_lState, -3);//automatically pops [key,value] 
 			}
 		}
 		void retrieveTableValues(std::function<void(const std::string&, const std::string&)> f) const
@@ -356,17 +355,19 @@ namespace Script
 				{
 					f(key, "");
 				}
-				lua_pop(_lState, 1);
+				popStack();
 			}
 		}
 		template<typename T>
 		T getTableField(const std::string& tableName, const std::string& fieldsName) const
 		{
-
+			/*
+				The function assumes that the table is a global variable, if the table is a sub table of another table this will break
+			*/
 			lua_getglobal(_lState, tableName.c_str());
 			lua_getfield(_lState, -1, fieldsName.c_str());
 			auto result = retrieveLuaValue<T>();
-			lua_pop(_lState, 1);
+			popStack();
 			return result;
 		}
 	};
