@@ -55,16 +55,16 @@ namespace Script
 			if (variableName.find('.') == std::string::npos)
 			{
 				lua_getglobal(_lState, variableName.c_str());
-				auto result= retrieveLuaValue<T>();
+				auto result = retrieveLuaValue<T>();
 				popStack();
 				return result;
 			}
 			else
 			{
 				auto lastDotPosition = variableName.find_last_of('.');
-				auto table = variableName.substr(0,lastDotPosition);
-				auto field = variableName.substr(lastDotPosition +1);
-				return getTableField<T>(table,field);
+				auto table = variableName.substr(0, lastDotPosition);
+				auto field = variableName.substr(lastDotPosition + 1);
+				return getTableField<T>(table, field);
 			}
 		}
 		//Sets a global variable in the file loaded during the creation of the object
@@ -112,13 +112,13 @@ namespace Script
 			_popC = 0;
 			callFunction(0, 0, "error running function " + function.name);
 		}
-		std::vector<std::string> getKeys(const std::string& tableName) const
+		std::map<std::string, std::string> getKeys(const std::string& tableName) const
 		{
-			std::vector<std::string> keys;
+			std::map<std::string, std::string> keys;
 			lua_getglobal(_lState, tableName.c_str());
 			if (lua_istable(_lState, -1)) {
-				auto f = [&keys](const std::string& key, const std::string & value) {
-					keys.push_back(key);
+				auto f = [&keys,this](const std::string& key) {
+					keys[key] = lua_typename(_lState, lua_type(_lState, -1));
 				};
 				retrieveTableValues(f);
 			}
@@ -196,8 +196,15 @@ namespace Script
 			if (lua_istable(_lState, -1))
 			{
 				std::map<std::string, std::string> data;
-				auto f = [&data](const std::string& key, const std::string & value) {
-					data[key] = value;
+				auto f = [&data,this](const std::string& key) {
+					if (!lua_istable(_lState, -1))
+					{
+						data[key] = retrieveLuaValue<std::string>(-1);
+					}
+					else
+					{
+						data[key] = "";
+					}
 				};
 				retrieveTableValues(f);
 				T result;
@@ -339,22 +346,14 @@ namespace Script
 				lua_settable(_lState, -3);//automatically pops [key,value] 
 			}
 		}
-		void retrieveTableValues(std::function<void(const std::string&, const std::string&)> f) const
+		void retrieveTableValues(std::function<void(const std::string&)> f) const
 		{
 			//The function assumes that the tables is on top of the stack
 			lua_pushnil(_lState);  /* first key */
 			while (lua_next(_lState, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
 				auto key = retrieveLuaValue<std::string>(-2);
-				if (!lua_istable(_lState, -1))
-				{
-					auto value = retrieveLuaValue<std::string>(-1);
-					f(key, value);
-				}
-				else
-				{
-					f(key, "");
-				}
+				f(key);
 				popStack();
 			}
 		}
