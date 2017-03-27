@@ -50,29 +50,29 @@ namespace Script
 		}
 		//Gets a global variable from the file loaded during the creation of the object
 		template <typename T >
-		T get(std::string variableName) const
+		T get(std::string name) const
 		{
-			if (variableName.find('.') == std::string::npos)
+			if (name.find('.') == std::string::npos)
 			{
-				lua_getglobal(_lState, variableName.c_str());
-				auto result = retrieveLuaValue<T>();
+				lua_getglobal(_lState, name.c_str());
+				auto val = retrieveLuaValue<T>();
 				popStack();
-				return result;
+				return val;
 			}
 			else
 			{
-				std::string parent = variableName.substr(0, variableName.find_first_of('.'));
+				std::string parent = name.substr(0, name.find_first_of('.'));
 				lua_getglobal(_lState, parent.c_str());
-				variableName = variableName.substr(variableName.find_first_of('.') + 1);
-				return getTableField<T>(variableName);
+				name = name.substr(name.find_first_of('.') + 1);
+				return getTableField<T>(name);
 			}
 		}
 		//Sets a global variable in the file loaded during the creation of the object
 		template <typename T >
-		void set(const std::string& variableName, const T& value) const
+		void set(const std::string& name, const T& val) const
 		{
-			setLuaValue(value);
-			lua_setglobal(_lState, variableName.c_str());
+			setLuaValue(val);
+			lua_setglobal(_lState, name.c_str());
 		}
 		//Function Calls
 		template <typename... returnTypes, typename... Args>
@@ -358,7 +358,7 @@ namespace Script
 			}
 		}
 		template<typename T>
-		T getTableField(std::string& tableName) const
+		T getTableField(std::string& str) const
 		{
 			/*
 				The function assumes that the table is on top of the stack
@@ -366,16 +366,16 @@ namespace Script
 			auto keepProcessing = true;
 			while (keepProcessing)
 			{
-				auto dotPosition = tableName.find_first_of('.');
+				auto dotPosition = str.find_first_of('.');
 				if (dotPosition == std::string::npos)
 				{
-					lua_getfield(_lState, -1, tableName.c_str());
+					lua_getfield(_lState, -1, str.c_str());
 					keepProcessing=false;
 				}
 				else
 				{
-					std::string parent = tableName.substr(0, dotPosition);
-					tableName = tableName.substr(dotPosition + 1);
+					std::string parent = str.substr(0, dotPosition);
+					str = str.substr(dotPosition + 1);
 					lua_getfield(_lState, -1, parent.c_str());
 				}
 			}
