@@ -50,7 +50,7 @@ namespace Script
 		}
 		//Gets a global variable from the file loaded during the creation of the object
 		template <typename T >
-		T get(const std::string& variableName) const
+		T get(std::string variableName) const
 		{
 			if (variableName.find('.') == std::string::npos)
 			{
@@ -61,10 +61,10 @@ namespace Script
 			}
 			else
 			{
-				auto lastDotPosition = variableName.find_last_of('.');
-				auto table = variableName.substr(0, lastDotPosition);
-				auto field = variableName.substr(lastDotPosition + 1);
-				return getTableField<T>(table, field);
+				std::string parent = variableName.substr(0, variableName.find_first_of('.'));
+				lua_getglobal(_lState, parent.c_str());
+				variableName = variableName.substr(variableName.find_first_of('.') + 1);
+				return getTableField<T>(variableName);
 			}
 		}
 		//Sets a global variable in the file loaded during the creation of the object
@@ -358,13 +358,27 @@ namespace Script
 			}
 		}
 		template<typename T>
-		T getTableField(const std::string& tableName, const std::string& fieldsName) const
+		T getTableField(std::string& tableName) const
 		{
 			/*
-				The function assumes that the table is a global variable, if the table is a sub table of another table this will break
+				The function assumes that the table is on top of the stack
 			*/
-			lua_getglobal(_lState, tableName.c_str());
-			lua_getfield(_lState, -1, fieldsName.c_str());
+			auto keepProcessing = true;
+			while (keepProcessing)
+			{
+				auto dotPosition = tableName.find_first_of('.');
+				if (dotPosition == std::string::npos)
+				{
+					lua_getfield(_lState, -1, tableName.c_str());
+					keepProcessing=false;
+				}
+				else
+				{
+					std::string parent = tableName.substr(0, dotPosition);
+					tableName = tableName.substr(dotPosition + 1);
+					lua_getfield(_lState, -1, parent.c_str());
+				}
+			}
 			auto result = retrieveLuaValue<T>();
 			popStack();
 			return result;
