@@ -132,7 +132,7 @@ namespace Script
 		{
 			luaL_openlibs(_lState);
 			//Load file and execute it
-			if (luaL_dofile(_lState, fileName.c_str))
+			if (luaL_dofile(_lState, fileName.c_str()))
 			{
 				handleError();
 			}
@@ -201,7 +201,7 @@ namespace Script
 				};
 				retrieveTableValues(f);
 				T result;
-				result.pack(data);
+				result.luaPack(data);
 				return result;
 			}
 			else
@@ -332,7 +332,7 @@ namespace Script
 		void createTable(const T& val) const
 		{
 			lua_newtable(_lState);
-			for (auto element : val.unpack())
+			for (auto element : val.luaUnpack())
 			{
 				pushLuaValue(element.first);
 				pushLuaValue(element.second);
