@@ -52,7 +52,7 @@ namespace Script
 			if (name.find('.') == std::string::npos)
 			{
 				lua_getglobal(_lState, name.c_str());
-				auto val = retrieveLuaValue<T>();
+				auto val = getLuaValue<T>();
 				popStack();
 				return val;
 			}
@@ -60,7 +60,7 @@ namespace Script
 			{
 				std::string field = loadTable(name);
 				loadTableField(field);
-				auto result = retrieveLuaValue<T>();
+				auto result = getLuaValue<T>();
 				popStack();
 				return result; 
 			}
@@ -71,6 +71,7 @@ namespace Script
 		template <typename T >
 		void set(const std::string& name, const T& val) const
 		{
+			
 			setLuaValue(val);
 			lua_setglobal(_lState, name.c_str());
 		}
@@ -83,13 +84,13 @@ namespace Script
 		std::tuple<returnTypes...> call(const LuaFunction&function, Args... args) const
 		{
 			
-			checkParametersNumber<returnTypes ...>(function.resultCount);
+			checkFunctionValidity<returnTypes ...>(function.resultCount);
 			loadLuaFunction(function.name);
 			_fResultCount = function.resultCount;
 			_popC = _fResultCount;
 			int numberOfArguments = loadFunctionParams(std::forward<Args>(args)...);
 			callFunction(numberOfArguments, _fResultCount, "error running function " + function.name);
-			return getResult<returnTypes ...>();
+			return getReturnValues<returnTypes ...>();
 		}
 		/*
 			0 input  N output
@@ -97,12 +98,12 @@ namespace Script
 		template <typename... T>
 		std::tuple<T...> call(const LuaFunction&function) const
 		{
-			checkParametersNumber<T...>(function.resultCount);
+			checkFunctionValidity<T...>(function.resultCount);
 			loadLuaFunction(function.name);
 			_fResultCount = function.resultCount;
 			_popC = _fResultCount;
 			callFunction(0, _fResultCount, "error running function " + function.name);
-			return getResult<T...>();
+			return getReturnValues<T...>();
 		}
 		/*
 			 0 input 0 
@@ -146,13 +147,16 @@ namespace Script
 		lua_State* _lState;
 		mutable unsigned int _fResultCount;//The result count of the last function that was called
 		mutable unsigned int _popC;//Number of elements that must be popped from the stack
+		/*
+			Loads  a lua file + standard lib and runs it
+		*/
 		void loadLuaFile(const std::string&name) const
 		{
 			luaL_openlibs(_lState);
-			//Load file and execute it
 			if (luaL_dofile(_lState, name.c_str()))
 			{
-				handleError();
+				std::string error_message = lua_tostring(_lState, -1);
+				generateError(error_message);
 			}
 		}
 		void loadLuaFunction(const std::string& name) const
@@ -194,18 +198,13 @@ namespace Script
 				generateError(errorMessage);
 			}
 		}
-		void handleError() const
-		{
-			std::string error_message = lua_tostring(_lState, -1);
-			generateError(error_message);
-		}
 		void generateError(const std::string& errorMessage) const
 		{
 			popStack();
 			throw std::invalid_argument(errorMessage.c_str());
 		}
 		template<typename... T>
-		void checkParametersNumber(unsigned int count) const
+		void checkFunctionValidity(unsigned int count) const
 		{
 			int a = sizeof...(T);
 			if (sizeof...(T) != count)
@@ -214,12 +213,12 @@ namespace Script
 			}
 		}
 		template<typename... T>
-		void checkParametersNumber() const
+		void checkFunctionValidity() const
 		{
-			checkParametersNumber<T...>(_fResultCount);
+			checkFunctionValidity<T...>(_fResultCount);
 		}
 		template <typename T>
-		T retrieveLuaValue(int stackIndex = -1) const
+		T getLuaValue(int stackIndex = -1) const
 		{
 			if (lua_istable(_lState, -1))
 			{
@@ -227,7 +226,7 @@ namespace Script
 				auto f = [&data, this](const std::string& key) {
 					if (!lua_istable(_lState, -1))
 					{
-						data[key] = retrieveLuaValue<std::string>(-1);
+						data[key] = getLuaValue<std::string>(-1);
 					}
 					else
 					{
@@ -247,27 +246,27 @@ namespace Script
 			}
 		}
 		template <>
-		double retrieveLuaValue<double>(int stackIndex) const
+		double getLuaValue<double>(int stackIndex) const
 		{
 			return  static_cast<double>(lua_tonumber(_lState, stackIndex));
 		}
 		template <>
-		float retrieveLuaValue<float>(int stackIndex) const
+		float getLuaValue<float>(int stackIndex) const
 		{
-			return static_cast<float>(retrieveLuaValue<double>(stackIndex));
+			return static_cast<float>(getLuaValue<double>(stackIndex));
 		}
 		template <>
-		int retrieveLuaValue<int>(int stackIndex) const
+		int getLuaValue<int>(int stackIndex) const
 		{
 			return  static_cast<int>(lua_tointeger(_lState, stackIndex));
 		}
 		template<>
-		std::string retrieveLuaValue<std::string>(int stackIndex) const
+		std::string getLuaValue<std::string>(int stackIndex) const
 		{
 			return static_cast<std::string>(lua_tostring(_lState, stackIndex));
 		}
 		template <>
-		bool  retrieveLuaValue<bool>(int stackIndex) const
+		bool  getLuaValue<bool>(int stackIndex) const
 		{
 			return lua_toboolean(_lState, stackIndex) != 0;
 		}
@@ -312,9 +311,9 @@ namespace Script
 			lua_pushboolean(_lState, val);
 		}
 		template<>
-		void pushLuaValue<std::string>(const std::string& str) const
+		void pushLuaValue<std::string>(const std::string& val) const
 		{
-			lua_pushstring(_lState, str.c_str());
+			lua_pushstring(_lState, val.c_str());
 		}
 		template <>
 		void pushLuaValue<int>(const int& val) const
@@ -336,18 +335,18 @@ namespace Script
 			lua_pop(_lState, count);
 		}
 		template <typename... Args>
-		std::tuple<Args ...> getResult() const
+		std::tuple<Args ...> getReturnValues() const
 		{
-			checkParametersNumber<Args...>();
+			checkFunctionValidity<Args...>();
 			//The order of evaluation of an initializer list in c-tor is well defined!
-			return tuple<Args ...>{ getResultValue<Args>() ... };
+			return tuple<Args ...>{ getReturnValue<Args>() ... };
 		}
 		template <typename T>
-		T getResultValue() const
+		T getReturnValue() const
 		{
 			if (_fResultCount != 0)
 			{
-				auto result = retrieveLuaValue<T>(_fResultCount*-1);
+				auto result = getLuaValue<T>(_fResultCount*-1);
 				if ((--_fResultCount) == 0)
 				{
 					popStack(_popC);
@@ -371,14 +370,18 @@ namespace Script
 				lua_settable(_lState, -3);//automatically pops [key,value] 
 			}
 		}
-		void iterateTable(std::function<void(const std::string&)> f) const
+		/*
+			Iterates over a table and calls function process for every iteration passing the key(the value is on the stack with index = -1
+			1-The function assumes that the tables is on top of the stack
+
+		*/
+		void iterateTable(std::function<void(const std::string&)> process) const
 		{
-			//The function assumes that the tables is on top of the stack
 			lua_pushnil(_lState);  /* first key */
 			while (lua_next(_lState, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
-				auto key = retrieveLuaValue<std::string>(-2);
-				f(key);
+				auto key = getLuaValue<std::string>(-2);
+				process(key);
 				popStack();
 			}
 		}
@@ -398,22 +401,22 @@ namespace Script
 			separed with .(dot)
 			1-The function assumes that the parent table is already on top of the stack
 		*/
-		void loadTableField(std::string str) const
+		void loadTableField(std::string field) const
 		{
 			
 			auto keepProcessing = true;
 			while (keepProcessing)
 			{
-				auto dotPosition = str.find_first_of('.');
+				auto dotPosition = field.find_first_of('.');
 				if (dotPosition == std::string::npos)
 				{
-					lua_getfield(_lState, -1, str.c_str());
+					lua_getfield(_lState, -1, field.c_str());
 					keepProcessing = false;
 				}
 				else
 				{
-					std::string parent = str.substr(0, dotPosition);
-					str = str.substr(dotPosition + 1);
+					std::string parent = field.substr(0, dotPosition);
+					field = field.substr(dotPosition + 1);
 					lua_getfield(_lState, -1, parent.c_str());
 				}
 			}
