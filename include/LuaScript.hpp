@@ -137,12 +137,6 @@ namespace LuaBridge
 			}
 			return keys;
 		}
-		void testingGetFunction()
-		{
-		/*	lua_getglobal(_lState, "multipleReturnWithNoParams");
-			auto d=lua_tocfunction(_lState, -1);
-*/
-		}
 	private:
 		lua_State* _lState;
 		mutable unsigned int _functionReturnCount;//The result count of the last function that was called
