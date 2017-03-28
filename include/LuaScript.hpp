@@ -1,16 +1,11 @@
 #ifndef LUA_SCRIPT_HPP
 #define LUA_SCRIPT_HPP
-#include <string>
-#include <vector>
 #include <map>
 #include <tuple>
+#include <string>
 #include <functional>
 #include <type_traits>
 #include "lua.hpp"
-/*
- *	TODO:
- *	Find better way to implement the call functionality
- */
 namespace Script
 {
 	struct LuaFunction
@@ -50,7 +45,7 @@ namespace Script
 		}
 		//Gets a global variable from the file loaded during the creation of the object
 		template <typename T >
-		T get(std::string name) const
+		T get(const std::string& name) const
 		{
 			if (name.find('.') == std::string::npos)
 			{
@@ -61,10 +56,11 @@ namespace Script
 			}
 			else
 			{
-				std::string parent = name.substr(0, name.find_first_of('.'));
-				lua_getglobal(_lState, parent.c_str());
-				name = name.substr(name.find_first_of('.') + 1);
-				return getTableField<T>(name);
+				std::string field = loadTable(name);
+				loadTableField(field);
+				auto result = retrieveLuaValue<T>();
+				popStack();
+				return result; 
 			}
 		}
 		//Sets a global variable in the file loaded during the creation of the object
@@ -112,15 +108,27 @@ namespace Script
 			_popC = 0;
 			callFunction(0, 0, "error running function " + function.name);
 		}
-		std::map<std::string, std::string> getKeys(const std::string& tableName) const
+		std::map<std::string, std::string> getKeys(const std::string& name) const
 		{
 			std::map<std::string, std::string> keys;
-			lua_getglobal(_lState, tableName.c_str());
-			if (lua_istable(_lState, -1)) {
-				auto f = [&keys,this](const std::string& key) {
-					keys[key] = lua_typename(_lState, lua_type(_lState, -1));
-				};
-				retrieveTableValues(f);
+			auto process = [&keys, this]() {
+				if (lua_istable(_lState, -1)) {
+					auto f = [&keys, this](const std::string& key) {
+						keys[key] = lua_typename(_lState, lua_type(_lState, -1));
+					};
+					iterateTable(f);
+				}
+			};
+			if (name.find('.') == std::string::npos)
+			{
+				lua_getglobal(_lState, name.c_str());
+				process();
+			}
+			else
+			{
+				std::string field= loadTable(name);
+				loadTableField(field);
+				process();
 			}
 			return keys;
 		}
@@ -196,7 +204,7 @@ namespace Script
 			if (lua_istable(_lState, -1))
 			{
 				std::map<std::string, std::string> data;
-				auto f = [&data,this](const std::string& key) {
+				auto f = [&data, this](const std::string& key) {
 					if (!lua_istable(_lState, -1))
 					{
 						data[key] = retrieveLuaValue<std::string>(-1);
@@ -206,7 +214,7 @@ namespace Script
 						data[key] = "";
 					}
 				};
-				retrieveTableValues(f);
+				iterateTable(f);
 				T result;
 				result.luaPack(data);
 				return result;
@@ -346,7 +354,7 @@ namespace Script
 				lua_settable(_lState, -3);//automatically pops [key,value] 
 			}
 		}
-		void retrieveTableValues(std::function<void(const std::string&)> f) const
+		void iterateTable(std::function<void(const std::string&)> f) const
 		{
 			//The function assumes that the tables is on top of the stack
 			lua_pushnil(_lState);  /* first key */
@@ -357,12 +365,25 @@ namespace Script
 				popStack();
 			}
 		}
-		template<typename T>
-		T getTableField(std::string& str) const
+		/*
+			Pushes on top of the stack the first element element from name and removes it
+			from name
+		*/
+		std::string loadTable(std::string name)const
 		{
-			/*
-				The function assumes that the table is on top of the stack
-			*/
+			std::string parent = name.substr(0, name.find_first_of('.'));
+			lua_getglobal(_lState, parent.c_str());
+			name = name.substr(name.find_first_of('.') + 1);
+			return name;
+		}
+		/*
+			Pushes on top of the stack the last element from the str, where each element is 
+			separed with .(dot)
+			1-The function assumes that the parent table is already on top of the stack
+		*/
+		void loadTableField(std::string str) const
+		{
+			
 			auto keepProcessing = true;
 			while (keepProcessing)
 			{
@@ -370,7 +391,7 @@ namespace Script
 				if (dotPosition == std::string::npos)
 				{
 					lua_getfield(_lState, -1, str.c_str());
-					keepProcessing=false;
+					keepProcessing = false;
 				}
 				else
 				{
@@ -379,9 +400,6 @@ namespace Script
 					lua_getfield(_lState, -1, parent.c_str());
 				}
 			}
-			auto result = retrieveLuaValue<T>();
-			popStack();
-			return result;
 		}
 	};
 #endif // !LUA_SCRIPT_HPP
