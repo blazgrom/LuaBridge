@@ -85,11 +85,9 @@ namespace Script
 		{
 			
 			checkFunctionValidity<returnTypes ...>(function.resultCount);
-			loadLuaFunction(function.name);
-			_fResultCount = function.resultCount;
-			_popC = _fResultCount;
+			prepareForFunctionCall(function);
 			int numberOfArguments = loadFunctionParams(std::forward<Args>(args)...);
-			callFunction(numberOfArguments, _fResultCount, "error running function " + function.name);
+			callFunction(numberOfArguments, _fResultCount,  function.name);
 			return getReturnValues<returnTypes ...>();
 		}
 		/*
@@ -99,10 +97,8 @@ namespace Script
 		std::tuple<T...> call(const LuaFunction&function) const
 		{
 			checkFunctionValidity<T...>(function.resultCount);
-			loadLuaFunction(function.name);
-			_fResultCount = function.resultCount;
-			_popC = _fResultCount;
-			callFunction(0, _fResultCount, "error running function " + function.name);
+			prepareForFunctionCall(function);
+			callFunction(0, _fResultCount,  function.name);
 			return getReturnValues<T...>();
 		}
 		/*
@@ -114,10 +110,8 @@ namespace Script
 			{
 				throw std::exception("Function cannot have return values");
 			}
-			loadLuaFunction(function.name);
-			_fResultCount = 0;
-			_popC = 0;
-			callFunction(0, 0, "error running function " + function.name);
+			prepareForFunctionCall(function);
+			callFunction(0, _fResultCount,  function.name);
 		}
 		std::map<std::string, std::string> getInfo(const std::string& name) const
 		{
@@ -192,10 +186,16 @@ namespace Script
 			pushLuaValue(value);
 			return 1;
 		}
-		void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage) const
+		void prepareForFunctionCall(const  LuaFunction& function) const
+		{
+			loadLuaFunction(function.name);
+			_fResultCount = function.resultCount;
+			_popC = _fResultCount;
+		}
+		void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& functionName) const
 		{
 			if (lua_pcall(_lState, numberOfArguments, numberOfReturnValues, 0) != 0) {
-				generateError(errorMessage);
+				generateError("Exception thrown during the execution of "+ functionName);
 			}
 		}
 		void generateError(const std::string& errorMessage) const
