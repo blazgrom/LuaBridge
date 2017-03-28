@@ -43,7 +43,9 @@ namespace Script
 		{
 			lua_close(_lState);
 		}
-		//Gets a global variable from the file loaded during the creation of the object
+		/*
+			Gets a global variable from the file loaded during the creation of the object
+		*/
 		template <typename T >
 		T get(const std::string& name) const
 		{
@@ -63,20 +65,24 @@ namespace Script
 				return result; 
 			}
 		}
-		//Sets a global variable in the file loaded during the creation of the object
+		/*
+			Sets a global variable in the file loaded during the creation of the object
+		*/
 		template <typename T >
 		void set(const std::string& name, const T& val) const
 		{
 			setLuaValue(val);
 			lua_setglobal(_lState, name.c_str());
 		}
-		//Function Calls
+		/*
+			N input  0 output && N input N output
+			When the case is  N input  0 output it creates an unnecessary tuple 
+			should be fixed !
+		*/
 		template <typename... returnTypes, typename... Args>
 		std::tuple<returnTypes...> call(const LuaFunction&function, Args... args) const
 		{
-			// N input  0 output && //N input N output
-			//When the case is  N input  0 output it creates an unnecessary tuple 
-			//should be fixed !
+			
 			checkParametersNumber<returnTypes ...>(function.resultCount);
 			loadLuaFunction(function.name);
 			_fResultCount = function.resultCount;
@@ -85,10 +91,12 @@ namespace Script
 			callFunction(numberOfArguments, _fResultCount, "error running function " + function.name);
 			return getResult<returnTypes ...>();
 		}
+		/*
+			0 input  N output
+		*/
 		template <typename... T>
 		std::tuple<T...> call(const LuaFunction&function) const
 		{
-			//0 input  N output
 			checkParametersNumber<T...>(function.resultCount);
 			loadLuaFunction(function.name);
 			_fResultCount = function.resultCount;
@@ -96,9 +104,11 @@ namespace Script
 			callFunction(0, _fResultCount, "error running function " + function.name);
 			return getResult<T...>();
 		}
+		/*
+			 0 input 0 
+		*/
 		void call(const LuaFunction&function) const
 		{
-			// 0 input 0 
 			if (function.resultCount > 0)
 			{
 				throw std::exception("Function cannot have return values");
@@ -108,7 +118,7 @@ namespace Script
 			_popC = 0;
 			callFunction(0, 0, "error running function " + function.name);
 		}
-		std::map<std::string, std::string> getKeys(const std::string& name) const
+		std::map<std::string, std::string> getInfo(const std::string& name) const
 		{
 			std::map<std::string, std::string> keys;
 			auto process = [&keys, this]() {
@@ -136,22 +146,35 @@ namespace Script
 		lua_State* _lState;
 		mutable unsigned int _fResultCount;//The result count of the last function that was called
 		mutable unsigned int _popC;//Number of elements that must be popped from the stack
-		void loadLuaFile(const std::string&fileName) const
+		void loadLuaFile(const std::string&name) const
 		{
 			luaL_openlibs(_lState);
 			//Load file and execute it
-			if (luaL_dofile(_lState, fileName.c_str()))
+			if (luaL_dofile(_lState, name.c_str()))
 			{
 				handleError();
 			}
 		}
-		void loadLuaFunction(const std::string& functionName) const
+		void loadLuaFunction(const std::string& name) const
 		{
-			lua_getglobal(_lState, functionName.c_str());
-			if (!lua_isfunction(_lState, -1))
+			auto checkType = [&name,this]() {
+				if (!lua_isfunction(_lState, -1))
+				{
+					generateError(name + " is not a function");
+				}
+			};
+			if (name.find('.') == std::string::npos)
 			{
-				generateError(functionName + " is not a function");
+				lua_getglobal(_lState, name.c_str());
+				checkType();
 			}
+			else
+			{
+				std::string field = loadTable(name);
+				loadTableField(field);
+				checkType();
+			}
+		
 		}
 		template <typename T, typename... Args>
 		int loadFunctionParams(T value, Args... args) const
@@ -165,14 +188,12 @@ namespace Script
 			pushLuaValue(value);
 			return 1;
 		}
-		//Call functions
 		void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& errorMessage) const
 		{
 			if (lua_pcall(_lState, numberOfArguments, numberOfReturnValues, 0) != 0) {
 				generateError(errorMessage);
 			}
 		}
-		//Error handling
 		void handleError() const
 		{
 			std::string error_message = lua_tostring(_lState, -1);
@@ -197,7 +218,6 @@ namespace Script
 		{
 			checkParametersNumber<T...>(_fResultCount);
 		}
-		//Lua retrieve	
 		template <typename T>
 		T retrieveLuaValue(int stackIndex = -1) const
 		{
@@ -251,7 +271,6 @@ namespace Script
 		{
 			return lua_toboolean(_lState, stackIndex) != 0;
 		}
-		//Sets
 		template <typename T>
 		void setLuaValue(const T& val) const
 		{
@@ -282,7 +301,6 @@ namespace Script
 		{
 			lua_pushinteger(_lState, val);
 		}
-		// Push
 		template <typename T>
 		void pushLuaValue(const T& val) const
 		{
@@ -313,7 +331,6 @@ namespace Script
 		{
 			pushLuaValue(static_cast<double>(val));
 		}
-		//Utility
 		void popStack(int count = 1) const
 		{
 			lua_pop(_lState, count);
