@@ -86,8 +86,8 @@ namespace LuaBridge
 			
 			checkFunctionValidity<returnTypes ...>(function.resultCount);
 			prepareForFunctionCall(function);
-			int numberOfArguments = loadFunctionParams(std::forward<Args>(args)...);
-			callFunction(numberOfArguments, _functionReturnCount,  function.name);
+			int argumentsCount = loadFunctionParams(std::forward<Args>(args)...);
+			callFunction(argumentsCount, _functionReturnCount,  function.name);
 			return getReturnValues<returnTypes ...>();
 		}
 		/*
@@ -192,16 +192,16 @@ namespace LuaBridge
 			_functionReturnCount = function.resultCount;
 			_popCount = _functionReturnCount;
 		}
-		void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& functionName) const
+		void callFunction(int argumentCount, int returnValuesCount, const std::string& functionName) const
 		{
-			if (lua_pcall(_lState, numberOfArguments, numberOfReturnValues, 0) != 0) {
+			if (lua_pcall(_lState, argumentCount, returnValuesCount, 0) != 0) {
 				generateError("Exception thrown during the execution of "+ functionName);
 			}
 		}
-		void generateError(const std::string& errorMessage) const
+		void generateError(const std::string& message) const
 		{
 			popStack();
-			throw std::invalid_argument(errorMessage.c_str());
+			throw std::invalid_argument(message.c_str());
 		}
 		template<typename... T>
 		void checkFunctionValidity(unsigned int count) const
