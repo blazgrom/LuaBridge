@@ -137,6 +137,12 @@ namespace LuaBridge
 			}
 			return keys;
 		}
+		void testingGetFunction()
+		{
+		/*	lua_getglobal(_lState, "multipleReturnWithNoParams");
+			auto d=lua_tocfunction(_lState, -1);
+*/
+		}
 	private:
 		lua_State* _lState;
 		mutable unsigned int _functionReturnCount;//The result count of the last function that was called
@@ -224,7 +230,7 @@ namespace LuaBridge
 			{
 				std::map<std::string, std::string> data;
 				auto f = [&data, this](const std::string& key) {
-					if (!lua_istable(_lState, -1))
+					if (!lua_istable(_lState, -1) && !lua_isfunction(_lState, -1))
 					{
 						data[key] = getLuaValue<std::string>(-1);
 					}
