@@ -6,7 +6,7 @@
 #include <functional>
 #include <type_traits>
 #include "lua.hpp"
-namespace Script
+namespace LuaBridge
 {
 	struct LuaFunction
 	{
@@ -20,26 +20,26 @@ namespace Script
 		std::string name;
 		unsigned int resultCount;
 	};
-	class LuaScript
+	class Luas
 	{
 	public:
-		explicit LuaScript(const std::string& fileName)
+		explicit Luas(const std::string& fileName)
 			:
 			_lState(luaL_newstate()),
-			_fResultCount(0),
-			_popC(0)
+			_functionReturnCount(0),
+			_popCount(0)
 		{
 			loadLuaFile(fileName);
 		}
-		explicit LuaScript(const char * fileName)
+		explicit Luas(const char * fileName)
 			:
 			_lState(luaL_newstate()),
-			_fResultCount(0),
-			_popC(0)
+			_functionReturnCount(0),
+			_popCount(0)
 		{
 			loadLuaFile(fileName);
 		}
-		~LuaScript()
+		~Luas()
 		{
 			lua_close(_lState);
 		}
@@ -87,7 +87,7 @@ namespace Script
 			checkFunctionValidity<returnTypes ...>(function.resultCount);
 			prepareForFunctionCall(function);
 			int numberOfArguments = loadFunctionParams(std::forward<Args>(args)...);
-			callFunction(numberOfArguments, _fResultCount,  function.name);
+			callFunction(numberOfArguments, _functionReturnCount,  function.name);
 			return getReturnValues<returnTypes ...>();
 		}
 		/*
@@ -98,7 +98,7 @@ namespace Script
 		{
 			checkFunctionValidity<T...>(function.resultCount);
 			prepareForFunctionCall(function);
-			callFunction(0, _fResultCount,  function.name);
+			callFunction(0, _functionReturnCount,  function.name);
 			return getReturnValues<T...>();
 		}
 		/*
@@ -111,7 +111,7 @@ namespace Script
 				throw std::exception("Function cannot have return values");
 			}
 			prepareForFunctionCall(function);
-			callFunction(0, _fResultCount,  function.name);
+			callFunction(0, _functionReturnCount,  function.name);
 		}
 		std::map<std::string, std::string> getInfo(const std::string& name) const
 		{
@@ -139,8 +139,8 @@ namespace Script
 		}
 	private:
 		lua_State* _lState;
-		mutable unsigned int _fResultCount;//The result count of the last function that was called
-		mutable unsigned int _popC;//Number of elements that must be popped from the stack
+		mutable unsigned int _functionReturnCount;//The result count of the last function that was called
+		mutable unsigned int _popCount;//Number of elements that must be popped from the stack
 		/*
 			Loads  a lua file + standard lib and runs it
 		*/
@@ -189,8 +189,8 @@ namespace Script
 		void prepareForFunctionCall(const  LuaFunction& function) const
 		{
 			loadLuaFunction(function.name);
-			_fResultCount = function.resultCount;
-			_popC = _fResultCount;
+			_functionReturnCount = function.resultCount;
+			_popCount = _functionReturnCount;
 		}
 		void callFunction(int numberOfArguments, int numberOfReturnValues, const std::string& functionName) const
 		{
@@ -215,7 +215,7 @@ namespace Script
 		template<typename... T>
 		void checkFunctionValidity() const
 		{
-			checkFunctionValidity<T...>(_fResultCount);
+			checkFunctionValidity<T...>(_functionReturnCount);
 		}
 		template <typename T>
 		T getLuaValue(int stackIndex = -1) const
@@ -344,19 +344,19 @@ namespace Script
 		template <typename T>
 		T getReturnValue() const
 		{
-			if (_fResultCount != 0)
+			if (_functionReturnCount != 0)
 			{
-				auto result = getLuaValue<T>(_fResultCount*-1);
-				if ((--_fResultCount) == 0)
+				auto result = getLuaValue<T>(_functionReturnCount*-1);
+				if ((--_functionReturnCount) == 0)
 				{
-					popStack(_popC);
-					_popC = 0;
+					popStack(_popCount);
+					_popCount = 0;
 				}
 				return result;
 			}
 			else
 			{
-				throw std::invalid_argument("You cannot get return values,because there are none");
+				throw std::invalid_argument("You cannot get return values, because there are none");
 			}
 		}
 		template <typename T>
