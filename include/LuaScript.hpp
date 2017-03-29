@@ -5,26 +5,25 @@
 #include <string>
 #include <functional>
 #include <type_traits>
-#include <iostream>
 #include "lua.hpp"
 namespace LuaBridge
 {
 	struct LuaFunction
 	{
-		explicit LuaFunction(const std::string& name, unsigned int rC = 0)
+		explicit LuaFunction(const std::string& name, unsigned int resultCount = 0)
 			:
 			name(name),
-			resultCount(rC)
+			resultCount(resultCount)
 		{
 
 		}
 		std::string name;
 		unsigned int resultCount;
 	};
-	class Luas
+	class LuaB
 	{
 	public:
-		explicit Luas(const std::string& fileName)
+		explicit LuaB(const std::string& fileName)
 			:
 			_lState(luaL_newstate()),
 			fileName(fileName),
@@ -34,7 +33,7 @@ namespace LuaBridge
 			luaL_openlibs(_lState);
 			loadLuaFile(fileName);
 		}
-		explicit Luas(const char * fileName)
+		explicit LuaB(const char * fileName)
 			:
 			_lState(luaL_newstate()),
 			fileName(fileName),
@@ -44,7 +43,7 @@ namespace LuaBridge
 			luaL_openlibs(_lState);
 			loadLuaFile(fileName);
 		}
-		~Luas()
+		~LuaB()
 		{
 			lua_close(_lState);
 		}
@@ -360,7 +359,7 @@ namespace LuaBridge
 		std::tuple<Args ...> getReturnValues() const
 		{
 			checkFunctionValidity<Args...>();
-			//The order of evaluation of an initializer list in c-tor is well defined!
+			//The order of evaluation of an initializer list in c-tor of tuple<Args...> is well defined
 			return tuple<Args ...>{ getReturnValue<Args>() ... };
 		}
 		template <typename T>
