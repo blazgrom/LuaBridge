@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include <type_traits>
+#include <iostream>
 #include "lua.hpp"
 namespace LuaBridge
 {
@@ -26,17 +27,21 @@ namespace LuaBridge
 		explicit Luas(const std::string& fileName)
 			:
 			_lState(luaL_newstate()),
+			fileName(fileName),
 			_functionReturnCount(0),
 			_popCount(0)
 		{
+			luaL_openlibs(_lState);
 			loadLuaFile(fileName);
 		}
 		explicit Luas(const char * fileName)
 			:
 			_lState(luaL_newstate()),
+			fileName(fileName),
 			_functionReturnCount(0),
 			_popCount(0)
 		{
+			luaL_openlibs(_lState);
 			loadLuaFile(fileName);
 		}
 		~Luas()
@@ -137,8 +142,26 @@ namespace LuaBridge
 			}
 			return keys;
 		}
+		bool changeFile(const std::string& name)
+		{
+			bool result = true;
+			lua_close(_lState);
+			_lState = luaL_newstate();
+			try
+			{
+				loadLuaFile(name);
+				fileName = name;
+			}
+			catch (const std::exception& e)
+			{
+				loadLuaFile(fileName);
+				result = false;
+			}
+			return result;
+		}
 	private:
 		lua_State* _lState;
+		std::string fileName;
 		mutable unsigned int _functionReturnCount;//The result count of the last function that was called
 		mutable unsigned int _popCount;//Number of elements that must be popped from the stack
 		/*
@@ -146,7 +169,6 @@ namespace LuaBridge
 		*/
 		void loadLuaFile(const std::string&name) const
 		{
-			luaL_openlibs(_lState);
 			if (luaL_dofile(_lState, name.c_str()))
 			{
 				std::string error_message = lua_tostring(_lState, -1);
@@ -201,7 +223,7 @@ namespace LuaBridge
 		void generateError(const std::string& message) const
 		{
 			popStack();
-			throw std::invalid_argument(message.c_str());
+			throw std::exception(message.c_str());
 		}
 		template<typename... T>
 		void checkFunctionValidity(unsigned int count) const
