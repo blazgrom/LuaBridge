@@ -75,9 +75,32 @@ namespace LuaBridge
 		template <typename T >
 		void set(const std::string& name, const T& val) const
 		{
-			
-			setLuaValue(val);
-			lua_setglobal(_lState, name.c_str());
+			if (name.find('.') == std::string::npos)
+			{
+				pushLuaValue(val);
+				lua_setglobal(_lState, name.c_str());
+			}
+			else
+			{
+				std::string field = loadTable(name);
+				auto keepProcessing = true;
+				while (keepProcessing)
+				{
+					auto dotPosition = field.find_first_of('.');
+					if (dotPosition == std::string::npos)
+					{
+						pushLuaValue<T>(val);
+						lua_setfield(_lState,  -2, field.c_str());
+						keepProcessing = false;
+					}
+					else
+					{
+						std::string parent = field.substr(0, dotPosition);
+						field = field.substr(dotPosition + 1);
+						lua_getfield(_lState, -1, parent.c_str());
+					}
+				}
+			}
 		}
 		/*
 			N input  0 output && N input N output
@@ -292,36 +315,6 @@ namespace LuaBridge
 			return lua_toboolean(_lState, stackIndex) != 0;
 		}
 		template <typename T>
-		void setLuaValue(const T& val) const
-		{
-			createTable(val);
-		}
-		template <>
-		void setLuaValue<bool>(const bool& val) const
-		{
-			lua_pushboolean(_lState, val);
-		}
-		template <>
-		void setLuaValue<std::string>(const std::string& val) const
-		{
-			lua_pushlstring(_lState, val.c_str(), val.size());
-		}
-		template<>
-		void setLuaValue<double>(const double& val) const
-		{
-			lua_pushnumber(_lState, val);
-		}
-		template <>
-		void setLuaValue<float>(const float& val) const
-		{
-			setLuaValue(static_cast<double>(val));
-		}
-		template<>
-		void setLuaValue<int>(const int& val) const
-		{
-			lua_pushinteger(_lState, val);
-		}
-		template <typename T>
 		void pushLuaValue(const T& val) const
 		{
 			createTable(val);
@@ -334,7 +327,7 @@ namespace LuaBridge
 		template<>
 		void pushLuaValue<std::string>(const std::string& val) const
 		{
-			lua_pushstring(_lState, val.c_str());
+			lua_pushlstring(_lState, val.c_str(), val.size());
 		}
 		template <>
 		void pushLuaValue<int>(const int& val) const
