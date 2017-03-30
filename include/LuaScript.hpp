@@ -31,7 +31,7 @@ namespace LuaBridge
 			_popCount(0)
 		{
 			luaL_openlibs(_lState);
-			loadLuaFile(fileName);
+			loadFile(fileName);
 		}
 		explicit LuaB(const char * fileName)
 			:
@@ -41,7 +41,7 @@ namespace LuaBridge
 			_popCount(0)
 		{
 			luaL_openlibs(_lState);
-			loadLuaFile(fileName);
+			loadFile(fileName);
 		}
 		~LuaB()
 		{
@@ -55,51 +55,42 @@ namespace LuaBridge
 		{
 			if (name.find('.') == std::string::npos)
 			{
-				lua_getglobal(_lState, name.c_str());
-				auto val = getLuaValue<T>();
+				loadGlobalVariable(name);
+				auto val = getValue<T>();
 				popStack();
 				return val;
 			}
 			else
 			{
-				std::string field = loadTable(name);
-				loadTableField(field);
-				auto result = getLuaValue<T>();
-				popStack();
-				return result; 
+				try
+				{
+					std::string field = loadTable(name);
+					loadTableField(field);
+					auto result = getValue<T>();
+					popStack();
+					return result;
+				}
+				catch (std::invalid_argument& )
+				{
+					throw;
+				}
 			}
-		}
+		}	
 		/*
 			Sets a global variable in the file loaded during the creation of the object
 		*/
 		template <typename T >
-		void set(const std::string& name, const T& val) const
+		bool set(const std::string& name, const T& val) const
 		{
 			if (name.find('.') == std::string::npos)
 			{
-				pushLuaValue(val);
-				lua_setglobal(_lState, name.c_str());
+				bool result = setGlobal(name, val);
+				return result;
 			}
 			else
 			{
-				std::string field = loadTable(name);
-				auto keepProcessing = true;
-				while (keepProcessing)
-				{
-					auto dotPosition = field.find_first_of('.');
-					if (dotPosition == std::string::npos)
-					{
-						pushLuaValue<T>(val);
-						lua_setfield(_lState,  -2, field.c_str());
-						keepProcessing = false;
-					}
-					else
-					{
-						std::string parent = field.substr(0, dotPosition);
-						field = field.substr(dotPosition + 1);
-						lua_getfield(_lState, -1, parent.c_str());
-					}
-				}
+				bool result = setField(name, val);
+				return result;
 			}
 		}
 		/*
@@ -153,7 +144,7 @@ namespace LuaBridge
 			};
 			if (name.find('.') == std::string::npos)
 			{
-				lua_getglobal(_lState, name.c_str());
+				loadGlobalVariable(name);
 				process();
 			}
 			else
@@ -171,12 +162,12 @@ namespace LuaBridge
 			_lState = luaL_newstate();
 			try
 			{
-				loadLuaFile(name);
+				loadFile(name);
 				fileName = name;
 			}
 			catch (const std::exception& e)
 			{
-				loadLuaFile(fileName);
+				loadFile(fileName);
 				result = false;
 			}
 			return result;
@@ -189,7 +180,7 @@ namespace LuaBridge
 		/*
 			Loads  a lua file + standard lib and runs it
 		*/
-		void loadLuaFile(const std::string&name) const
+		void loadFile(const std::string&name) const
 		{
 			if (luaL_dofile(_lState, name.c_str()))
 			{
@@ -197,7 +188,7 @@ namespace LuaBridge
 				generateError(error_message);
 			}
 		}
-		void loadLuaFunction(const std::string& name) const
+		void loadFunction(const std::string& name) const
 		{
 			auto checkType = [&name,this]() {
 				if (!lua_isfunction(_lState, -1))
@@ -207,7 +198,7 @@ namespace LuaBridge
 			};
 			if (name.find('.') == std::string::npos)
 			{
-				lua_getglobal(_lState, name.c_str());
+				loadGlobalVariable(name);
 				checkType();
 			}
 			else
@@ -221,25 +212,25 @@ namespace LuaBridge
 		template <typename T, typename... Args>
 		int loadFunctionParams(T value, Args... args) const
 		{
-			pushLuaValue(value);
+			pushValue(value);
 			return 1 + loadFunctionParams(args...);
 		}
 		template <typename T>
 		int loadFunctionParams(T value) const
 		{
-			pushLuaValue(value);
+			pushValue(value);
 			return 1;
 		}
 		void prepareForFunctionCall(const  LuaFunction& function) const
 		{
-			loadLuaFunction(function.name);
+			loadFunction(function.name);
 			_functionReturnCount = function.resultCount;
 			_popCount = _functionReturnCount;
 		}
 		void callFunction(int argumentCount, int returnValuesCount, const std::string& functionName) const
 		{
 			if (lua_pcall(_lState, argumentCount, returnValuesCount, 0) != 0) {
-				generateError("Exception thrown during the execution of "+ functionName);
+				generateError(functionName+" : " + getValue<std::string>());
 			}
 		}
 		void generateError(const std::string& message) const
@@ -262,7 +253,7 @@ namespace LuaBridge
 			checkFunctionValidity<T...>(_functionReturnCount);
 		}
 		template <typename T>
-		T getLuaValue(int stackIndex = -1) const
+		T getValue(int stackIndex = -1) const
 		{
 			if (lua_istable(_lState, -1))
 			{
@@ -270,7 +261,7 @@ namespace LuaBridge
 				auto f = [&data, this](const std::string& key) {
 					if (!lua_istable(_lState, -1) && !lua_isfunction(_lState, -1))
 					{
-						data[key] = getLuaValue<std::string>(-1);
+						data[key] = getValue<std::string>(-1);
 					}
 					else
 					{
@@ -290,59 +281,59 @@ namespace LuaBridge
 			}
 		}
 		template <>
-		double getLuaValue<double>(int stackIndex) const
+		double getValue<double>(int stackIndex) const
 		{
 			return  static_cast<double>(lua_tonumber(_lState, stackIndex));
 		}
 		template <>
-		float getLuaValue<float>(int stackIndex) const
+		float getValue<float>(int stackIndex) const
 		{
-			return static_cast<float>(getLuaValue<double>(stackIndex));
+			return static_cast<float>(getValue<double>(stackIndex));
 		}
 		template <>
-		int getLuaValue<int>(int stackIndex) const
+		int getValue<int>(int stackIndex) const
 		{
 			return  static_cast<int>(lua_tointeger(_lState, stackIndex));
 		}
 		template<>
-		std::string getLuaValue<std::string>(int stackIndex) const
+		std::string getValue<std::string>(int stackIndex) const
 		{
 			return static_cast<std::string>(lua_tostring(_lState, stackIndex));
 		}
 		template <>
-		bool  getLuaValue<bool>(int stackIndex) const
+		bool  getValue<bool>(int stackIndex) const
 		{
 			return lua_toboolean(_lState, stackIndex) != 0;
 		}
 		template <typename T>
-		void pushLuaValue(const T& val) const
+		void pushValue(const T& val) const
 		{
 			createTable(val);
 		}
 		template <>
-		void pushLuaValue<bool>(const bool& val) const
+		void pushValue<bool>(const bool& val) const
 		{
 			lua_pushboolean(_lState, val);
 		}
 		template<>
-		void pushLuaValue<std::string>(const std::string& val) const
+		void pushValue<std::string>(const std::string& val) const
 		{
 			lua_pushlstring(_lState, val.c_str(), val.size());
 		}
 		template <>
-		void pushLuaValue<int>(const int& val) const
+		void pushValue<int>(const int& val) const
 		{
 			lua_pushinteger(_lState, val);
 		}
 		template<>
-		void pushLuaValue<double>(const double& val) const
+		void pushValue<double>(const double& val) const
 		{
 			lua_pushnumber(_lState, val);
 		}
 		template<>
-		void pushLuaValue<float>(const float& val) const
+		void pushValue<float>(const float& val) const
 		{
-			pushLuaValue(static_cast<double>(val));
+			pushValue(static_cast<double>(val));
 		}
 		void popStack(int count = 1) const
 		{
@@ -360,7 +351,7 @@ namespace LuaBridge
 		{
 			if (_functionReturnCount != 0)
 			{
-				auto result = getLuaValue<T>(_functionReturnCount*-1);
+				auto result = getValue<T>(_functionReturnCount*-1);
 				if ((--_functionReturnCount) == 0)
 				{
 					popStack(_popCount);
@@ -379,8 +370,8 @@ namespace LuaBridge
 			lua_newtable(_lState);
 			for (auto element : val.luaUnpack())
 			{
-				pushLuaValue(element.first);
-				pushLuaValue(element.second);
+				pushValue(element.first);
+				pushValue(element.second);
 				lua_settable(_lState, -3);//automatically pops [key,value] 
 			}
 		}
@@ -394,7 +385,7 @@ namespace LuaBridge
 			lua_pushnil(_lState);  /* first key */
 			while (lua_next(_lState, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
-				auto key = getLuaValue<std::string>(-2);
+				auto key = getValue<std::string>(-2);
 				process(key);
 				popStack();
 			}
@@ -406,7 +397,7 @@ namespace LuaBridge
 		std::string loadTable(std::string name)const
 		{
 			std::string parent = name.substr(0, name.find_first_of('.'));
-			lua_getglobal(_lState, parent.c_str());
+			loadGlobalVariable(parent);
 			name = name.substr(name.find_first_of('.') + 1);
 			return name;
 		}
@@ -424,15 +415,94 @@ namespace LuaBridge
 				auto dotPosition = field.find_first_of('.');
 				if (dotPosition == std::string::npos)
 				{
-					lua_getfield(_lState, -1, field.c_str());
 					keepProcessing = false;
+					getTableField(field, -1);
 				}
 				else
 				{
 					std::string parent = field.substr(0, dotPosition);
 					field = field.substr(dotPosition + 1);
-					lua_getfield(_lState, -1, parent.c_str());
+					getTableField(parent, -1);
 				}
+			}
+		}
+		/*
+			Load a global lua variable with name equals to name,
+			if the variable could not be loaded the stack is popped and  an exception is throw signaling that the variable 
+			could not be loaded
+		*/
+		void loadGlobalVariable(const std::string& name) const
+		{
+			lua_getglobal(_lState, name.c_str());
+			bool failed = lua_isnoneornil(_lState, -1);
+			if (failed)
+			{
+				popStack();
+				throw std::invalid_argument("Object with name " + name + " could not be loaded");
+			}
+		}
+		/*
+			Pushes on top of the stack the field with name equals to name of the table at specified index,
+			if the table doesnt contain a specific field an exception is thrown 
+		*/
+		void getTableField(const std::string& name, int index ) const
+		{
+			if (lua_istable(_lState, index))
+			{
+				lua_getfield(_lState, index, name.c_str());
+			}
+			else
+			{
+				popStack();
+				throw std::invalid_argument("The field " + name + " could not be loaded");
+			}
+		}
+		
+
+
+		template <typename T>
+		bool setGlobal(const std::string& name, const T& val) const
+		{
+			try
+			{
+				loadGlobalVariable(name);
+				pushValue(val);
+				lua_setglobal(_lState, name.c_str());
+				return true;
+			}
+			catch (const std::invalid_argument& e)
+			{
+				return false;
+			}
+		}
+		template <typename T>
+		bool setField(const std::string& name, const T& val)const
+		{
+			try
+			{
+				std::string field = loadTable(name);
+				auto keepProcessing = true;
+				while (keepProcessing)
+				{
+					auto dotPosition = field.find_first_of('.');
+					if (dotPosition == std::string::npos)
+					{
+						pushValue<T>(val);
+						lua_setfield(_lState, -2, field.c_str());
+						keepProcessing = false;
+					}
+					else
+					{
+						std::string parent = field.substr(0, dotPosition);
+						field = field.substr(dotPosition + 1);
+						getTableField(parent, -1);
+					}
+				}
+				return true;
+			}
+			catch (const std::invalid_argument& e)
+			{
+				return false;
 			}
 		}
 	};
