@@ -1,5 +1,5 @@
-#ifndef LUA_SCRIPT_HPP
-#define LUA_SCRIPT_HPP
+#ifndef LUA_B_HPP
+#define LUA_B_HPP
 #include <map>
 #include <tuple>
 #include <string>
@@ -25,27 +25,22 @@ namespace LuaBridge
 	public:
 		explicit LuaB(const std::string& fileName)
 			:
-			_lState(luaL_newstate()),
-			fileName(fileName),
+			_state(luaL_newstate()),
+			_file(fileName),
+			_open(true),
 			_functionReturnCount(0),
 			_popCount(0)
 		{
-			luaL_openlibs(_lState);
-			loadFile(fileName);
+			luaL_openlibs(_state);
+			loadFile(_file);
 		}
-		explicit LuaB(const char * fileName)
-			:
-			_lState(luaL_newstate()),
-			fileName(fileName),
-			_functionReturnCount(0),
-			_popCount(0)
-		{
-			luaL_openlibs(_lState);
-			loadFile(fileName);
-		}
+		LuaB(const LuaB& rhs) = delete;
+		LuaB& operator=(const LuaB& rhs) = delete;
+		LuaB(LuaB&& rhs) = default;
+		LuaB& operator=( LuaB&& rhs) = default;
 		~LuaB()
 		{
-			lua_close(_lState);
+			lua_close(_state);
 		}
 		/*
 			Gets a global variable from the file loaded during the creation of the object
@@ -95,27 +90,25 @@ namespace LuaBridge
 		}
 		/*
 			N input  0 output && N input N output
-			When the case is  N input  0 output it creates an unnecessary tuple 
-			should be fixed !
+			
 		*/
 		template <typename... returnTypes, typename... Args>
 		std::tuple<returnTypes...> call(const LuaFunction&function, Args... args) const
 		{
-			
-			checkFunctionValidity<returnTypes ...>(function.resultCount);
-			prepareForFunctionCall(function);
+			checkDataValidity<returnTypes ...>(function.resultCount);
+			prepareForCall(function);
 			int argumentsCount = loadFunctionParams(std::forward<Args>(args)...);
 			callFunction(argumentsCount, _functionReturnCount,  function.name);
 			return getReturnValues<returnTypes ...>();
-		}
+		}		
 		/*
 			0 input  N output
 		*/
 		template <typename... T>
 		std::tuple<T...> call(const LuaFunction&function) const
 		{
-			checkFunctionValidity<T...>(function.resultCount);
-			prepareForFunctionCall(function);
+			checkDataValidity<T...>(function.resultCount);
+			prepareForCall(function);
 			callFunction(0, _functionReturnCount,  function.name);
 			return getReturnValues<T...>();
 		}
@@ -128,16 +121,16 @@ namespace LuaBridge
 			{
 				throw std::exception("Function cannot have return values");
 			}
-			prepareForFunctionCall(function);
+			prepareForCall(function);
 			callFunction(0, _functionReturnCount,  function.name);
 		}
-		std::map<std::string, std::string> getInfo(const std::string& name) const
+		std::map<std::string, std::string> getTableInfo(const std::string& name) const
 		{
 			std::map<std::string, std::string> keys;
 			auto process = [&keys, this]() {
-				if (lua_istable(_lState, -1)) {
+				if (lua_istable(_state, -1)) {
 					auto f = [&keys, this](const std::string& key) {
-						keys[key] = lua_typename(_lState, lua_type(_lState, -1));
+						keys[key] = lua_typename(_state, lua_type(_state, -1));
 					};
 					iterateTable(f);
 				}
@@ -155,26 +148,41 @@ namespace LuaBridge
 			}
 			return keys;
 		}
-		bool changeFile(const std::string& name)
+		void openFile(const std::string& name)
+		{
+			if (!_open)
+			{
+				_state = luaL_newstate();
+				loadFile(name);
+				_file = name;
+			}
+		}
+		void closeFile()  noexcept
+		{
+			lua_close(_state);
+			_open = false;
+		}
+		bool changeFile(const std::string& name)  noexcept
 		{
 			bool result = true;
-			lua_close(_lState);
-			_lState = luaL_newstate();
+			lua_close(_state);
+			_state = luaL_newstate();
 			try
 			{
 				loadFile(name);
-				fileName = name;
+				_file = name;
 			}
 			catch (const std::exception& e)
 			{
-				loadFile(fileName);
+				loadFile(_file);
 				result = false;
 			}
 			return result;
 		}
 	private:
-		lua_State* _lState;
-		std::string fileName;
+		lua_State* _state;
+		std::string _file;
+		bool _open;
 		mutable unsigned int _functionReturnCount;//The result count of the last function that was called
 		mutable unsigned int _popCount;//Number of elements that must be popped from the stack
 		/*
@@ -182,18 +190,19 @@ namespace LuaBridge
 		*/
 		void loadFile(const std::string&name) const
 		{
-			if (luaL_dofile(_lState, name.c_str()))
+			if (luaL_dofile(_state, name.c_str()))
 			{
-				std::string error_message = lua_tostring(_lState, -1);
+				std::string error_message = lua_tostring(_state, -1);
 				generateError(error_message);
 			}
 		}
 		void loadFunction(const std::string& name) const
 		{
 			auto checkType = [&name,this]() {
-				if (!lua_isfunction(_lState, -1))
+				if (!lua_isfunction(_state, -1))
 				{
-					generateError(name + " is not a function");
+					popStack();
+					throw std::invalid_argument(name + " is not a function");
 				}
 			};
 			if (name.find('.') == std::string::npos)
@@ -221,7 +230,7 @@ namespace LuaBridge
 			pushValue(value);
 			return 1;
 		}
-		void prepareForFunctionCall(const  LuaFunction& function) const
+		void prepareForCall(const  LuaFunction& function) const
 		{
 			loadFunction(function.name);
 			_functionReturnCount = function.resultCount;
@@ -229,7 +238,7 @@ namespace LuaBridge
 		}
 		void callFunction(int argumentCount, int returnValuesCount, const std::string& functionName) const
 		{
-			if (lua_pcall(_lState, argumentCount, returnValuesCount, 0) != 0) {
+			if (lua_pcall(_state, argumentCount, returnValuesCount, 0) != 0) {
 				generateError(functionName+" : " + getValue<std::string>());
 			}
 		}
@@ -239,27 +248,31 @@ namespace LuaBridge
 			throw std::exception(message.c_str());
 		}
 		template<typename... T>
-		void checkFunctionValidity(unsigned int count) const
+		void checkDataValidity(unsigned int count) const
 		{
 			int a = sizeof...(T);
-			if (sizeof...(T) != count)
+			if (sizeof...(T) > count)
 			{
-				throw std::invalid_argument("You cannot get more return values than the function returns");
+				throw std::invalid_argument("Number of template parameters passed is bigger than the number of the function's return values ");
+			}
+			else if (sizeof...(T) < count)
+			{
+				throw std::invalid_argument("The number of function return values is bigger than the number of template parameters for the return values");
 			}
 		}
 		template<typename... T>
-		void checkFunctionValidity() const
+		void checkDataValidity() const
 		{
-			checkFunctionValidity<T...>(_functionReturnCount);
+			checkDataValidity<T...>(_functionReturnCount);
 		}
 		template <typename T>
 		T getValue(int stackIndex = -1) const
 		{
-			if (lua_istable(_lState, -1))
+			if (lua_istable(_state, -1))
 			{
 				std::map<std::string, std::string> data;
 				auto f = [&data, this](const std::string& key) {
-					if (!lua_istable(_lState, -1) && !lua_isfunction(_lState, -1))
+					if (!lua_istable(_state, -1) && !lua_isfunction(_state, -1))
 					{
 						data[key] = getValue<std::string>(-1);
 					}
@@ -283,7 +296,7 @@ namespace LuaBridge
 		template <>
 		double getValue<double>(int stackIndex) const
 		{
-			return  static_cast<double>(lua_tonumber(_lState, stackIndex));
+			return  static_cast<double>(lua_tonumber(_state, stackIndex));
 		}
 		template <>
 		float getValue<float>(int stackIndex) const
@@ -293,17 +306,17 @@ namespace LuaBridge
 		template <>
 		int getValue<int>(int stackIndex) const
 		{
-			return  static_cast<int>(lua_tointeger(_lState, stackIndex));
+			return  static_cast<int>(lua_tointeger(_state, stackIndex));
 		}
 		template<>
 		std::string getValue<std::string>(int stackIndex) const
 		{
-			return static_cast<std::string>(lua_tostring(_lState, stackIndex));
+			return static_cast<std::string>(lua_tostring(_state, stackIndex));
 		}
 		template <>
 		bool  getValue<bool>(int stackIndex) const
 		{
-			return lua_toboolean(_lState, stackIndex) != 0;
+			return lua_toboolean(_state, stackIndex) != 0;
 		}
 		template <typename T>
 		void pushValue(const T& val) const
@@ -313,22 +326,22 @@ namespace LuaBridge
 		template <>
 		void pushValue<bool>(const bool& val) const
 		{
-			lua_pushboolean(_lState, val);
+			lua_pushboolean(_state, val);
 		}
 		template<>
 		void pushValue<std::string>(const std::string& val) const
 		{
-			lua_pushlstring(_lState, val.c_str(), val.size());
+			lua_pushlstring(_state, val.c_str(), val.size());
 		}
 		template <>
 		void pushValue<int>(const int& val) const
 		{
-			lua_pushinteger(_lState, val);
+			lua_pushinteger(_state, val);
 		}
 		template<>
 		void pushValue<double>(const double& val) const
 		{
-			lua_pushnumber(_lState, val);
+			lua_pushnumber(_state, val);
 		}
 		template<>
 		void pushValue<float>(const float& val) const
@@ -337,12 +350,11 @@ namespace LuaBridge
 		}
 		void popStack(int count = 1) const
 		{
-			lua_pop(_lState, count);
+			lua_pop(_state, count);
 		}
 		template <typename... Args>
 		std::tuple<Args ...> getReturnValues() const
 		{
-			checkFunctionValidity<Args...>();
 			//The order of evaluation of an initializer list in c-tor of tuple<Args...> is well defined
 			return tuple<Args ...>{ getReturnValue<Args>() ... };
 		}
@@ -367,12 +379,12 @@ namespace LuaBridge
 		template <typename T>
 		void createTable(const T& val) const
 		{
-			lua_newtable(_lState);
+			lua_newtable(_state);
 			for (auto element : val.luaUnpack())
 			{
 				pushValue(element.first);
 				pushValue(element.second);
-				lua_settable(_lState, -3);//automatically pops [key,value] 
+				lua_settable(_state, -3);//automatically pops [key,value] 
 			}
 		}
 		/*
@@ -382,8 +394,8 @@ namespace LuaBridge
 		*/
 		void iterateTable(std::function<void(const std::string&)> process) const
 		{
-			lua_pushnil(_lState);  /* first key */
-			while (lua_next(_lState, -2) != 0) {
+			lua_pushnil(_state);  /* first key */
+			while (lua_next(_state, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
 				auto key = getValue<std::string>(-2);
 				process(key);
@@ -433,8 +445,8 @@ namespace LuaBridge
 		*/
 		void loadGlobalVariable(const std::string& name) const
 		{
-			lua_getglobal(_lState, name.c_str());
-			bool failed = lua_isnoneornil(_lState, -1);
+			lua_getglobal(_state, name.c_str());
+			bool failed = lua_isnoneornil(_state, -1);
 			if (failed)
 			{
 				popStack();
@@ -447,9 +459,9 @@ namespace LuaBridge
 		*/
 		void getTableField(const std::string& name, int index ) const
 		{
-			if (lua_istable(_lState, index))
+			if (lua_istable(_state, index))
 			{
-				lua_getfield(_lState, index, name.c_str());
+				lua_getfield(_state, index, name.c_str());
 			}
 			else
 			{
@@ -457,9 +469,6 @@ namespace LuaBridge
 				throw std::invalid_argument("The field " + name + " could not be loaded");
 			}
 		}
-		
-
-
 		template <typename T>
 		bool setGlobal(const std::string& name, const T& val) const
 		{
@@ -467,7 +476,7 @@ namespace LuaBridge
 			{
 				loadGlobalVariable(name);
 				pushValue(val);
-				lua_setglobal(_lState, name.c_str());
+				lua_setglobal(_state, name.c_str());
 				return true;
 			}
 			catch (const std::invalid_argument& e)
@@ -488,7 +497,7 @@ namespace LuaBridge
 					if (dotPosition == std::string::npos)
 					{
 						pushValue<T>(val);
-						lua_setfield(_lState, -2, field.c_str());
+						lua_setfield(_state, -2, field.c_str());
 						keepProcessing = false;
 					}
 					else
@@ -506,5 +515,5 @@ namespace LuaBridge
 			}
 		}
 	};
-#endif // !LUA_SCRIPT_HPP
+#endif // !LUA_B_HPP
 }
