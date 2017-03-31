@@ -4,7 +4,6 @@
 #include <tuple>
 #include <string>
 #include <functional>
-#include <type_traits>
 #include "lua.hpp"
 namespace LuaBridge
 {
