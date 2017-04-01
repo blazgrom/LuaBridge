@@ -56,18 +56,11 @@ namespace LuaBridge
 			}
 			else
 			{
-				try
-				{
-					std::string field = loadTable(name);
-					loadTableField(field);
-					auto result = getValue<T>();
-					popStack();
-					return result;
-				}
-				catch (std::invalid_argument& )
-				{
-					throw;
-				}
+				std::string field = loadTable(name);
+				loadTableField(field);
+				auto result = getValue<T>();
+				popStack();
+				return result;
 			}
 		}	
 		/*
@@ -78,13 +71,11 @@ namespace LuaBridge
 		{
 			if (name.find('.') == std::string::npos)
 			{
-				bool result = setGlobal(name, val);
-				return result;
+				return setGlobal(name, val);
 			}
 			else
 			{
-				bool result = setField(name, val);
-				return result;
+				return setField(name, val);
 			}
 		}
 		/*
@@ -249,7 +240,6 @@ namespace LuaBridge
 		template<typename... T>
 		void checkDataValidity(unsigned int count) const
 		{
-			int a = sizeof...(T);
 			if (sizeof...(T) > count)
 			{
 				throw std::invalid_argument("Number of template parameters passed is bigger than the number of the function's return values ");
@@ -310,7 +300,9 @@ namespace LuaBridge
 		template<>
 		std::string getValue<std::string>(int stackIndex) const
 		{
-			return static_cast<std::string>(lua_tostring(_state, stackIndex));
+			size_t strLength = 0;
+			const char* str = lua_tolstring(_state, stackIndex, &strLength);
+			return std::string(str, strLength);
 		}
 		template <>
 		bool  getValue<bool>(int stackIndex) const
@@ -379,7 +371,7 @@ namespace LuaBridge
 		void createTable(const T& val) const
 		{
 			lua_newtable(_state);
-			for (auto element : val.luaUnpack())
+			for (const auto& element : val.luaUnpack())
 			{
 				pushValue(element.first);
 				pushValue(element.second);
@@ -409,8 +401,7 @@ namespace LuaBridge
 		{
 			std::string parent = name.substr(0, name.find_first_of('.'));
 			loadGlobalVariable(parent);
-			name = name.substr(name.find_first_of('.') + 1);
-			return name;
+			return name.substr(name.find_first_of('.') + 1);
 		}
 		/*
 			Pushes on top of the stack the last element from the str, where each element is 
