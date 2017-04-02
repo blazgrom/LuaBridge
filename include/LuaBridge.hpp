@@ -7,12 +7,26 @@
 #include "lua.hpp"
 namespace LuaBridge
 {
+	template <typename... T>
 	struct LuaFunction
 	{
-		explicit LuaFunction(const std::string& name, unsigned int resultCount = 0)
+		explicit LuaFunction(const std::string& name)
 			:
 			name(name),
-			resultCount(resultCount)
+			resultCount(sizeof... (T))
+		{
+
+		}
+		std::string name;
+		unsigned int resultCount;
+	};
+	template <>
+	struct LuaFunction<void>
+	{
+		explicit LuaFunction(const std::string& name)
+			:
+			name(name),
+			resultCount(0)
 		{
 
 		}
@@ -74,22 +88,32 @@ namespace LuaBridge
 			}
 		}
 		/*
-			N input  0 output && N input N output
+			N input N output
 		*/
 		template <typename... returnTypes, typename... Args>
-		std::tuple<returnTypes...> call(const LuaFunction& function, Args... args) const
+		std::tuple<returnTypes...> call(const LuaFunction<returnTypes...>& function, Args... args) const
 		{
 			checkDataValidity<returnTypes ...>(function.resultCount);
 			loadFunction(function.name);
 			int argumentsCount = loadFunctionParams(std::forward<Args>(args)...);
 			callFunction(argumentsCount, function.resultCount,  function.name);
 			return getReturnValues<returnTypes ...>(function.resultCount);
-		}	
+		}
+		/*
+			N input  0 output
+		*/
+		template <typename...Args>
+		void call(const LuaFunction<void>& function, Args... args) const
+		{
+			loadFunction(function.name);
+			int argumentsCount = loadFunctionParams(std::forward<Args>(args)...);
+			callFunction(argumentsCount, function.resultCount, function.name);
+		}
 		/*
 			0 input  N output
 		*/
 		template <typename... T>
-		std::tuple<T...> call(const LuaFunction& function) const
+		std::tuple<T...> call(const LuaFunction<T...>& function) const
 		{
 			checkDataValidity<T...>(function.resultCount);
 			loadFunction(function.name);
@@ -99,12 +123,8 @@ namespace LuaBridge
 		/*
 			 0 input 0 
 		*/
-		void call(const LuaFunction& function) const
+		void call(const LuaFunction<void>& function) const
 		{
-			if (function.resultCount > 0)
-			{
-				throw std::exception("Function cannot have return values");
-			}
 			loadFunction(function.name);
 			callFunction(0, function.resultCount,  function.name);
 		}
