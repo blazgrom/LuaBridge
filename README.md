@@ -52,7 +52,7 @@ Feature list:
 
 * C++
 ```cpp
-	script.call(LuaFunction("helloWorld"));
+	script.call(LuaFunction<void>("helloWorld"));
 ```
 ##### No input params and N return values
 * Lua
@@ -63,8 +63,7 @@ Feature list:
 ```
 * C++
 ```cpp
-	int returnValuesCount=3;
-    std::tuple<int,int,int> result=script.call<int,int,int>(LuaFunction("multipleReturnValues",returnValuesCount));
+    std::tuple<int,int,int> result=script.call(LuaFunction<int,int,int>("multipleReturnValues"));
 ```
 ##### N input params and no return values
 * Lua
@@ -76,7 +75,7 @@ Feature list:
 ```
 * C++
 ```cpp
-    script.call(LuaFunction("Sum"), 1, 2, 3); //Returns a std::tuple<> 
+    script.call(LuaFunction<void>("Sum"), 1, 2, 3);
 ```
 
 ##### N input params and N return values
@@ -90,8 +89,8 @@ Feature list:
 * C++
 ```cpp
 	int returnValuesCount=3;
-    LuaFunction test("Test", returnValuesCount);
-   	auto result = script.call<int, int, int>(test, 1, 2, 3); 
+    LuaFunction<int, int, int> test("Test");
+   	auto result = script.call(test, 1, 2, 3); 
 ```
 #### Table info
 ```cpp
