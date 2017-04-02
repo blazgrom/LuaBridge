@@ -26,9 +26,7 @@ namespace LuaBridge
 			:
 			_state(luaL_newstate()),
 			_file(fileName),
-			_open(true),
-			_functionReturnCount(0),
-			_popCount(0)
+			_open(false)
 		{
 			luaL_openlibs(_state);
 			loadFile(_file);
@@ -80,17 +78,16 @@ namespace LuaBridge
 		}
 		/*
 			N input  0 output && N input N output
-			
 		*/
 		template <typename... returnTypes, typename... Args>
 		std::tuple<returnTypes...> call(const LuaFunction& function, Args... args) const
 		{
 			checkDataValidity<returnTypes ...>(function.resultCount);
-			prepareForCall(function);
+			loadFunction(function.name);
 			int argumentsCount = loadFunctionParams(std::forward<Args>(args)...);
-			callFunction(argumentsCount, _functionReturnCount,  function.name);
-			return getReturnValues<returnTypes ...>();
-		}		
+			callFunction(argumentsCount, function.resultCount,  function.name);
+			return getReturnValues<returnTypes ...>(function.resultCount);
+		}	
 		/*
 			0 input  N output
 		*/
@@ -98,9 +95,9 @@ namespace LuaBridge
 		std::tuple<T...> call(const LuaFunction& function) const
 		{
 			checkDataValidity<T...>(function.resultCount);
-			prepareForCall(function);
-			callFunction(0, _functionReturnCount,  function.name);
-			return getReturnValues<T...>();
+			loadFunction(function.name);
+			callFunction(0, function.resultCount,  function.name);
+			return getReturnValues<T...>(function.resultCount);
 		}
 		/*
 			 0 input 0 
@@ -111,8 +108,8 @@ namespace LuaBridge
 			{
 				throw std::exception("Function cannot have return values");
 			}
-			prepareForCall(function);
-			callFunction(0, _functionReturnCount,  function.name);
+			loadFunction(function.name);
+			callFunction(0, function.resultCount,  function.name);
 		}
 		std::map<std::string, std::string> getTableInfo(const std::string& name) const
 		{
@@ -144,6 +141,7 @@ namespace LuaBridge
 			{
 				_state = luaL_newstate();
 				loadFile(name);
+				_open = true;
 				_file = name;
 			}
 		}
@@ -173,8 +171,6 @@ namespace LuaBridge
 		lua_State* _state;
 		std::string _file;
 		bool _open;
-		mutable unsigned int _functionReturnCount;//The result count of the last function that was called
-		mutable unsigned int _popCount;//Number of elements that must be popped from the stack
 		/*
 			Loads  a lua file + standard lib and runs it
 		*/
@@ -220,15 +216,9 @@ namespace LuaBridge
 			pushValue(value);
 			return 1;
 		}
-		void prepareForCall(const LuaFunction& function) const
+		void callFunction(int inputValCount, int outputValCount, const std::string& functionName) const
 		{
-			loadFunction(function.name);
-			_functionReturnCount = function.resultCount;
-			_popCount = _functionReturnCount;
-		}
-		void callFunction(int argumentCount, int returnValuesCount, const std::string& functionName) const
-		{
-			if (lua_pcall(_state, argumentCount, returnValuesCount, 0) != 0) {
+			if (lua_pcall(_state, inputValCount, outputValCount, 0) != 0) {
 				generateError(functionName+" : " + getValue<std::string>());
 			}
 		}
@@ -248,11 +238,6 @@ namespace LuaBridge
 			{
 				throw std::invalid_argument("The number of function return values is bigger than the number of template parameters for the return values");
 			}
-		}
-		template<typename... T>
-		void checkDataValidity() const
-		{
-			checkDataValidity<T...>(_functionReturnCount);
 		}
 		template <typename T>
 		T getValue(int stackIndex = -1) const
@@ -344,23 +329,20 @@ namespace LuaBridge
 			lua_pop(_state, count);
 		}
 		template <typename... Args>
-		std::tuple<Args ...> getReturnValues() const
+		std::tuple<Args ...> getReturnValues(unsigned int functionReturnCount) const
 		{
+			const unsigned int popCount = functionReturnCount;
 			//The order of evaluation of an initializer list in c-tor of tuple<Args...> is well defined
-			return tuple<Args ...>{ getReturnValue<Args>() ... };
+			tuple<Args ...> result{ getReturnValue<Args>(functionReturnCount--) ... };
+			popStack(popCount);
+			return result;
 		}
 		template <typename T>
-		T getReturnValue() const
+		T getReturnValue(int index) const
 		{
-			if (_functionReturnCount != 0)
+			if (index != 0)
 			{
-				auto result = getValue<T>(_functionReturnCount*-1);
-				if ((--_functionReturnCount) == 0)
-				{
-					popStack(_popCount);
-					_popCount = 0;
-				}
-				return result;
+				return  getValue<T>(index*-1);
 			}
 			else
 			{
