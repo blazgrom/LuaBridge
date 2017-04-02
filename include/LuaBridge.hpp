@@ -91,7 +91,7 @@ namespace LuaBridge
 			N input N output
 		*/
 		template <typename... returnTypes, typename... Args>
-		std::tuple<returnTypes...> call(const LuaFunction<returnTypes...>& function, Args... args) const
+		std::tuple<returnTypes...> call(const LuaFunction<returnTypes...>& function, Args&&... args) const
 		{
 			checkDataValidity<returnTypes ...>(function.resultCount);
 			loadFunction(function.name);
@@ -103,7 +103,7 @@ namespace LuaBridge
 			N input  0 output
 		*/
 		template <typename...Args>
-		void call(const LuaFunction<void>& function, Args... args) const
+		void call(const LuaFunction<void>& function, Args&&... args) const
 		{
 			loadFunction(function.name);
 			int argumentsCount = loadFunctionParams(std::forward<Args>(args)...);
@@ -221,13 +221,13 @@ namespace LuaBridge
 		
 		}
 		template <typename T, typename... Args>
-		int loadFunctionParams(T value, Args... args) const
+		int loadFunctionParams(T&& value, Args&&... args) const
 		{
 			pushValue(value);
 			return 1 + loadFunctionParams(args...);
 		}
 		template <typename T>
-		int loadFunctionParams(T value) const
+		int loadFunctionParams(T&& value) const
 		{
 			pushValue(value);
 			return 1;
