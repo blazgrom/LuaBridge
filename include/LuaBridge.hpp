@@ -48,18 +48,15 @@ namespace LuaBridge
 			if (name.find('.') == std::string::npos)
 			{
 				loadGlobalVariable(name);
-				auto val = getValue<T>();
-				popStack();
-				return val;
 			}
 			else
 			{
 				std::string field = loadTable(name);
 				loadTableField(field);
-				auto result = getValue<T>();
-				popStack();
-				return result;
 			}
+			auto result = getValue<T>();
+			popStack();
+			return result;
 		}	
 		/*
 			Sets a global variable in the file loaded during the creation of the object
@@ -178,8 +175,7 @@ namespace LuaBridge
 		{
 			if (luaL_dofile(_state, name.c_str()))
 			{
-				std::string error_message = lua_tostring(_state, -1);
-				generateError(error_message);
+				generateError(lua_tostring(_state, -1));
 			}
 		}
 		void loadFunction(const std::string& name) const
@@ -260,12 +256,9 @@ namespace LuaBridge
 				result.luaPack(data);
 				return result;
 			}
-			else
-			{
-				std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
-				std::string endText = typeid(T).name();
-				generateError(startText + endText);
-			}
+			std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
+			std::string endText = typeid(T).name();
+			generateError(startText + endText);
 		}
 		template <>
 		double getValue<double>(int stackIndex) const
