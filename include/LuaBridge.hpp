@@ -44,7 +44,7 @@ namespace LuaBridge
 		/*
 			Gets a global variable from the file loaded during the creation of the object
 		*/
-		template <typename T >
+		template <typename T>
 		T get(const std::string& name) const
 		{
 			if (name.find('.') == std::string::npos)
@@ -66,7 +66,7 @@ namespace LuaBridge
 		/*
 			Sets a global variable in the file loaded during the creation of the object
 		*/
-		template <typename T >
+		template <typename T>
 		bool set(const std::string& name, const T& val) const
 		{
 			if (name.find('.') == std::string::npos)
@@ -83,7 +83,7 @@ namespace LuaBridge
 			
 		*/
 		template <typename... returnTypes, typename... Args>
-		std::tuple<returnTypes...> call(const LuaFunction&function, Args... args) const
+		std::tuple<returnTypes...> call(const LuaFunction& function, Args... args) const
 		{
 			checkDataValidity<returnTypes ...>(function.resultCount);
 			prepareForCall(function);
@@ -95,7 +95,7 @@ namespace LuaBridge
 			0 input  N output
 		*/
 		template <typename... T>
-		std::tuple<T...> call(const LuaFunction&function) const
+		std::tuple<T...> call(const LuaFunction& function) const
 		{
 			checkDataValidity<T...>(function.resultCount);
 			prepareForCall(function);
@@ -105,7 +105,7 @@ namespace LuaBridge
 		/*
 			 0 input 0 
 		*/
-		void call(const LuaFunction&function) const
+		void call(const LuaFunction& function) const
 		{
 			if (function.resultCount > 0)
 			{
@@ -147,12 +147,12 @@ namespace LuaBridge
 				_file = name;
 			}
 		}
-		void closeFile()  noexcept
+		void closeFile() noexcept
 		{
 			lua_close(_state);
 			_open = false;
 		}
-		bool changeFile(const std::string& name)  noexcept
+		bool changeFile(const std::string& name) noexcept
 		{
 			bool result = true;
 			lua_close(_state);
@@ -178,7 +178,7 @@ namespace LuaBridge
 		/*
 			Loads  a lua file + standard lib and runs it
 		*/
-		void loadFile(const std::string&name) const
+		void loadFile(const std::string& name) const
 		{
 			if (luaL_dofile(_state, name.c_str()))
 			{
@@ -220,7 +220,7 @@ namespace LuaBridge
 			pushValue(value);
 			return 1;
 		}
-		void prepareForCall(const  LuaFunction& function) const
+		void prepareForCall(const LuaFunction& function) const
 		{
 			loadFunction(function.name);
 			_functionReturnCount = function.resultCount;
@@ -397,7 +397,7 @@ namespace LuaBridge
 			Pushes on top of the stack the first element element from name and removes it
 			from name
 		*/
-		std::string loadTable(std::string name)const
+		std::string loadTable(std::string name) const
 		{
 			std::string parent = name.substr(0, name.find_first_of('.'));
 			loadGlobalVariable(parent);
@@ -447,7 +447,7 @@ namespace LuaBridge
 			Pushes on top of the stack the field with name equals to name of the table at specified index,
 			if the table doesnt contain a specific field an exception is thrown 
 		*/
-		void getTableField(const std::string& name, int index ) const
+		void getTableField(const std::string& name, int index) const
 		{
 			if (lua_istable(_state, index))
 			{
@@ -475,7 +475,7 @@ namespace LuaBridge
 			}
 		}
 		template <typename T>
-		bool setField(const std::string& name, const T& val)const
+		bool setField(const std::string& name, const T& val) const
 		{
 			try
 			{
