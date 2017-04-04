@@ -277,7 +277,10 @@ namespace LuaBridge
 				return result;
 			}
 			std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
-			std::string endText = typeid(T).name();
+			/*
+				What we want here is just the name of the type thus we remove any references and cv qualifiers
+			*/
+			std::string endText = typeid(typename decay<T>::type).name();
 			generateError(startText + endText);
 		}
 		template <>
