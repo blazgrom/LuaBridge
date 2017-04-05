@@ -7,6 +7,7 @@ Feature list:
  * Function calls
  * Table info
  * User defined class support
+ * Utility
 
 ```cpp
 		LuaB script("test.lua");
@@ -129,5 +130,23 @@ struct Position {
 	}
 };
 ```
+#### Utility
 
+* Close File
+
+```cpp
+	script.closeFile()
+};
+```
+* Open file 
+```cpp
+	script.openFile("test.lua")
+};
+```
+
+* Change file ( If the new file cannot be loaded, the old one is left active )
+```cpp
+	script.changeFile("newTest.lua")
+};
+```
 	
