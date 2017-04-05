@@ -39,11 +39,11 @@ namespace LuaBridge
 		explicit LuaB(const std::string& fileName)
 			:
 			_state(luaL_newstate()),
-			_file(fileName),
-			_open(false)
+			_file(fileName)
 		{
 			luaL_openlibs(_state);
 			loadFile(_file);
+			_open = true;
 		}
 		LuaB(const LuaB& rhs) = delete;
 		LuaB& operator=(const LuaB& rhs) = delete;
