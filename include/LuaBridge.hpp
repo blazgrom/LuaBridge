@@ -280,7 +280,7 @@ namespace LuaBridge
 			/*
 				What we want here is just the name of the type thus we remove any references and cv qualifiers
 			*/
-			std::string endText = typeid(typename decay<T>::type).name();
+			std::string endText = typeid(typename std::decay<T>::type).name();
 			generateError(startText + endText);
 		}
 		template <>
@@ -349,7 +349,7 @@ namespace LuaBridge
 		{
 			const unsigned int popCount = functionReturnCount;
 			//The order of evaluation of an initializer list in c-tor of tuple<Args...> is well defined
-			tuple<Args ...> result{ getReturnValue<Args>(functionReturnCount--) ... };
+			std::tuple<Args ...> result{ getReturnValue<Args>(functionReturnCount--) ... };
 			popStack(popCount);
 			return result;
 		}
