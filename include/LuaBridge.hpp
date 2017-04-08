@@ -177,7 +177,7 @@ namespace LuaBridge
 				loadFile(name);
 				_file = name;
 			}
-			catch (const std::exception& e)
+			catch (const std::exception& )
 			{
 				loadFile(_file);
 				result = false;
@@ -258,30 +258,31 @@ namespace LuaBridge
 		template <typename T>
 		T getValue(int stackIndex = -1) const
 		{
-			if (lua_istable(_state, -1))
+			if (!lua_istable(_state, -1))
 			{
-				std::map<std::string, std::string> data;
-				auto f = [&data, this](const std::string& key) {
-					if (!lua_istable(_state, -1) && !lua_isfunction(_state, -1))
-					{
-						data[key] = getValue<std::string>(-1);
-					}
-					else
-					{
-						data[key] = "";
-					}
-				};
-				iterateTable(f);
-				T result;
-				result.luaPack(data);
-				return result;
-			}
-			std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
-			/*
+				std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
+				/*
 				What we want here is just the name of the type thus we remove any references and cv qualifiers
-			*/
-			std::string endText = typeid(typename std::decay<T>::type).name();
-			generateError(startText + endText);
+				*/
+				std::string endText = typeid(typename std::decay<T>::type).name();
+				generateError(startText + endText);
+			}
+			std::map<std::string, std::string> data;
+			auto f = [&data, this](const std::string& key) {
+				if (!lua_istable(_state, -1) && !lua_isfunction(_state, -1))
+				{
+					data[key] = getValue<std::string>(-1);
+				}
+				else
+				{
+					data[key] = "";
+				}
+			};
+			iterateTable(f);
+			T result;
+			result.luaPack(data);
+			return result;
+		
 		}
 		template <>
 		double getValue<double>(int stackIndex) const
