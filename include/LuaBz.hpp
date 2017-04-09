@@ -5,7 +5,7 @@
 #include <string>
 #include <functional>
 #include "lua.hpp"
-namespace LuaBridge
+namespace LuaWrapper
 {
 	template <typename... T>
 	struct LuaFunction
