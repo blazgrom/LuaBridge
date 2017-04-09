@@ -2,6 +2,7 @@
 #define LUA_B_HPP
 #include <map>
 #include <tuple>
+#include <vector>
 #include <string>
 #include <functional>
 #include "lua.hpp"
@@ -36,6 +37,19 @@ namespace LuaWrapper
 	class LuaBz
 	{
 	public:
+		LuaBz(const std::string& fileName,const std::vector<std::string>& preloadedFiles)
+			:
+			_state(luaL_newstate()),
+			_file(fileName)
+		{
+			luaL_openlibs(_state);
+			for (const std::string& file:preloadedFiles)
+			{
+				luaL_dofile(_state, file.c_str());
+			}
+			loadFile(_file);
+			_open = true;
+		}
 		explicit LuaBz(const std::string& fileName)
 			:
 			_state(luaL_newstate()),
