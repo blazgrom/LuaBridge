@@ -1,4 +1,4 @@
-# LuaB - Simple bridge between Modern C++ and Lua
+# LuaBz - Simple Lua wrapper for Modern C++ 
 
 Feature list:
 
@@ -10,7 +10,7 @@ Feature list:
  * Utility
 
 ```cpp
-		LuaB script("test.lua");
+		LuaBz script("test.lua");
 ```
 #### Retrieve lua variable's value:
 
