@@ -50,6 +50,16 @@ namespace LuaWrapper
 			loadFile(_file);
 			_open = true;
 		}
+		LuaBz(const std::string& fileName, const std::string& preloadedFile)
+			:
+			_state(luaL_newstate()),
+			_file(fileName)
+		{
+			luaL_openlibs(_state);
+			luaL_dofile(_state, preloadedFile.c_str());
+			loadFile(_file);
+			_open = true;
+		}
 		explicit LuaBz(const std::string& fileName)
 			:
 			_state(luaL_newstate()),
