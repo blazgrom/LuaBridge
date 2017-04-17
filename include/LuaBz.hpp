@@ -5,8 +5,9 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <iostream>
 #include "lua.hpp"
-namespace LuaWrapper
+namespace LuaBlaz
 {
 	template <typename... T>
 	struct LuaFunction
@@ -36,38 +37,42 @@ namespace LuaWrapper
 	};
 	class LuaBz
 	{
+	private:
+		lua_State* state_;
+		std::string file_;
+		bool open_;
 	public:
 		LuaBz(const std::string& fileName,const std::vector<std::string>& preloadedFiles)
 			:
-			_state(luaL_newstate()),
-			_file(fileName)
+			state_(luaL_newstate()),
+			file_(fileName)
 		{
-			luaL_openlibs(_state);
+			luaL_openlibs(state_);
 			for (const std::string& file:preloadedFiles)
 			{
-				luaL_dofile(_state, file.c_str());
+				luaL_dofile(state_, file.c_str());
 			}
-			loadFile(_file);
-			_open = true;
+			loadFile(file_);
+			open_ = true;
 		}
 		LuaBz(const std::string& fileName, const std::string& preloadedFile)
 			:
-			_state(luaL_newstate()),
-			_file(fileName)
+			state_(luaL_newstate()),
+			file_(fileName)
 		{
-			luaL_openlibs(_state);
-			luaL_dofile(_state, preloadedFile.c_str());
-			loadFile(_file);
-			_open = true;
+			luaL_openlibs(state_);
+			luaL_dofile(state_, preloadedFile.c_str());
+			loadFile(file_);
+			open_ = true;
 		}
 		explicit LuaBz(const std::string& fileName)
 			:
-			_state(luaL_newstate()),
-			_file(fileName)
+			state_(luaL_newstate()),
+			file_(fileName)
 		{
-			luaL_openlibs(_state);
-			loadFile(_file);
-			_open = true;
+			luaL_openlibs(state_);
+			loadFile(file_);
+			open_ = true;
 		}
 		LuaBz(const LuaBz& rhs) = delete;
 		LuaBz& operator=(const LuaBz& rhs) = delete;
@@ -75,7 +80,7 @@ namespace LuaWrapper
 		LuaBz& operator=(LuaBz&& rhs) = default;
 		~LuaBz()
 		{
-			lua_close(_state);
+			lua_close(state_);
 		}
 		/*
 			Gets a global variable from the file loaded during the creation of the object
@@ -156,9 +161,9 @@ namespace LuaWrapper
 		{
 			std::map<std::string, std::string> keys;
 			auto process = [&keys, this]() {
-				if (lua_istable(_state, -1)) {
+				if (lua_istable(state_, -1)) {
 					auto f = [&keys, this](const std::string& key) {
-						keys[key] = lua_typename(_state, lua_type(_state, -1));
+						keys[key] = lua_typename(state_, lua_type(state_, -1));
 					};
 					iterateTable(f);
 				}
@@ -178,54 +183,51 @@ namespace LuaWrapper
 		}
 		void openFile(const std::string& name)
 		{
-			if (!_open)
+			if (!open_)
 			{
-				_state = luaL_newstate();
+				state_ = luaL_newstate();
 				loadFile(name);
-				_open = true;
-				_file = name;
+				open_ = true;
+				file_ = name;
 			}
 		}
 		void closeFile() noexcept
 		{
-			lua_close(_state);
-			_open = false;
+			lua_close(state_);
+			open_ = false;
 		}
 		bool changeFile(const std::string& name) noexcept
 		{
 			bool result = true;
-			lua_close(_state);
-			_state = luaL_newstate();
+			lua_close(state_);
+			state_ = luaL_newstate();
 			try
 			{
 				loadFile(name);
-				_file = name;
+				file_ = name;
 			}
 			catch (const std::exception& )
 			{
-				loadFile(_file);
+				loadFile(file_);
 				result = false;
 			}
 			return result;
 		}
 	private:
-		lua_State* _state;
-		std::string _file;
-		bool _open;
 		/*
 			Loads  a lua file + standard lib and runs it
 		*/
 		void loadFile(const std::string& name) const
 		{
-			if (luaL_dofile(_state, name.c_str()))
+			if (luaL_dofile(state_, name.c_str()))
 			{
-				generateError(lua_tostring(_state, -1));
+				generateError(lua_tostring(state_, -1));
 			}
 		}
 		void loadFunction(const std::string& name) const
 		{
 			auto checkType = [&name,this]() {
-				if (!lua_isfunction(_state, -1))
+				if (!lua_isfunction(state_, -1))
 				{
 					popStack();
 					throw std::invalid_argument(name + " is not a function");
@@ -258,7 +260,7 @@ namespace LuaWrapper
 		}
 		void callFunction(int inputValCount, int outputValCount, const std::string& functionName) const
 		{
-			if (lua_pcall(_state, inputValCount, outputValCount, 0) != 0) {
+			if (lua_pcall(state_, inputValCount, outputValCount, 0) != 0) {
 				generateError(functionName+" : " + getValue<std::string>());
 			}
 		}
@@ -282,7 +284,7 @@ namespace LuaWrapper
 		template <typename T>
 		T getValue(int stackIndex = -1) const
 		{
-			if (!lua_istable(_state, -1))
+			if (!lua_istable(state_, -1))
 			{
 				std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
 				/*
@@ -293,7 +295,7 @@ namespace LuaWrapper
 			}
 			std::map<std::string, std::string> data;
 			auto f = [&data, this](const std::string& key) {
-				if (!lua_istable(_state, -1) && !lua_isfunction(_state, -1))
+				if (!lua_istable(state_, -1) && !lua_isfunction(state_, -1))
 				{
 					data[key] = getValue<std::string>(-1);
 				}
@@ -311,7 +313,7 @@ namespace LuaWrapper
 		template <>
 		double getValue<double>(int stackIndex) const
 		{
-			return  static_cast<double>(lua_tonumber(_state, stackIndex));
+			return  static_cast<double>(lua_tonumber(state_, stackIndex));
 		}
 		template <>
 		float getValue<float>(int stackIndex) const
@@ -321,19 +323,19 @@ namespace LuaWrapper
 		template <>
 		int getValue<int>(int stackIndex) const
 		{
-			return  static_cast<int>(lua_tointeger(_state, stackIndex));
+			return  static_cast<int>(lua_tointeger(state_, stackIndex));
 		}
 		template<>
 		std::string getValue<std::string>(int stackIndex) const
 		{
 			size_t strLength = 0;
-			const char* str = lua_tolstring(_state, stackIndex, &strLength);
+			const char* str = lua_tolstring(state_, stackIndex, &strLength);
 			return std::string(str, strLength);
 		}
 		template <>
 		bool  getValue<bool>(int stackIndex) const
 		{
-			return lua_toboolean(_state, stackIndex) != 0;
+			return lua_toboolean(state_, stackIndex) != 0;
 		}
 		template <typename T>
 		void pushValue(const T& val) const
@@ -343,22 +345,22 @@ namespace LuaWrapper
 		template <>
 		void pushValue<bool>(const bool& val) const
 		{
-			lua_pushboolean(_state, val);
+			lua_pushboolean(state_, val);
 		}
 		template<>
 		void pushValue<std::string>(const std::string& val) const
 		{
-			lua_pushlstring(_state, val.c_str(), val.size());
+			lua_pushlstring(state_, val.c_str(), val.size());
 		}
 		template <>
 		void pushValue<int>(const int& val) const
 		{
-			lua_pushinteger(_state, val);
+			lua_pushinteger(state_, val);
 		}
 		template<>
 		void pushValue<double>(const double& val) const
 		{
-			lua_pushnumber(_state, val);
+			lua_pushnumber(state_, val);
 		}
 		template<>
 		void pushValue<float>(const float& val) const
@@ -367,7 +369,7 @@ namespace LuaWrapper
 		}
 		void popStack(int count = 1) const
 		{
-			lua_pop(_state, count);
+			lua_pop(state_, count);
 		}
 		template <typename... Args>
 		std::tuple<Args ...> getReturnValues(unsigned int functionReturnCount) const
@@ -393,12 +395,12 @@ namespace LuaWrapper
 		template <typename T>
 		void createTable(const T& val) const
 		{
-			lua_newtable(_state);
+			lua_newtable(state_);
 			for (const auto& element : val.luaUnpack())
 			{
 				pushValue(element.first);
 				pushValue(element.second);
-				lua_settable(_state, -3);//automatically pops [key,value] 
+				lua_settable(state_, -3);//automatically pops [key,value] 
 			}
 		}
 		/*
@@ -408,8 +410,8 @@ namespace LuaWrapper
 		*/
 		void iterateTable(std::function<void(const std::string&)> process) const
 		{
-			lua_pushnil(_state);  /* first key */
-			while (lua_next(_state, -2) != 0) {
+			lua_pushnil(state_);  /* first key */
+			while (lua_next(state_, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
 				auto key = getValue<std::string>(-2);
 				process(key);
@@ -458,8 +460,8 @@ namespace LuaWrapper
 		*/
 		void loadGlobalVariable(const std::string& name) const
 		{
-			lua_getglobal(_state, name.c_str());
-			bool failed = lua_isnoneornil(_state, -1);
+			lua_getglobal(state_, name.c_str());
+			bool failed = lua_isnoneornil(state_, -1);
 			if (failed)
 			{
 				popStack();
@@ -472,9 +474,9 @@ namespace LuaWrapper
 		*/
 		void getTableField(const std::string& name, int index) const
 		{
-			if (lua_istable(_state, index))
+			if (lua_istable(state_, index))
 			{
-				lua_getfield(_state, index, name.c_str());
+				lua_getfield(state_, index, name.c_str());
 			}
 			else
 			{
@@ -489,7 +491,7 @@ namespace LuaWrapper
 			{
 				loadGlobalVariable(name);
 				pushValue(val);
-				lua_setglobal(_state, name.c_str());
+				lua_setglobal(state_, name.c_str());
 				return true;
 			}
 			catch (const std::invalid_argument& e)
@@ -510,7 +512,7 @@ namespace LuaWrapper
 					if (dotPosition == std::string::npos)
 					{
 						pushValue<T>(val);
-						lua_setfield(_state, -2, field.c_str());
+						lua_setfield(state_, -2, field.c_str());
 						keepProcessing = false;
 					}
 					else
