@@ -165,22 +165,25 @@ namespace Lua
 		{
 			lua_newtable(m_state);
 			auto table = static_cast<LuaTable>(val);
-			for (const auto& element:table.values)
+			for (const auto& element : table.values)
 			{
 				push(element.name());
 				switch (element.type())
 				{
-					case LuaType::Boolean:
+				case LuaType::Boolean:
 					push(element.boolean());
 					break;
-					case LuaType::Double:
+				case LuaType::Double:
 					push(element.number());
 					break;
-					case LuaType::Integer:
+				case LuaType::Integer:
 					push(element.integer());
 					break;
-					case LuaType::Nil:
+				case LuaType::Nil:
 					push(element.nil());
+					break;
+				case LuaType::String:
+					push(element.string());
 					break;
 				}
 				lua_settable(m_state, -3); //automatically pops [key,value] 

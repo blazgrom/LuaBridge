@@ -9,7 +9,7 @@ namespace Lua
 	*/
 	enum class LuaType :short
 	{
-		Integer, Nil, Boolean, Double
+		Integer, Nil, Boolean, Double, String
 	};
 	template <typename... T>
 	struct LuaFunction
@@ -44,7 +44,7 @@ namespace Lua
 			:
 			m_data{},
 			m_initialized{ LuaType::Nil },
-			m_name{name}
+			m_name{ name }
 		{
 			m_data.n = data;
 		}
@@ -72,11 +72,71 @@ namespace Lua
 		{
 			m_data.b = data;
 		}
-		LuaValue(const LuaValue&) = default;
-		LuaValue(LuaValue&&) = default;
-		LuaValue& operator=(const LuaValue&) = default;
-		LuaValue& operator=(LuaValue&&) = default;
-		~LuaValue() = default;
+		LuaValue(const std::string& name, std::string data)
+			:
+			m_data{},
+			m_initialized{ LuaType::String },
+			m_name{ name }
+		{
+			m_data.s = data;
+		}
+
+		LuaValue(const LuaValue& rhs)
+			:
+			m_data(rhs.m_data),
+			m_initialized(rhs.m_initialized),
+			m_name(rhs.m_name)
+		{
+			if (m_initialized == LuaType::String)
+			{
+				m_data.s.~basic_string();
+				m_data.s = rhs.m_data.s;
+			}
+		};
+		LuaValue(LuaValue&& rhs)
+			:
+			m_data(rhs.m_data),
+			m_initialized(rhs.m_initialized),
+			m_name(rhs.m_name)
+		{
+			if (m_initialized == LuaType::String)
+			{
+				m_data.s.~basic_string();
+				m_data.s = std::move(rhs.m_data.s);
+			}
+		};
+		LuaValue& operator=(const LuaValue& rhs) 
+		{
+			if (this == &rhs)
+			{
+				m_data = rhs.m_data;
+				m_initialized = rhs.m_initialized;
+				m_name = rhs.m_name;
+				if (m_initialized == LuaType::String)
+				{
+					m_data.s.~basic_string();
+					m_data.s = std::move(rhs.m_data.s);
+				}
+			}
+			return *this;
+		};
+		LuaValue& operator=(LuaValue&& rhs)
+		{
+			m_data = rhs.m_data;
+			m_initialized = rhs.m_initialized;
+			m_name = rhs.m_name;
+			if (m_initialized == LuaType::String)
+			{
+				m_data.s.~basic_string();
+				m_data.s = std::move(rhs.m_data.s);
+			}
+			return *this;
+		};
+		~LuaValue()
+		{
+			if (m_initialized == Lua::LuaType::String)
+				m_data.s.~basic_string();
+		}
 		std::string name() const
 		{
 			return m_name;
@@ -89,7 +149,7 @@ namespace Lua
 		{
 			if (m_initialized == LuaType::Double)
 				return m_data.d;
-			throw std::runtime_error{"Double is not initialized"};
+			throw std::runtime_error{ "Double is not initialized" };
 		}
 		int integer() const
 		{
@@ -107,16 +167,30 @@ namespace Lua
 		{
 			if (m_initialized == LuaType::Nil)
 				return m_data.n;
-			throw std::runtime_error{ "Nil is not inialized" };
+			throw std::runtime_error{ "Nil is not initialized" };
+		}
+		std::string string() const
+		{
+			if (m_initialized == LuaType::String)
+				return m_data.s;
+			throw std::runtime_error{ "String is not initialized" };
 		}
 	private:
-		union 
+		union Data
 		{
 			std::nullptr_t n; //nil
 			int i;
 			double d;
 			bool b;
-		} m_data;
+			std::string s;
+			Data() :n{ nullptr } {};
+			~Data() {};
+			Data(const Data&) {};
+			Data(Data&&) {};
+			Data& operator=(const Data&) {};
+			Data& operator=(Data&&) {};
+		};
+		Data m_data;
 		LuaType m_initialized;
 		std::string m_name;
 	};

@@ -237,6 +237,12 @@ namespace Lua
 				{
 					table.values.push_back(Lua::LuaValue(key, nullptr));
 				}
+				else if (lua_isstring(m_state, -1))
+				{
+					size_t strLength = 0;
+					const char* str = lua_tolstring(m_state, -1, &strLength);
+					table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
+				}
 				else if (lua_isnumber(m_state, -1))
 				{
 					double number = lua_tonumber(m_state, -1);
