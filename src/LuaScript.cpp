@@ -34,7 +34,7 @@ namespace Lua
 		lua_close(m_state);
 	}
 	//Public
-	std::map<std::string, std::string> LuaScript::getTableInfo(const std::string& name) const
+	std::map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
 	{
 		std::map<std::string, std::string> info;
 		auto process = [&info, this]() {
@@ -45,13 +45,13 @@ namespace Lua
 				iterateTable(f);
 			}
 		};
-		if (name.find('.') == std::string::npos)
+		if (table.find('.') == std::string::npos)
 		{
-			loadGlobal(name);
+			loadGlobal(table);
 		}
 		else
 		{
-			std::string field = loadTable(name);
+			std::string field = loadTable(table);
 			loadTableField(field);
 		}
 		process();
@@ -93,7 +93,7 @@ namespace Lua
 	{
 		if (luaL_dostring(m_state, luaCode.c_str()))
 		{
-			generateError(lua_tostring(m_state, -1));
+			error(lua_tostring(m_state, -1));
 		}
 	}
 	//Private
@@ -113,7 +113,7 @@ namespace Lua
 	{
 		if (luaL_dofile(m_state, name.c_str()))
 		{
-			generateError(lua_tostring(m_state, -1));
+			error(lua_tostring(m_state, -1));
 		}
 	}
 	void LuaScript::loadFunction(const std::string& name) const
@@ -121,7 +121,7 @@ namespace Lua
 		auto checkType = [&name, this]() {
 			if (!lua_isfunction(m_state, -1))
 			{
-				generateError(name + "is not a function");
+				error(name + "is not a function");
 			}
 		};
 		if (name.find('.') == std::string::npos)
@@ -135,13 +135,13 @@ namespace Lua
 		}
 		checkType();
 	}
-	void LuaScript::callFunction(int inputValCount, int outputValCount, const std::string& functionName) const
+	void LuaScript::call_Impl(int inputValCount, int outputValCount, const std::string& functionName) const
 	{
 		if (lua_pcall(m_state, inputValCount, outputValCount, 0) != 0) {
-			generateError(functionName + " : " + getValue<std::string>());
+			error(functionName + " : " +  getImpl<std::string>());
 		}
 	}
-	void LuaScript::generateError(const std::string& message) const
+	void LuaScript::error(const std::string& message) const
 	{
 		popStack();
 		throw std::runtime_error(message.c_str());
@@ -160,7 +160,7 @@ namespace Lua
 		while (lua_next(m_state, -2) != 0)
 		{
 			/*key=-2, value=-1*/
-			auto key = getValue<std::string>(-2);
+			auto key =  getImpl<std::string>(-2);
 			process(key);
 			popStack();
 		}
@@ -181,15 +181,15 @@ namespace Lua
 	*/
 	void LuaScript::loadTableField(std::string field) const
 	{
-
 		auto keepProcessing = true;
 		while (keepProcessing)
 		{
 			auto dotPosition = field.find_first_of('.');
 			if (dotPosition == std::string::npos)
 			{
-				keepProcessing = false;
 				getTableField(field, -1);
+				keepProcessing = false;
+
 			}
 			else
 			{
@@ -202,11 +202,9 @@ namespace Lua
 	void LuaScript::loadGlobal(const std::string& name) const
 	{
 		lua_getglobal(m_state, name.c_str());
-		bool failed = lua_isnoneornil(m_state, -1);
-		if (failed)
+		if (lua_isnoneornil(m_state, -1))
 		{
-			popStack();
-			throw std::runtime_error("Object with name " + name + " could not be loaded");
+			error("Object with name " + name + " could not be loaded");
 		}
 	}
 	/*
@@ -225,4 +223,17 @@ namespace Lua
 			throw std::runtime_error("The field " + name + " could not be loaded");
 		}
 	}
+	std::map<std::string, std::string > LuaScript::createValuesMap() const
+	{
+		std::map<std::string, std::string> data;
+		auto f = [&data, this](const std::string& key) {
+			if (!lua_istable(m_state, -1) && !lua_isfunction(m_state, -1))
+				data[key] = getImpl<std::string>(-1);
+			else
+				data[key] = "";
+		};
+		iterateTable(f);
+		return data;
+	}
+
 }
