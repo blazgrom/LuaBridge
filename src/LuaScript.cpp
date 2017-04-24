@@ -222,18 +222,6 @@ namespace Lua
 			throw std::runtime_error("The field " + name + " could not be loaded");
 		}
 	}
-	std::map<std::string, std::string > LuaScript::createValuesMap() const
-	{
-		std::map<std::string, std::string> data;
-		auto f = [&data, this](const std::string& key) {
-			if (!lua_istable(m_state, -1) && !lua_isfunction(m_state, -1))
-				data[key] = getImpl<std::string>(-1);
-			else
-				data[key] = "";
-		};
-		iterateTable(f);
-		return data;
-	}
 	Lua::LuaTable LuaScript::createLuaTable() const
 	{
 		Lua::LuaTable table;
