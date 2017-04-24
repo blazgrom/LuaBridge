@@ -1,40 +1,16 @@
-#ifndef LUA_B_HPP
-#define LUA_B_HPP
+#ifndef LUA_SCRIPT_HPP
+#define LUA_SCRIPT_HPP
 #include <map>
 #include <tuple>
 #include <vector>
 #include <string>
 #include <functional>
 #include <iostream>
+#include "LuaFunction.hpp"
 #include "lua.hpp"
 namespace Lua
 {
-	template <typename... T>
-	struct LuaFunction
-	{
-		explicit LuaFunction(const std::string& name)
-			:
-			name(name),
-			resultCount(sizeof... (T))
-		{
-
-		}
-		std::string name;
-		unsigned int resultCount;
-	};
-	template <>
-	struct LuaFunction<void>
-	{
-		explicit LuaFunction(const std::string& name)
-			:
-			name(name),
-			resultCount(0)
-		{
-
-		}
-		std::string name;
-		unsigned int resultCount;
-	};
+	
 	class LuaScript
 	{
 	private:
@@ -305,8 +281,7 @@ namespace Lua
 				}
 			};
 			iterateTable(f);
-			T result;
-			result.luaPack(data);
+			T result{data};
 			return result;
 		
 		}
@@ -530,5 +505,5 @@ namespace Lua
 			}
 		}
 	};
-#endif // !LUA_B_HPP
+#endif // !LUA_SCRIPT_HPP
 }
