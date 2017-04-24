@@ -30,7 +30,7 @@ namespace Lua
 			Permits the user to retrieve a variable, this variable can be either global one or a table
 			entry in a global variable
 		*/
-		template <typename T>
+		template <class T>
 		T get(const std::string& name) const
 		{
 			if (name.find('.') == std::string::npos)
@@ -49,7 +49,7 @@ namespace Lua
 		/*
 			Sets the value of either a global variable or an entry in a global table
 		*/
-		template <typename T>
+		template <class T>
 		bool set(const std::string& name, T&& val) const
 		{
 			if (name.find('.') == std::string::npos)
@@ -61,7 +61,7 @@ namespace Lua
 				return setField(name, val);
 			}
 		}
-		template <typename... R, typename... Args>
+		template <class... R, class... Args>
 		std::tuple<R...> call(const LuaFunction<R...>& f, Args&&... args) const
 		{
 			loadFunction(f.name);
@@ -69,14 +69,14 @@ namespace Lua
 			call_Impl(argumentsCount, f.resultCount, f.name);
 			return returnValues<R ...>(f.resultCount);
 		}
-		template <typename...Args>
+		template <class...Args>
 		void call(const LuaFunction<void>& f, Args&&... args) const
 		{
 			loadFunction(f.name);
 			int argumentsCount = loadParams(std::forward<Args>(args)...);
 			call_Impl(argumentsCount, f.resultCount, f.name);
 		}
-		template <typename... T>
+		template <class... T>
 		std::tuple<T...> call(const LuaFunction<T...>& f) const
 		{
 			loadFunction(f.name);
@@ -107,19 +107,19 @@ namespace Lua
 		void getTableField(const std::string& name, int index) const;
 		Lua::LuaTable createLuaTable() const;
 		//Templates
-		template <typename T, typename... Args>
+		template <class T, class... Args>
 		int loadParams(T&& value, Args&&... args) const
 		{
 			push(value);
 			return 1 + loadParams(args...);
 		}
-		template <typename T>
+		template <class T>
 		int loadParams(T&& value) const
 		{
 			push(value);
 			return 1;
 		}
-		template <typename T>
+		template <class T>
 		T getImpl(int stackIndex = -1) const
 		{
 			if (!lua_istable(m_state, -1))
@@ -160,7 +160,7 @@ namespace Lua
 		{
 			return lua_toboolean(m_state, stackIndex) != 0;
 		}
-		template <typename T>
+		template <class T>
 		void push(const T& val) const
 		{
 			lua_newtable(m_state);
@@ -219,7 +219,7 @@ namespace Lua
 		{
 			push(static_cast<double>(val));
 		}
-		template <typename... Args>
+		template <class... Args>
 		std::tuple<Args ...> returnValues(unsigned int count) const
 		{
 			const unsigned int popCount = count;
@@ -227,7 +227,7 @@ namespace Lua
 			popStack(popCount);
 			return result;
 		}
-		template <typename T>
+		template <class T>
 		T returnValue(int index) const
 		{
 			if (index != 0)
@@ -239,7 +239,7 @@ namespace Lua
 				throw std::runtime_error("You cannot get return values, because there are none");
 			}
 		}
-		template <typename T>
+		template <class T>
 		bool setGlobal(const std::string& name, const T& val) const
 		{
 			try
@@ -254,7 +254,7 @@ namespace Lua
 				return false;
 			}
 		}
-		template <typename T>
+		template <class T>
 		bool setField(const std::string& name, const T& val) const
 		{
 			try

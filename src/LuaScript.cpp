@@ -227,6 +227,9 @@ namespace Lua
 		Lua::LuaTable table;
 		auto f = [&table, this](const std::string &key)
 		{
+			//Note:
+			//The check for string should always be last,because in lua number can 
+			//be seen also as strings
 			if (!lua_istable(m_state, -1) && !lua_isfunction(m_state, -1))
 			{
 				if (lua_isboolean(m_state, -1))
@@ -237,12 +240,6 @@ namespace Lua
 				{
 					table.values.push_back(Lua::LuaValue(key, nullptr));
 				}
-				else if (lua_isstring(m_state, -1))
-				{
-					size_t strLength = 0;
-					const char* str = lua_tolstring(m_state, -1, &strLength);
-					table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
-				}
 				else if (lua_isnumber(m_state, -1))
 				{
 					double number = lua_tonumber(m_state, -1);
@@ -251,6 +248,13 @@ namespace Lua
 					else
 						table.values.push_back(Lua::LuaValue(key, number));
 				}
+				else if (lua_isstring(m_state, -1))
+				{
+					size_t strLength = 0;
+					const char* str = lua_tolstring(m_state, -1, &strLength);
+					table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
+				}
+			
 			}
 		};
 		iterateTable(f);

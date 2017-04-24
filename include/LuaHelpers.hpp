@@ -183,8 +183,8 @@ namespace Lua
 			double d;
 			bool b;
 			std::string s;
-			Data() :n{ nullptr } {};
-			~Data() {};
+			Data() :n{ nullptr }, s{} {};
+			~Data()  {};
 			Data(const Data&) {};
 			Data(Data&&) {};
 			Data& operator=(const Data&) {};
