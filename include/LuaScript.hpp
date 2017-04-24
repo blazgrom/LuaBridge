@@ -100,7 +100,7 @@ namespace Lua
 		void popStack(int count = 1) const;
 		void call_Impl(int inputValCount, int outputValCount, const std::string& functionName) const;
 		void error(const std::string& message) const;
-		void foreachEntry(std::function<void(const std::string&)> process) const;
+		void iterateTable(std::function<void(const std::string&)> process) const;
 		std::string loadTable(std::string name) const;
 		void loadTableField(std::string field) const;
 		void loadGlobal(const std::string& name) const;

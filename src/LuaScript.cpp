@@ -189,7 +189,6 @@ namespace Lua
 			{
 				getTableField(field, -1);
 				keepProcessing = false;
-
 			}
 			else
 			{
