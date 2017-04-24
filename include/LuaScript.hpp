@@ -10,7 +10,7 @@
 #include "lua.hpp"
 namespace Lua
 {
-	
+
 	class LuaScript
 	{
 	private:
@@ -18,35 +18,10 @@ namespace Lua
 		std::string m_fileName;
 		bool m_open;
 	public:
-		explicit LuaScript(const std::string& file)
-			:
-			m_state(luaL_newstate()),
-			m_fileName(file),
-			m_open(true)
-		{
-			luaL_openlibs(m_state);
-			loadFile(m_fileName);
-		}
-		LuaScript(const std::string& file,const std::vector<std::string>& dependencies)
-			:
-			m_state(luaL_newstate()),
-			m_fileName(file),
-			m_open(true)
-		{
-			initialize( dependencies);
-		}
-		LuaScript(const std::string& file, const std::string& dependency)
-			:
-			m_state(luaL_newstate()),
-			m_fileName(file),
-			m_open(true)
-		{
-			initialize({ dependency });
-		}
-		~LuaScript()
-		{
-			lua_close(m_state);
-		}
+		explicit LuaScript(const std::string& file, bool loadStandardLib = true);
+		LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib = true);
+		LuaScript(const std::string& file, const std::string& dependency, bool loadStandardLib = true);
+		~LuaScript();
 		LuaScript(const LuaScript& rhs) = delete;
 		LuaScript& operator=(const LuaScript& rhs) = delete;
 		LuaScript(LuaScript&& rhs) = default;
@@ -70,12 +45,12 @@ namespace Lua
 			auto result = getValue<T>();
 			popStack();
 			return result;
-		}	
+		}
 		/*
 			Sets the value of either a global variable or an entry in a global table
 		*/
 		template <typename T>
-		bool set(const std::string& name,  T&& val) const
+		bool set(const std::string& name, T&& val) const
 		{
 			if (name.find('.') == std::string::npos)
 			{
@@ -92,7 +67,7 @@ namespace Lua
 			checkDataValidity<R ...>(f.resultCount);
 			loadFunction(f.name);
 			int argumentsCount = loadParams(std::forward<Args>(args)...);
-			callFunction(argumentsCount, f.resultCount,  f.name);
+			callFunction(argumentsCount, f.resultCount, f.name);
 			return getReturnValues<R ...>(f.resultCount);
 		}
 		template <typename...Args>
@@ -107,109 +82,32 @@ namespace Lua
 		{
 			checkDataValidity<T...>(function.resultCount);
 			loadFunction(function.name);
-			callFunction(0, function.resultCount,  function.name);
+			callFunction(0, function.resultCount, function.name);
 			return getReturnValues<T...>(function.resultCount);
 		}
 		void call(const LuaFunction<void>& function) const
 		{
 			loadFunction(function.name);
-			callFunction(0, function.resultCount,  function.name);
+			callFunction(0, function.resultCount, function.name);
 		}
-		std::map<std::string, std::string> getTableInfo(const std::string& name) const
-		{
-			std::map<std::string, std::string> info;
-			auto process = [&info, this]() {
-				if (lua_istable(m_state, -1)) {
-					auto f = [&info, this](const std::string& key) {
-						info[key] = lua_typename(m_state, lua_type(m_state, -1));
-					};
-					iterateTable(f);
-				}
-			};
-			if (name.find('.') == std::string::npos)
-			{
-				loadGlobal(name);
-			}
-			else
-			{
-				std::string field= loadTable(name);
-				loadTableField(field);
-			}
-			process();
-			return info;
-		}
-		void openFile(const std::string& name)
-		{
-			if (!m_open)
-			{
-				m_state = luaL_newstate();
-				loadFile(name);
-				m_open = true;
-				m_fileName = name;
-			}
-		}
-		void closeFile() noexcept
-		{
-			lua_close(m_state);
-			m_open = false;
-		}
-		bool changeFile(const std::string& name) noexcept
-		{
-			bool result = true;
-			lua_close(m_state);
-			m_state = luaL_newstate();
-			try
-			{
-				loadFile(name);
-				m_fileName = name;
-			}
-			catch (...)
-			{
-				loadFile(m_fileName);
-				result = false;
-			}
-			return result;
-		}
+		std::map<std::string, std::string> getTableInfo(const std::string& name) const;
+		void openFile(const std::string& name);
+		void closeFile() noexcept;
+		bool changeFile(const std::string& name) noexcept;
+		void run(std::string luaCode);
 	private:
-		void initialize(const std::vector<std::string>& dependencies)
-		{
-			luaL_openlibs(m_state);
-			for (const std::string& file : dependencies)
-			{
-				loadFile(file);
-			}
-			loadFile(m_fileName);
-		}
-		/*
-			Loads  a lua file + standard lib and runs it
-		*/
-		void loadFile(const std::string& name) const
-		{
-			if (luaL_dofile(m_state, name.c_str()))
-			{
-				generateError(lua_tostring(m_state, -1));
-			}
-		}
-		void loadFunction(const std::string& name) const
-		{
-			auto checkType = [&name,this]() {
-				if (!lua_isfunction(m_state, -1))
-				{
-					popStack();
-					throw std::runtime_error(name + " is not a function");
-				}
-			};
-			if (name.find('.') == std::string::npos)
-			{
-				loadGlobal(name);
-			}
-			else
-			{
-				std::string field = loadTable(name);
-				loadTableField(field);
-			}
-			checkType();
-		}
+		void initialize(const std::vector<std::string>& dependencies, bool loadStandardLib);
+		void loadFile(const std::string& name) const;
+		void loadFunction(const std::string& name) const;
+		void popStack(int count = 1) const;
+		void callFunction(int inputValCount, int outputValCount, const std::string& functionName) const;
+		void generateError(const std::string& message) const;
+		void iterateTable(std::function<void(const std::string&)> process) const;
+		std::string loadTable(std::string name) const;
+		void loadTableField(std::string field) const;
+		void loadGlobal(const std::string& name) const;
+		void getTableField(const std::string& name, int index) const;
+		//Templates
 		template <typename T, typename... Args>
 		int loadParams(T&& value, Args&&... args) const
 		{
@@ -221,17 +119,6 @@ namespace Lua
 		{
 			pushValue(value);
 			return 1;
-		}
-		void callFunction(int inputValCount, int outputValCount, const std::string& functionName) const
-		{
-			if (lua_pcall(m_state, inputValCount, outputValCount, 0) != 0) {
-				generateError(functionName+" : " + getValue<std::string>());
-			}
-		}
-		void generateError(const std::string& message) const
-		{
-			popStack();
-			throw std::exception(message.c_str());
 		}
 		template<typename... T>
 		void checkDataValidity(unsigned int count) const
@@ -265,7 +152,7 @@ namespace Lua
 					data[key] = "";
 			};
 			iterateTable(f);
-			T result{data};
+			T result{ data };
 			return result;
 		}
 		template <>
@@ -325,10 +212,6 @@ namespace Lua
 		{
 			pushValue(static_cast<double>(val));
 		}
-		void popStack(int count = 1) const
-		{
-			lua_pop(m_state, count);
-		}
 		template <typename... Args>
 		std::tuple<Args ...> getReturnValues(unsigned int functionReturnCount) const
 		{
@@ -358,81 +241,6 @@ namespace Lua
 				pushValue(element.first);
 				pushValue(element.second);
 				lua_settable(m_state, -3); //automatically pops [key,value] 
-			}
-		}
-		/*
-			Iterates over a table and calls function process for every iteration passing the key(the value is on the stack with index = -1
-			1-The function assumes that the tables is on top of the stack
-		*/
-		void iterateTable(std::function<void(const std::string&)> process) const
-		{
-			lua_pushnil(m_state);  
-			while (lua_next(m_state, -2) != 0)
-			{
-				/*key=-2, value=-1*/
-				auto key = getValue<std::string>(-2);
-				process(key);
-				popStack();
-			}
-		}
-		/*
-			Pushes on top of the stack the first element  from name and return the names of the remaining fields
-		*/
-		std::string loadTable(std::string name) const
-		{
-			std::string parent = name.substr(0, name.find_first_of('.'));
-			loadGlobal(parent);
-			return name.substr(name.find_first_of('.') + 1);
-		}
-		/*
-			Pushes on top of the stack the last element from the str, where each element is 
-			separed with .(dot)
-			1-The function assumes that the parent table is already on top of the stack
-		*/
-		void loadTableField(std::string field) const
-		{
-			
-			auto keepProcessing = true;
-			while (keepProcessing)
-			{
-				auto dotPosition = field.find_first_of('.');
-				if (dotPosition == std::string::npos)
-				{
-					keepProcessing = false;
-					getTableField(field, -1);
-				}
-				else
-				{
-					std::string parent = field.substr(0, dotPosition);
-					field = field.substr(dotPosition + 1);
-					getTableField(parent, -1);
-				}
-			}
-		}
-		void loadGlobal(const std::string& name) const
-		{
-			lua_getglobal(m_state, name.c_str());
-			bool failed = lua_isnoneornil(m_state, -1);
-			if (failed)
-			{
-				popStack();
-				throw std::runtime_error("Object with name " + name + " could not be loaded");
-			}
-		}
-		/*
-			Pushes on top of the stack the field with name equals to name of the table at specified index,
-			if the table doesnt contain a specific field an exception is thrown 
-		*/
-		void getTableField(const std::string& name, int index) const
-		{
-			if (lua_istable(m_state, index))
-			{
-				lua_getfield(m_state, index, name.c_str());
-			}
-			else
-			{
-				popStack();
-				throw std::runtime_error("The field " + name + " could not be loaded");
 			}
 		}
 		template <typename T>
