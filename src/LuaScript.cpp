@@ -234,5 +234,33 @@ namespace Lua
 		iterateTable(f);
 		return data;
 	}
+	Lua::LuaTable LuaScript::createLuaTable() const
+	{
+		Lua::LuaTable table;
+		auto f = [&table, this](const std::string &key)
+		{
+			if (!lua_istable(m_state, -1) && !lua_isfunction(m_state, -1))
+			{
+				if (lua_isboolean(m_state, -1))
+				{
+					table.values.push_back(Lua::LuaValue(key, lua_toboolean(m_state, -1)));
+				}
+				else if (lua_isnil(m_state, -1))
+				{
+					table.values.push_back(Lua::LuaValue(key, nullptr));
+				}
+				else if (lua_isnumber(m_state, -1))
+				{
+					double number = lua_tonumber(m_state, -1);
+					if (number == static_cast<int>(number))
+						table.values.push_back(Lua::LuaValue(key, static_cast<int>(number)));
+					else
+						table.values.push_back(Lua::LuaValue(key, number));
+				}
+			}
+		};
+		iterateTable(f);
+		return table;
+	}
 
 }

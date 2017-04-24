@@ -106,6 +106,7 @@ namespace Lua
 		void loadGlobal(const std::string& name) const;
 		void getTableField(const std::string& name, int index) const;
 		std::map<std::string, std::string > createValuesMap() const;
+		Lua::LuaTable createLuaTable() const;
 		//Templates
 		template <typename T, typename... Args>
 		int loadParams(T&& value, Args&&... args) const
@@ -131,6 +132,7 @@ namespace Lua
 				std::string endText = typeid(typename std::decay<T>::type).name();
 				error(startText + endText);
 			}
+			T r{ createLuaTable() };
 			return T{ createValuesMap() };
 		}
 		template <>
