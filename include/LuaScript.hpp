@@ -164,12 +164,31 @@ namespace Lua
 		void push(const T& val) const
 		{
 			lua_newtable(m_state);
-			for (const auto& element : val.luaUnpack())
+			auto table = static_cast<LuaTable>(val);
+			for (const auto& element:table.values)
 			{
-				push(element.first);
-				push(element.second);
-				lua_settable(m_state, -3); //automatically pops [key,value] 
+				push(element.name());
+				switch (element.type())
+				{
+					case LuaType::Boolean:
+					push(element.boolean());
+					break;
+					case LuaType::Double:
+					push(element.number());
+					break;
+					case LuaType::Integer:
+					push(element.integer());
+					break;
+					case LuaType::Nil:
+					push(element.nil());
+					break;
+				}
 			}
+		}
+		template <>
+		void push<std::nullptr_t>(const std::nullptr_t& val) const
+		{
+			lua_pushnil(m_state);
 		}
 		template <>
 		void push<bool>(const bool& val) const

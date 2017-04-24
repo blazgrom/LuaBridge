@@ -83,29 +83,29 @@ namespace Lua
 		{
 			return m_name;
 		}
-		LuaType getInitializedType() const
+		LuaType type() const
 		{
 			return m_initialized;
 		}
-		double getDouble() const
+		double number() const
 		{
 			if (m_initialized == LuaType::Double)
 				return m_data.d;
 			throw std::runtime_error{"Double is not initialized"};
 		}
-		int getInt() const
+		int integer() const
 		{
 			if (m_initialized == LuaType::Integer)
 				return m_data.i;
 			throw std::runtime_error{ "Int is not initialized" };
 		}
-		bool getBool() const
+		bool boolean() const
 		{
 			if (m_initialized == LuaType::Boolean)
 				return m_data.b;
 			throw std::runtime_error{ "Bool is not initialized" };
 		}
-		std::nullptr_t getNil() const
+		std::nullptr_t nil() const
 		{
 			if (m_initialized == LuaType::Nil)
 				return m_data.n;
