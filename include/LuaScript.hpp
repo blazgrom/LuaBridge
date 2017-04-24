@@ -6,7 +6,7 @@
 #include <string>
 #include <functional>
 #include <iostream>
-#include "LuaFunction.hpp"
+#include "LuaHelpers.hpp"
 #include "lua.hpp"
 namespace Lua
 {

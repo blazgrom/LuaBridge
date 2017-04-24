@@ -5,10 +5,12 @@ namespace Lua
 {
 	/*
 		TODO:
-		-Rename file
 		-Add string to LuaValue
 	*/
-	
+	enum class LuaType :short
+	{
+		Integer, Nil, Boolean, Double
+	};
 	template <typename... T>
 	struct LuaFunction
 	{
@@ -34,10 +36,6 @@ namespace Lua
 		}
 		std::string name;
 		unsigned int resultCount;
-	};
-	enum class LuaType :short
-	{
-		Integer, Nil, Boolean, Double
 	};
 	struct LuaValue
 	{
