@@ -228,7 +228,7 @@ namespace Lua
 				lua_setglobal(m_state, name.c_str());
 				return true;
 			}
-			catch (const std::runtime_error& e)
+			catch (const std::runtime_error&)
 			{
 				return false;
 			}
@@ -259,14 +259,14 @@ namespace Lua
 				}
 				return true;
 			}
-			catch (const std::runtime_error& e)
+			catch (const std::runtime_error&)
 			{
 				return false;
 			}
 		}
 		void getGlobalVariable(const std::string& name) const;
 		void getTableField(const std::string& name) const;
-	
 	};
-#endif // !LUA_SCRIPT_HPP
 }
+#endif // !LUA_SCRIPT_HPP
+
