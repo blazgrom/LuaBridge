@@ -5,12 +5,10 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include <iostream>
 #include "LuaHelpers.hpp"
 #include "lua.hpp"
 namespace Lua
 {
-
 	class LuaScript
 	{
 	private:
@@ -26,54 +24,38 @@ namespace Lua
 		LuaScript& operator=(const LuaScript& rhs) = delete;
 		LuaScript(LuaScript&& rhs) = default;
 		LuaScript& operator=(LuaScript&& rhs) = default;
-		/*
-			Permits the user to retrieve a variable, this variable can be either global one or a table
-			entry in a global variable
-		*/
 		template <class T>
 		T get(const std::string& name) const
 		{
 			if (name.find('.') == std::string::npos)
-			{
-				loadGlobal(name);
-			}
+				getGlobalVariable(name);
 			else
-			{
-				std::string field = loadTable(name);
-				loadTableField(field);
-			}
-			auto result = getImpl<T>();
-			popStack();
+				getTableField(name);
+			auto result = get_Impl<T>();
+			pop();
 			return result;
 		}
-		/*
-			Sets the value of either a global variable or an entry in a global table
-		*/
 		template <class T>
 		bool set(const std::string& name, T&& val) const
 		{
 			if (name.find('.') == std::string::npos)
-			{
-				return setGlobal(name, val);
-			}
+				return setGlobalVariable(name, val);
 			else
-			{
-				return setField(name, val);
-			}
+				return setTableField(name, val);
 		}
 		template <class... R, class... Args>
 		std::tuple<R...> call(const LuaFunction<R...>& f, Args&&... args) const
 		{
 			loadFunction(f.name);
-			int argumentsCount = loadParams(std::forward<Args>(args)...);
+			int argumentsCount = setFunctionParamaters(std::forward<Args>(args)...);
 			call_Impl(argumentsCount, f.resultCount, f.name);
-			return returnValues<R ...>(f.resultCount);
+			return getFunctionResult<R ...>(f.resultCount);
 		}
 		template <class...Args>
 		void call(const LuaFunction<void>& f, Args&&... args) const
 		{
 			loadFunction(f.name);
-			int argumentsCount = loadParams(std::forward<Args>(args)...);
+			int argumentsCount = setFunctionParamaters(std::forward<Args>(args)...);
 			call_Impl(argumentsCount, f.resultCount, f.name);
 		}
 		template <class... T>
@@ -81,7 +63,7 @@ namespace Lua
 		{
 			loadFunction(f.name);
 			call_Impl(0, f.resultCount, f.name);
-			return returnValues<T...>(f.resultCount);
+			return getFunctionResult<T...>(f.resultCount);
 		}
 		void call(const LuaFunction<void>& f) const
 		{
@@ -97,35 +79,22 @@ namespace Lua
 		void initialize(const std::vector<std::string>& dependencies, bool loadStandardLib);
 		void loadFile(const std::string& name) const;
 		void loadFunction(const std::string& name) const;
-		void popStack(int count = 1) const;
-		void call_Impl(int inputValCount, int outputValCount, const std::string& functionName) const;
+		void call_Impl(int inputCount, int outputCount, const std::string& name) const;
+		void pop(int count = 1) const;
 		void error(const std::string& message) const;
-		void iterateTable(std::function<void(const std::string&)> process) const;
-		std::string loadTable(std::string name) const;
-		void loadTableField(std::string field) const;
-		void loadGlobal(const std::string& name) const;
-		void getTableField(const std::string& name, int index) const;
-		Lua::LuaTable createLuaTable() const;
-		//Templates
-		template <class T, class... Args>
-		int loadParams(T&& value, Args&&... args) const
-		{
-			push(value);
-			return 1 + loadParams(args...);
-		}
+		//Pushes on top of the stack a specific field from a the table with the specified index
+		void loadTableField(const std::string& field, int tableIndex = -1) const;
+		//Call predicate for every entry of a table,assumes that the table is on top of the stack
+		void iterateTable(std::function<void(const std::string&)> p) const;
+		LuaTable createLuaTable() const;
+		//Retrieve variable from the top of the stack
 		template <class T>
-		int loadParams(T&& value) const
-		{
-			push(value);
-			return 1;
-		}
-		template <class T>
-		T getImpl(int stackIndex = -1) const
+		T get_Impl(int stackIndex = -1) const
 		{
 			if (!lua_istable(m_state, -1))
 			{
 				/*
-					What we want here is just the name of the type thus we remove any references and cv qualifiers
+				What we want here is just the name of the type thus we remove any references and cv qualifiers
 				*/
 				std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
 				std::string endText = typeid(typename std::decay<T>::type).name();
@@ -134,32 +103,33 @@ namespace Lua
 			return T{ createLuaTable() };
 		}
 		template <>
-		double getImpl<double>(int stackIndex) const
+		double get_Impl<double>(int stackIndex) const
 		{
 			return  static_cast<double>(lua_tonumber(m_state, stackIndex));
 		}
 		template <>
-		float getImpl<float>(int stackIndex) const
+		float get_Impl<float>(int stackIndex) const
 		{
-			return static_cast<float>(getImpl<double>(stackIndex));
+			return static_cast<float>(get_Impl<double>(stackIndex));
 		}
 		template <>
-		int getImpl<int>(int stackIndex) const
+		int get_Impl<int>(int stackIndex) const
 		{
 			return  static_cast<int>(lua_tointeger(m_state, stackIndex));
 		}
 		template<>
-		std::string getImpl<std::string>(int stackIndex) const
+		std::string get_Impl<std::string>(int stackIndex) const
 		{
 			size_t strLength = 0;
 			const char* str = lua_tolstring(m_state, stackIndex, &strLength);
 			return std::string(str, strLength);
 		}
 		template <>
-		bool  getImpl<bool>(int stackIndex) const
+		bool  get_Impl<bool>(int stackIndex) const
 		{
 			return lua_toboolean(m_state, stackIndex) != 0;
 		}
+		//Push a value to the stack
 		template <class T>
 		void push(const T& val) const
 		{
@@ -220,31 +190,40 @@ namespace Lua
 			push(static_cast<double>(val));
 		}
 		template <class... Args>
-		std::tuple<Args ...> returnValues(unsigned int count) const
+		std::tuple<Args ...> getFunctionResult(unsigned int count) const
 		{
 			const unsigned int popCount = count;
-			std::tuple<Args ...> result{ returnValue<Args>(count--) ... };
-			popStack(popCount);
+			std::tuple<Args ...> result{ getFunctionResult_Impl<Args>(count--) ... };
+			pop(popCount);
 			return result;
 		}
 		template <class T>
-		T returnValue(int index) const
+		T getFunctionResult_Impl(int index) const
 		{
 			if (index != 0)
-			{
-				return  getImpl<T>(index*-1);
-			}
+				return  get_Impl<T>(index*-1);
 			else
-			{
 				throw std::runtime_error("You cannot get return values, because there are none");
-			}
+		}
+		//Helpers
+		template <class T, class... Args>
+		int setFunctionParamaters(T&& value, Args&&... args) const
+		{
+			push(value);
+			return 1 + setFunctionParamaters(args...);
 		}
 		template <class T>
-		bool setGlobal(const std::string& name, const T& val) const
+		int setFunctionParamaters(T&& value) const
+		{
+			push(value);
+			return 1;
+		}
+		template <class T>
+		bool setGlobalVariable(const std::string& name, const T& val) const
 		{
 			try
 			{
-				loadGlobal(name);
+				getGlobalVariable(name);
 				push(val);
 				lua_setglobal(m_state, name.c_str());
 				return true;
@@ -255,26 +234,27 @@ namespace Lua
 			}
 		}
 		template <class T>
-		bool setField(const std::string& name, const T& val) const
+		bool setTableField(const std::string& name, const T& val) const
 		{
 			try
 			{
-				std::string field = loadTable(name);
+				std::string tableName = name.substr(0, name.find_first_of('.')),tableField= name.substr(name.find_first_of('.') + 1);
+				getGlobalVariable(tableName);
 				auto keepProcessing = true;
 				while (keepProcessing)
 				{
-					auto dotPosition = field.find_first_of('.');
+					auto dotPosition = tableField.find_first_of('.');
 					if (dotPosition == std::string::npos)
 					{
 						push<T>(val);
-						lua_setfield(m_state, -2, field.c_str());
+						lua_setfield(m_state, -2, tableField.c_str());
 						keepProcessing = false;
 					}
 					else
 					{
-						std::string parent = field.substr(0, dotPosition);
-						field = field.substr(dotPosition + 1);
-						getTableField(parent, -1);
+						std::string parent = tableField.substr(0, dotPosition);
+						tableField = tableField.substr(dotPosition + 1);
+						loadTableField(parent);
 					}
 				}
 				return true;
@@ -284,6 +264,9 @@ namespace Lua
 				return false;
 			}
 		}
+		void getGlobalVariable(const std::string& name) const;
+		void getTableField(const std::string& name) const;
+	
 	};
 #endif // !LUA_SCRIPT_HPP
 }

@@ -3,10 +3,6 @@
 #include <string>
 namespace Lua
 {
-	/*
-		TODO:
-		-Add string to LuaValue
-	*/
 	enum class LuaType :short
 	{
 		Integer, Nil, Boolean, Double, String
