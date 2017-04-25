@@ -7,6 +7,8 @@
 #include <functional>
 #include "LuaHelpers.hpp"
 #include "lua.hpp"
+
+#include <iostream>
 namespace Lua
 {
 	class LuaScript
@@ -24,6 +26,13 @@ namespace Lua
 		LuaScript& operator=(const LuaScript& rhs) = delete;
 		LuaScript(LuaScript&& rhs) = default;
 		LuaScript& operator=(LuaScript&& rhs) = default;
+		
+		template <class R,class... Args>
+		void registerFunc(std::function<R(Args...)> f) const
+		{
+			std::cout << sizeof...(Args);
+		}
+
 		template <class T>
 		T get(const std::string& name) const
 		{
@@ -71,9 +80,9 @@ namespace Lua
 			call_Impl(0, f.resultCount, f.name);
 		}
 		std::map<std::string, std::string> tableInfo(const std::string& table) const;
-		void openFile(const std::string& name);
-		void closeFile() noexcept;
-		bool changeFile(const std::string& name) noexcept;
+		void open(const std::string& file);
+		void close() noexcept;
+		bool change(const std::string& newFile) noexcept;
 		void run(std::string luaCode);
 	private:
 		void initialize(const std::vector<std::string>& dependencies, bool loadStandardLib);
@@ -129,7 +138,6 @@ namespace Lua
 		{
 			return lua_toboolean(m_state, stackIndex) != 0;
 		}
-		//Push a value to the stack
 		template <class T>
 		void push(const T& val) const
 		{
@@ -205,7 +213,6 @@ namespace Lua
 			else
 				throw std::runtime_error("You cannot get return values, because there are none");
 		}
-		//Helpers
 		template <class T, class... Args>
 		int setFunctionParamaters(T&& value, Args&&... args) const
 		{

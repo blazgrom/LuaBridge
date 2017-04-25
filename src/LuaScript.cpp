@@ -52,30 +52,30 @@ namespace Lua
 		process();
 		return info;
 	}
-	void LuaScript::openFile(const std::string& name)
+	void LuaScript::open(const std::string& file)
 	{
 		if (!m_open)
 		{
 			m_state = luaL_newstate();
-			loadFile(name);
+			loadFile(file);
 			m_open = true;
-			m_fileName = name;
+			m_fileName = file;
 		}
 	}
-	void LuaScript::closeFile() noexcept
+	void LuaScript::close() noexcept
 	{
 		lua_close(m_state);
 		m_open = false;
 	}
-	bool LuaScript::changeFile(const std::string& name) noexcept
+	bool LuaScript::change(const std::string& newFile) noexcept
 	{
 		bool result = true;
 		try
 		{
 			lua_close(m_state);
 			m_state = luaL_newstate();
-			loadFile(name);
-			m_fileName = name;
+			loadFile(newFile);
+			m_fileName = newFile;
 		}
 		catch (...)
 		{
