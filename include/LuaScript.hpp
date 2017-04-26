@@ -26,8 +26,8 @@ namespace Lua
 		LuaScript& operator=(const LuaScript& rhs) = delete;
 		LuaScript(LuaScript&& rhs) = default;
 		LuaScript& operator=(LuaScript&& rhs) = default;
-		
-		template <class R,class... Args>
+
+		template <class R, class... Args>
 		void registerFunc(std::function<R(Args...)> f) const
 		{
 			std::cout << sizeof...(Args);
@@ -40,9 +40,7 @@ namespace Lua
 				getGlobalVariable(name);
 			else
 				getTableField(name);
-			auto result = get_Impl<T>();
-			pop();
-			return result;
+			return get_Impl<T>();
 		}
 		template <class T>
 		bool set(const std::string& name, T&& val) const
@@ -90,10 +88,11 @@ namespace Lua
 		void loadFunction(const std::string& name) const;
 		void call_Impl(int inputCount, int outputCount, const std::string& name) const;
 		void pop(int count = 1) const;
-		void error(const std::string& message) const;
+		void error(const std::string& message, bool popStack = false) const;
 		//Pushes on top of the stack a specific field from a the table with the specified index
 		void loadTableField(const std::string& field, int tableIndex = -1) const;
 		//Call predicate for every entry of a table,assumes that the table is on top of the stack
+		//the predicate should remove the value from stack's top
 		void iterateTable(std::function<void(const std::string&)> p) const;
 		LuaTable createLuaTable() const;
 		//Retrieve variable from the top of the stack
@@ -114,29 +113,39 @@ namespace Lua
 		template <>
 		double get_Impl<double>(int stackIndex) const
 		{
-			return  static_cast<double>(lua_tonumber(m_state, stackIndex));
+			auto r = static_cast<double>(lua_tonumber(m_state, stackIndex));
+			pop();
+			return r;
 		}
 		template <>
 		float get_Impl<float>(int stackIndex) const
 		{
-			return static_cast<float>(get_Impl<double>(stackIndex));
+			auto r = static_cast<float>(get_Impl<double>(stackIndex));
+			pop();
+			return r;
 		}
 		template <>
 		int get_Impl<int>(int stackIndex) const
 		{
-			return  static_cast<int>(lua_tointeger(m_state, stackIndex));
+			auto r = static_cast<int>(lua_tointeger(m_state, stackIndex));
+			pop();
+			return r;
 		}
 		template<>
 		std::string get_Impl<std::string>(int stackIndex) const
 		{
 			size_t strLength = 0;
 			const char* str = lua_tolstring(m_state, stackIndex, &strLength);
-			return std::string(str, strLength);
+			std::string r{ str, strLength };
+			pop();
+			return r;
 		}
 		template <>
 		bool  get_Impl<bool>(int stackIndex) const
 		{
-			return lua_toboolean(m_state, stackIndex) != 0;
+			auto  r = lua_toboolean(m_state, stackIndex) != 0;
+			pop();
+			return r;
 		}
 		template <class T>
 		void push(const T& val) const
@@ -200,10 +209,7 @@ namespace Lua
 		template <class... Args>
 		std::tuple<Args ...> getFunctionResult(unsigned int count) const
 		{
-			const unsigned int popCount = count;
-			std::tuple<Args ...> result{ getFunctionResult_Impl<Args>(count--) ... };
-			pop(popCount);
-			return result;
+			return { getFunctionResult_Impl<Args>(count--) ... };
 		}
 		template <class T>
 		T getFunctionResult_Impl(int index) const
@@ -245,7 +251,7 @@ namespace Lua
 		{
 			try
 			{
-				std::string tableName = name.substr(0, name.find_first_of('.')),tableField= name.substr(name.find_first_of('.') + 1);
+				std::string tableName = name.substr(0, name.find_first_of('.')), tableField = name.substr(name.find_first_of('.') + 1);
 				getGlobalVariable(tableName);
 				auto keepProcessing = true;
 				while (keepProcessing)

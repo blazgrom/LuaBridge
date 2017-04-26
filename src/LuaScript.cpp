@@ -41,6 +41,7 @@ namespace Lua
 			if (lua_istable(m_state, -1)) {
 				auto f = [&info, this](const std::string& key) {
 					info[key] = lua_typename(m_state, lua_type(m_state, -1));
+					pop();
 				};
 				iterateTable(f);
 			}
@@ -88,7 +89,7 @@ namespace Lua
 	{
 		if (luaL_dostring(m_state, luaCode.c_str()))
 		{
-			error(lua_tostring(m_state, -1));
+			error(lua_tostring(m_state, -1),true);
 		}
 	}
 	//Private
@@ -108,7 +109,7 @@ namespace Lua
 	{
 		if (luaL_dofile(m_state, name.c_str()))
 		{
-			error(lua_tostring(m_state, -1));
+			error(lua_tostring(m_state, -1),true);
 		}
 	}
 	void LuaScript::loadFunction(const std::string& name) const
@@ -132,9 +133,12 @@ namespace Lua
 			error(name + " : " + get_Impl<std::string>());
 		}
 	}
-	void LuaScript::error(const std::string& message) const
+	void LuaScript::error(const std::string& message,bool popStack) const
 	{
-		pop();
+		if (popStack)
+		{
+			pop();
+		}
 		throw std::runtime_error(message.c_str());
 	}
 	void LuaScript::pop(int count) const
@@ -147,9 +151,8 @@ namespace Lua
 		while (lua_next(m_state, -2) != 0)
 		{
 			/*key=-2, value=-1*/
-			auto key = get_Impl<std::string>(-2);
-			p(key);
-			pop();
+			auto str = lua_tostring(m_state, -2);
+			p(std::string{str});
 		}
 	}
 	void LuaScript::getGlobalVariable(const std::string& name) const
@@ -164,7 +167,7 @@ namespace Lua
 	{
 		std::string tableName = name.substr(0, name.find_first_of('.')), tablefield = name.substr(name.find_first_of('.') + 1);
 		getGlobalVariable(tableName);
-		auto keepProcessing = true;
+		bool keepProcessing = true;
 		while (keepProcessing)
 		{
 			auto dotPosition = tablefield.find_first_of('.');
@@ -216,6 +219,10 @@ namespace Lua
 					const char* str = lua_tolstring(m_state, -1, &strLength);
 					table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
 				}
+				break;
+			case LUA_TFUNCTION://Ignore functions and tables
+			case LUA_TTABLE:
+				pop();
 				break;
 			}
 		};

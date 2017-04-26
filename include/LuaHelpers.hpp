@@ -83,12 +83,25 @@ namespace Lua
 			m_initialized{ rhs.m_initialized },
 			m_name{ rhs.m_name }
 		{
-			if (m_initialized == LuaType::String)
+			switch (m_initialized)
 			{
+			case Lua::LuaType::Integer:
+				m_data.i = rhs.m_data.i;
+				break;
+			case Lua::LuaType::Nil:
+				m_data.n = rhs.m_data.n;
+				break;
+			case Lua::LuaType::Boolean:
+				m_data.b = rhs.m_data.b;
+				break;
+			case Lua::LuaType::Double:
+				m_data.d = rhs.m_data.d;
+				break;
+			case Lua::LuaType::String:
 				m_data.s.~basic_string();
-				m_data.s = rhs.m_data.s;
+				m_data.s = std::move(rhs.m_data.s);
+				break;
 			}
-			m_data = rhs.m_data;
 		};
 		LuaValue(LuaValue&& rhs)
 			:
@@ -96,12 +109,25 @@ namespace Lua
 			m_initialized{ rhs.m_initialized },
 			m_name{ rhs.m_name }
 		{
-			if (m_initialized == LuaType::String)
+			switch (m_initialized)
 			{
+			case Lua::LuaType::Integer:
+				m_data.i = rhs.m_data.i;
+				break;
+			case Lua::LuaType::Nil:
+				m_data.n = rhs.m_data.n;
+				break;
+			case Lua::LuaType::Boolean:
+				m_data.b = rhs.m_data.b;
+				break;
+			case Lua::LuaType::Double:
+				m_data.d = rhs.m_data.d;
+				break;
+			case Lua::LuaType::String:
 				m_data.s.~basic_string();
 				m_data.s = std::move(rhs.m_data.s);
+				break;
 			}
-			m_data = rhs.m_data;
 		};
 		LuaValue& operator=(const LuaValue& rhs)
 		{
@@ -109,12 +135,25 @@ namespace Lua
 			{
 				m_initialized = rhs.m_initialized;
 				m_name = rhs.m_name;
-				if (m_initialized == LuaType::String)
+				switch (m_initialized)
 				{
+				case Lua::LuaType::Integer:
+					m_data.i = rhs.m_data.i;
+					break;
+				case Lua::LuaType::Nil:
+					m_data.n = rhs.m_data.n;
+					break;
+				case Lua::LuaType::Boolean:
+					m_data.b = rhs.m_data.b;
+					break;
+				case Lua::LuaType::Double:
+					m_data.d = rhs.m_data.d;
+					break;
+				case Lua::LuaType::String:
 					m_data.s.~basic_string();
 					m_data.s = std::move(rhs.m_data.s);
+					break;
 				}
-				m_data = rhs.m_data;
 			}
 			return *this;
 		};
@@ -122,12 +161,25 @@ namespace Lua
 		{
 			m_initialized = rhs.m_initialized;
 			m_name = rhs.m_name;
-			if (m_initialized == LuaType::String)
+			switch (m_initialized)
 			{
+			case Lua::LuaType::Integer:
+				m_data.i = rhs.m_data.i;
+				break;
+			case Lua::LuaType::Nil:
+				m_data.n = rhs.m_data.n;
+				break;
+			case Lua::LuaType::Boolean:
+				m_data.b = rhs.m_data.b;
+				break;
+			case Lua::LuaType::Double:
+				m_data.d = rhs.m_data.d;
+				break;
+			case Lua::LuaType::String:
 				m_data.s.~basic_string();
 				m_data.s = std::move(rhs.m_data.s);
+				break;
 			}
-			m_data = rhs.m_data;
 			return *this;
 		};
 		~LuaValue()
@@ -184,24 +236,9 @@ namespace Lua
 			Data() :n{ nullptr }, s{} {};
 			~Data() {};
 			Data(const Data& rhs)
-				:
-				n{ rhs.n },
-				i{ rhs.i },
-				d{ rhs.d },
-				b{ rhs.b }
-			{
-			};
+			{};
 			Data& operator=(const Data& rhs)
-			{
-				if (this != &rhs)
-				{
-					n = rhs.n;
-					i = rhs.i;
-					d = rhs.d;
-					b = rhs.d;
-				}
-				return *this;
-			};
+			{};
 		};
 		Data m_data;
 		LuaType m_initialized;
