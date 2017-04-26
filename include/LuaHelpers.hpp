@@ -79,33 +79,34 @@ namespace Lua
 
 		LuaValue(const LuaValue& rhs)
 			:
-			m_data(rhs.m_data),
-			m_initialized(rhs.m_initialized),
-			m_name(rhs.m_name)
+			m_data{ rhs.m_data },
+			m_initialized{ rhs.m_initialized },
+			m_name{ rhs.m_name }
 		{
 			if (m_initialized == LuaType::String)
 			{
 				m_data.s.~basic_string();
 				m_data.s = rhs.m_data.s;
 			}
+			m_data = rhs.m_data;
 		};
 		LuaValue(LuaValue&& rhs)
 			:
-			m_data(rhs.m_data),
-			m_initialized(rhs.m_initialized),
-			m_name(rhs.m_name)
+			m_data{},
+			m_initialized{ rhs.m_initialized },
+			m_name{ rhs.m_name }
 		{
 			if (m_initialized == LuaType::String)
 			{
 				m_data.s.~basic_string();
 				m_data.s = std::move(rhs.m_data.s);
 			}
+			m_data = rhs.m_data;
 		};
-		LuaValue& operator=(const LuaValue& rhs) 
+		LuaValue& operator=(const LuaValue& rhs)
 		{
 			if (this == &rhs)
 			{
-				m_data = rhs.m_data;
 				m_initialized = rhs.m_initialized;
 				m_name = rhs.m_name;
 				if (m_initialized == LuaType::String)
@@ -113,12 +114,12 @@ namespace Lua
 					m_data.s.~basic_string();
 					m_data.s = std::move(rhs.m_data.s);
 				}
+				m_data = rhs.m_data;
 			}
 			return *this;
 		};
 		LuaValue& operator=(LuaValue&& rhs)
 		{
-			m_data = rhs.m_data;
 			m_initialized = rhs.m_initialized;
 			m_name = rhs.m_name;
 			if (m_initialized == LuaType::String)
@@ -126,6 +127,7 @@ namespace Lua
 				m_data.s.~basic_string();
 				m_data.s = std::move(rhs.m_data.s);
 			}
+			m_data = rhs.m_data;
 			return *this;
 		};
 		~LuaValue()
@@ -174,17 +176,32 @@ namespace Lua
 	private:
 		union Data
 		{
-			std::nullptr_t n; //nil
+			std::nullptr_t n;
 			int i;
 			double d;
 			bool b;
-			std::string s;
+			std::string s;//Assignment and for s is handled inside LuaValue
 			Data() :n{ nullptr }, s{} {};
-			~Data()  {};
-			Data(const Data&) {};
-			Data(Data&&) {};
-			Data& operator=(const Data&) {};
-			Data& operator=(Data&&) {};
+			~Data() {};
+			Data(const Data& rhs)
+				:
+				n{ rhs.n },
+				i{ rhs.i },
+				d{ rhs.d },
+				b{ rhs.b }
+			{
+			};
+			Data& operator=(const Data& rhs)
+			{
+				if (this != &rhs)
+				{
+					n = rhs.n;
+					i = rhs.i;
+					d = rhs.d;
+					b = rhs.d;
+				}
+				return *this;
+			};
 		};
 		Data m_data;
 		LuaType m_initialized;
