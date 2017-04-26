@@ -26,13 +26,6 @@ namespace Lua
 		LuaScript& operator=(const LuaScript& rhs) = delete;
 		LuaScript(LuaScript&& rhs) = default;
 		LuaScript& operator=(LuaScript&& rhs) = default;
-
-		template <class R, class... Args>
-		void registerFunc(std::function<R(Args...)> f) const
-		{
-			std::cout << sizeof...(Args);
-		}
-
 		template <class T>
 		T get(const std::string& name) const
 		{
