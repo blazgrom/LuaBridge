@@ -34,6 +34,11 @@ namespace Lua
 		lua_close(m_state);
 	}
 	//Public
+	void LuaScript::call(const LuaFunction<void>& f) const
+	{
+		loadFunction(f.name);
+		call_Impl(0, f.resultCount, f.name);
+	}
 	std::map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
 	{
 		std::map<std::string, std::string> info;
@@ -41,7 +46,6 @@ namespace Lua
 			if (lua_istable(m_state, -1)) {
 				auto f = [&info, this](const std::string& key) {
 					info[key] = lua_typename(m_state, lua_type(m_state, -1));
-					pop();
 				};
 				iterateTable(f);
 			}
@@ -145,14 +149,16 @@ namespace Lua
 	{
 		lua_pop(m_state, count);
 	}
-	void LuaScript::iterateTable(std::function<void(const std::string&)> p) const
+	void LuaScript::iterateTable(std::function<void(const std::string&)> predicate,bool popLastValue) const
 	{
 		lua_pushnil(m_state);
 		while (lua_next(m_state, -2) != 0)
 		{
 			/*key=-2, value=-1*/
 			auto str = lua_tostring(m_state, -2);
-			p(std::string{str});
+			predicate(std::string{str});
+			if (popLastValue)
+				pop();
 		}
 	}
 	void LuaScript::getGlobalVariable(const std::string& name) const
@@ -226,7 +232,7 @@ namespace Lua
 				break;
 			}
 		};
-		iterateTable(f);
+		iterateTable(f, false);
 		return table;
 	}
 }
