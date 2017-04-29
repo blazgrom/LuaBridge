@@ -1,4 +1,4 @@
-## LuaBz - A simple wrapper for the C's Lua API written in modern C++ 
+## LuaBz - A simple Lua binding for modern C++
 
 Feature list:
  * Get/Set variable's value

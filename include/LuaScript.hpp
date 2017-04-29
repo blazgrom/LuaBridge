@@ -252,7 +252,6 @@ namespace Lua
 	{
 		try
 		{
-			getGlobalVariable(name);
 			push(val);
 			lua_setglobal(m_state, name.c_str());
 			return true;
