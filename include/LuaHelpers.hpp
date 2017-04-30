@@ -1,6 +1,7 @@
 #ifndef LUA_FUNCTION_HPP
 #define LUA_FUNCTION_HPP
 #include <string>
+#include <vector>
 namespace Lua
 {
 	enum class LuaType :short
