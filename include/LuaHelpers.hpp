@@ -38,96 +38,52 @@ namespace Lua
 	public:
 		LuaValue(const std::string& name, std::nullptr_t data)
 			:
-			m_data{},
 			m_initialized{ LuaType::Nil },
-			m_name{ name }
+			m_name{ name },
+			m_nil{data}
 		{
-			m_data.n = data;
 		}
 		LuaValue(const std::string& name, int data)
 			:
-			m_data{},
 			m_initialized{ LuaType::Integer },
-			m_name{ name }
+			m_name{ name },
+			m_integer{data}
 		{
-			m_data.i = data;
 		}
 		LuaValue(const std::string& name, double data)
 			:
-			m_data{},
 			m_initialized{ LuaType::Double },
-			m_name{ name }
+			m_name{ name },
+			m_number{data}
 		{
-			m_data.d = data;
 		}
 		LuaValue(const std::string& name, bool data)
 			:
-			m_data{},
 			m_initialized{ LuaType::Boolean },
-			m_name{ name }
+			m_name{ name },
+			m_bool{data}
 		{
-			m_data.b = data;
 		}
 		LuaValue(const std::string& name, std::string data)
 			:
-			m_data{},
 			m_initialized{ LuaType::String },
-			m_name{ name }
+			m_name{ name },
+			m_string{data}
 		{
-			m_data.s = data;
 		}
-
 		LuaValue(const LuaValue& rhs)
 			:
-			m_data{ rhs.m_data },
 			m_initialized{ rhs.m_initialized },
 			m_name{ rhs.m_name }
 		{
-			switch (m_initialized)
-			{
-			case Lua::LuaType::Integer:
-				m_data.i = rhs.m_data.i;
-				break;
-			case Lua::LuaType::Nil:
-				m_data.n = rhs.m_data.n;
-				break;
-			case Lua::LuaType::Boolean:
-				m_data.b = rhs.m_data.b;
-				break;
-			case Lua::LuaType::Double:
-				m_data.d = rhs.m_data.d;
-				break;
-			case Lua::LuaType::String:
-				m_data.s.~basic_string();
-				m_data.s = std::move(rhs.m_data.s);
-				break;
-			}
+			copy(rhs);
 		};
 		LuaValue(LuaValue&& rhs)
 			:
-			m_data{},
 			m_initialized{ rhs.m_initialized },
 			m_name{ rhs.m_name }
 		{
-			switch (m_initialized)
-			{
-			case Lua::LuaType::Integer:
-				m_data.i = rhs.m_data.i;
-				break;
-			case Lua::LuaType::Nil:
-				m_data.n = rhs.m_data.n;
-				break;
-			case Lua::LuaType::Boolean:
-				m_data.b = rhs.m_data.b;
-				break;
-			case Lua::LuaType::Double:
-				m_data.d = rhs.m_data.d;
-				break;
-			case Lua::LuaType::String:
-				m_data.s.~basic_string();
-				m_data.s = std::move(rhs.m_data.s);
-				break;
-			}
+			copy(rhs);
 		};
 		LuaValue& operator=(const LuaValue& rhs)
 		{
@@ -135,25 +91,7 @@ namespace Lua
 			{
 				m_initialized = rhs.m_initialized;
 				m_name = rhs.m_name;
-				switch (m_initialized)
-				{
-				case Lua::LuaType::Integer:
-					m_data.i = rhs.m_data.i;
-					break;
-				case Lua::LuaType::Nil:
-					m_data.n = rhs.m_data.n;
-					break;
-				case Lua::LuaType::Boolean:
-					m_data.b = rhs.m_data.b;
-					break;
-				case Lua::LuaType::Double:
-					m_data.d = rhs.m_data.d;
-					break;
-				case Lua::LuaType::String:
-					m_data.s.~basic_string();
-					m_data.s = std::move(rhs.m_data.s);
-					break;
-				}
+				copy(rhs);
 			}
 			return *this;
 		};
@@ -161,31 +99,13 @@ namespace Lua
 		{
 			m_initialized = rhs.m_initialized;
 			m_name = rhs.m_name;
-			switch (m_initialized)
-			{
-			case Lua::LuaType::Integer:
-				m_data.i = rhs.m_data.i;
-				break;
-			case Lua::LuaType::Nil:
-				m_data.n = rhs.m_data.n;
-				break;
-			case Lua::LuaType::Boolean:
-				m_data.b = rhs.m_data.b;
-				break;
-			case Lua::LuaType::Double:
-				m_data.d = rhs.m_data.d;
-				break;
-			case Lua::LuaType::String:
-				m_data.s.~basic_string();
-				m_data.s = std::move(rhs.m_data.s);
-				break;
-			}
+			copy(rhs);
 			return *this;
 		};
 		~LuaValue()
 		{
 			if (m_initialized == Lua::LuaType::String)
-				m_data.s.~basic_string();
+				m_string.~basic_string();
 		}
 		std::string name() const
 		{
@@ -198,51 +118,66 @@ namespace Lua
 		double number() const
 		{
 			if (m_initialized == LuaType::Double)
-				return m_data.d;
+				return m_number;
 			throw std::runtime_error{ "Double is not initialized" };
 		}
 		int integer() const
 		{
 			if (m_initialized == LuaType::Integer)
-				return m_data.i;
+				return m_integer;
 			throw std::runtime_error{ "Int is not initialized" };
-		}
+		} 
 		bool boolean() const
 		{
 			if (m_initialized == LuaType::Boolean)
-				return m_data.b;
+				return m_bool;
 			throw std::runtime_error{ "Bool is not initialized" };
 		}
 		std::nullptr_t nil() const
 		{
 			if (m_initialized == LuaType::Nil)
-				return m_data.n;
+				return m_nil;
 			throw std::runtime_error{ "Nil is not initialized" };
 		}
 		std::string string() const
 		{
 			if (m_initialized == LuaType::String)
-				return m_data.s;
+				return m_string;
 			throw std::runtime_error{ "String is not initialized" };
 		}
 	private:
-		union Data
+		union 
 		{
-			std::nullptr_t n;
-			int i;
-			double d;
-			bool b;
-			std::string s;//Assignment and for s is handled inside LuaValue
-			Data() :n{ nullptr }, s{} {};
-			~Data() {};
-			Data(const Data& rhs)
-			{};
-			Data& operator=(const Data& rhs)
-			{};
+			std::nullptr_t m_nil;
+			int m_integer;
+			double m_number;
+			bool m_bool;
+			std::string m_string;
 		};
-		Data m_data;
 		LuaType m_initialized;
 		std::string m_name;
+		void copy(const LuaValue& rhs)
+		{
+			switch (m_initialized)
+			{
+			case Lua::LuaType::Integer:
+				m_integer = rhs.m_integer;
+				break;
+			case Lua::LuaType::Nil:
+				m_nil = m_nil;
+				break;
+			case Lua::LuaType::Boolean:
+				m_bool = rhs.m_bool;
+				break;
+			case Lua::LuaType::Double:
+				m_number = rhs.m_number;
+				break;
+			case Lua::LuaType::String:
+				m_string.~basic_string();
+				m_string = rhs.m_string;
+				break;
+			}
+		}
 	};
 	struct LuaTable
 	{
