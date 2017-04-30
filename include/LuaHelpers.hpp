@@ -182,7 +182,7 @@ namespace Lua
 				break;
 			case Lua::LuaType::String:
 				m_string.~basic_string();
-				m_string = rhs.m_string;
+				new (&m_string)std::string{ m_string };
 				break;
 			}
 		}
