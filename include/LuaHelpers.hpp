@@ -5,7 +5,7 @@ namespace Lua
 {
 	enum class LuaType :short
 	{
-		Integer, Nil, Boolean, Double, String
+		Integer, Nil, Boolean, Number, String
 	};
 	template <typename... T>
 	struct LuaFunction
@@ -52,9 +52,16 @@ namespace Lua
 		}
 		LuaValue(const std::string& name, double data)
 			:
-			m_initialized{ LuaType::Double },
+			m_initialized{ LuaType::Number },
 			m_name{ name },
 			m_number{data}
+		{
+		}
+		LuaValue(const std::string& name, float data)
+			:
+			m_initialized{ LuaType::Number },
+			m_name{ name },
+			m_number{ static_cast<double>(data) }
 		{
 		}
 		LuaValue(const std::string& name, bool data)
@@ -117,21 +124,21 @@ namespace Lua
 		}
 		double number() const
 		{
-			if (m_initialized == LuaType::Double)
+			if (m_initialized == LuaType::Number)
 				return m_number;
-			throw std::runtime_error{ "Double is not initialized" };
+			throw std::runtime_error{ "Number is not initialized" };
 		}
 		int integer() const
 		{
 			if (m_initialized == LuaType::Integer)
 				return m_integer;
-			throw std::runtime_error{ "Int is not initialized" };
+			throw std::runtime_error{ "Integer is not initialized" };
 		} 
 		bool boolean() const
 		{
 			if (m_initialized == LuaType::Boolean)
 				return m_bool;
-			throw std::runtime_error{ "Bool is not initialized" };
+			throw std::runtime_error{ "Boolean is not initialized" };
 		}
 		std::nullptr_t nil() const
 		{
@@ -169,7 +176,7 @@ namespace Lua
 			case Lua::LuaType::Boolean:
 				m_bool = rhs.m_bool;
 				break;
-			case Lua::LuaType::Double:
+			case Lua::LuaType::Number:
 				m_number = rhs.m_number;
 				break;
 			case Lua::LuaType::String:

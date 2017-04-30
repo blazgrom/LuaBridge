@@ -176,7 +176,7 @@ namespace Lua
 			case LuaType::Boolean:
 				push(element.boolean());
 				break;
-			case LuaType::Double:
+			case LuaType::Number:
 				push(element.number());
 				break;
 			case LuaType::Integer:
