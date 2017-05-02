@@ -110,7 +110,7 @@ namespace Lua
 		return getFunctionResult<T...>(f.resultCount);
 	}
 	template <class T>
-	T LuaScript::get_Impl(int stackIndex) const
+	T LuaScript::get_Impl(int) const
 	{
 		if (!lua_istable(m_state, -1))
 		{
@@ -193,7 +193,7 @@ namespace Lua
 		}
 	}
 	template <>
-	inline void LuaScript::push<std::nullptr_t>(const std::nullptr_t& val) const
+	inline void LuaScript::push<std::nullptr_t>(const std::nullptr_t&) const
 	{
 		lua_pushnil(m_state);
 	}
