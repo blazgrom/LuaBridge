@@ -4,6 +4,33 @@
 #include <vector>
 namespace Lua
 {
+	template<class T>
+	struct function_traits;
+	//For std::function object
+	template<class T, class... Args>
+	struct function_traits<std::function<T(Args...)>>
+	{
+		using result_type = T;
+		static const size_t argument_count = sizeof... (Args);
+		template <size_t index>
+		struct arg
+		{
+			using argument_type = typename std::tuple_element<index, std::tuple<Args...>>::type;
+		};
+	};
+	//For pure function pointer
+	template<class T, class... Args>
+	struct function_traits<T(*)(Args...)>
+	{
+		using result_type = T;
+		static const size_t argument_count = sizeof... (Args);
+		template <size_t index>
+		struct arg
+		{
+			using argument_type = typename std::tuple_element<index, std::tuple<Args...>>::type;
+		};
+	};
+
 	enum class LuaType :short
 	{
 		Integer, Nil, Boolean, Number, String

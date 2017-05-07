@@ -3,12 +3,15 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include <iostream>
 #include <string>
 #include <functional>
+#include <type_traits>
 #include "LuaHelpers.hpp"
 #include "lua.hpp"
 namespace Lua
 {
+
 	class LuaScript
 	{
 	private:
@@ -40,6 +43,79 @@ namespace Lua
 		void call(const LuaFunction<void>& f) const;
 		void run(std::string luaCode);
 		std::map<std::string, std::string> tableInfo(const std::string& table) const;
+
+
+		//template <class T, class... Args>
+		//void register_function(std::string name,std::function<T(Args...)>& user_input)
+		//{
+		//	lua_CFunction a = [&user_input]()->lua_CFunction {
+		//		static auto static_user_input = user_input;
+		//		struct FunctionCallHelper
+		//		{
+		//			static T call(Args&& args)
+		//			{
+		//				return static_user_input(std::forward<Args>(args)...);
+		//			}
+		//			static T call()
+		//			{
+		//				return static_user_input();
+		//			}
+		//		};
+		//		return [](lua_State*)->int {
+		//			//Retrieve sizeof...(Args) variables from the stack and pass them to call
+		//			std::cout << FunctionCallHelper::call() << "\n";
+		//			return 1;
+		//		};
+		//	}();
+		//	a(m_state);
+		//}
+	
+		template <class T>
+		void register_function(std::string name, T user_function)
+		{
+			auto temp{ user_function };
+			std::cout<<typeid(typename function_traits<decltype(temp)>::result_type).name()<<"\n";
+			auto argument_cout = function_traits<decltype(temp)>::argument_count;
+		}
+		void funct() 
+		{
+			std::function<std::string()> user_input = []()->std::string {
+				return "aaaa\n";
+			};
+			std::function<std::string()> user_input1 = []()->std::string {
+				return "aaaa11111\n";
+			};
+			lua_CFunction a=[user_input]()->lua_CFunction {
+				struct internal
+				{
+					static std::string call(std::function<std::string()> m_user_input)
+					{
+						return m_user_input();
+					}
+				};
+				static auto user = user_input;
+				return [](lua_State*)->int {
+					std::cout<<internal::call(user)<<"\n";
+					return 2;
+				};
+			}();
+			a(nullptr);
+			a= [user_input1]()->lua_CFunction {
+				struct internal
+				{
+					static std::string call(std::function<std::string()> m_user_input)
+					{
+						return m_user_input();
+					}
+				};
+				static auto user = user_input1;
+				return [](lua_State*)->int {
+					std::cout << internal::call(user) << "\n";
+					return 2;
+				};
+			}();
+			a(nullptr);
+		}
 	private:
 		void initialize(const std::vector<std::string>& dependencies, bool loadStandardLib);
 		void loadFile(const std::string& name) const;
@@ -47,14 +123,19 @@ namespace Lua
 		void call_Impl(int inputCount, int outputCount, const std::string& name) const;
 		void pop(int count = 1) const;
 		void error(const std::string& message, bool popStack = false) const;
-		//Pushes on top of the stack a specific field from a the table with the specified index
 		void loadTableField(const std::string& field, int tableIndex = -1) const;
-		void iterateTable(std::function<void(const std::string&)> predicate, bool popLastValue=true) const;
+		void traverseTable(std::function<void(const std::string&)> predicate, bool popLastValue = true) const;
 		LuaTable createLuaTable() const;
 		template <class T>
 		T get_Impl(int stackIndex = -1) const;
 		template <class T>
 		void push(const T& val) const;
+		void push(const std::nullptr_t) const;
+		void push(bool val) const;
+		void push(const std::string& val) const;
+		void push(int val) const;
+		void push(double val) const;
+		void push(float val) const;
 		template <class... Args>
 		std::tuple<Args ...> getFunctionResult(unsigned int count) const;
 		template <class T>
@@ -64,9 +145,9 @@ namespace Lua
 		template <class T>
 		int setFunctionParamaters(T&& value) const;
 		template <class T>
-		bool setGlobalVariable(const std::string& name, const T& val) const;
+		bool setGlobalVariable(const std::string& name, T&& val) const;
 		template <class T>
-		bool setTableField(const std::string& name, const T& val) const;
+		bool setTableField(const std::string& name,T&& val) const;
 		void getGlobalVariable(const std::string& name) const;
 		void getTableField(const std::string& name) const;
 	};
@@ -83,9 +164,9 @@ namespace Lua
 	bool LuaScript::set(const std::string& name, T&& val) const
 	{
 		if (name.find('.') == std::string::npos)
-			return setGlobalVariable(name, val);
+			return setGlobalVariable(name, std::forward<T>(val));
 		else
-			return setTableField(name, val);
+			return setTableField(name, std::forward<T>(val));
 	}
 	template <class... R, class... Args>
 	std::tuple<R...> LuaScript::call(const LuaFunction<R...>& f, Args&&... args) const
@@ -114,15 +195,7 @@ namespace Lua
 	{
 		if (!lua_istable(m_state, -1))
 		{
-			//TODO
-			//change error message here, it no longer needs to take typeid because we are converting to LuaTable,
-			//the user type should be constructable from LuaTable however
-			/*
-			What we want here is just the name of the type thus we remove any references and cv qualifiers
-			*/
-			std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
-			std::string endText = typeid(typename std::decay<T>::type).name();
-			error(startText + endText);
+			error("The Lua variable you are trying to retrieve is not a table, thus cannot be converted to a user defined type");
 		}
 		return T{ createLuaTable() };
 	}
@@ -170,8 +243,8 @@ namespace Lua
 		auto table = static_cast<LuaTable>(val);
 		for (const auto& element : table.values)
 		{
-			push(element.name());
-			switch (element.type())
+			push(element.name());//key
+			switch (element.type())//value
 			{
 			case LuaType::Boolean:
 				push(element.boolean());
@@ -189,38 +262,8 @@ namespace Lua
 				push(element.string());
 				break;
 			}
-			lua_settable(m_state, -3); //automatically pops [key,value] 
+			lua_settable(m_state, -3); //automatically pops the key and the value from the stack
 		}
-	}
-	template <>
-	inline void LuaScript::push<std::nullptr_t>(const std::nullptr_t&) const
-	{
-		lua_pushnil(m_state);
-	}
-	template <>
-	inline void LuaScript::push<bool>(const bool& val) const
-	{
-		lua_pushboolean(m_state, val);
-	}
-	template<>
-	inline void LuaScript::push<std::string>(const std::string& val) const
-	{
-		lua_pushlstring(m_state, val.c_str(), val.size());
-	}
-	template <>
-	inline void LuaScript::push<int>(const int& val) const
-	{
-		lua_pushinteger(m_state, val);
-	}
-	template<>
-	inline void LuaScript::push<double>(const double& val) const
-	{
-		lua_pushnumber(m_state, val);
-	}
-	template<>
-	inline void LuaScript::push<float>(const float& val) const
-	{
-		push(static_cast<double>(val));
 	}
 	template <class... Args>
 	std::tuple<Args ...> LuaScript::getFunctionResult(unsigned int count) const
@@ -248,11 +291,11 @@ namespace Lua
 		return 1;
 	}
 	template <class T>
-	bool LuaScript::setGlobalVariable(const std::string& name, const T& val) const
+	bool LuaScript::setGlobalVariable(const std::string& name, T&& val) const
 	{
 		try
 		{
-			push(val);
+			push(std::forward<T>(val));
 			lua_setglobal(m_state, name.c_str());
 			return true;
 		}
@@ -262,7 +305,7 @@ namespace Lua
 		}
 	}
 	template <class T>
-	bool LuaScript::setTableField(const std::string& name, const T& val) const
+	bool LuaScript::setTableField(const std::string& name, T&& val) const
 	{
 		try
 		{
@@ -274,7 +317,7 @@ namespace Lua
 				auto dotPosition = tableField.find_first_of('.');
 				if (dotPosition == std::string::npos)
 				{
-					push<T>(val);
+					push(std::forward<T>(val));
 					lua_setfield(m_state, -2, tableField.c_str());
 					keepProcessing = false;
 				}
