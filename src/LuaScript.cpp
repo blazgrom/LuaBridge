@@ -47,7 +47,7 @@ namespace Lua
 				auto f = [&info, this](const std::string& key) {
 					info[key] = lua_typename(m_state, lua_type(m_state, -1));
 				};
-				traverseTable(f);
+				iterateTable(f);
 			}
 		};
 		if (table.find('.') == std::string::npos)
@@ -149,7 +149,7 @@ namespace Lua
 	{
 		lua_pop(m_state, count);
 	}
-	void LuaScript::traverseTable(std::function<void(const std::string&)> predicate,bool popLastValue) const
+	void LuaScript::iterateTable(std::function<void(const std::string&)> predicate,bool popLastValue) const
 	{
 		lua_pushnil(m_state);
 		while (lua_next(m_state, -2) != 0)
@@ -232,31 +232,7 @@ namespace Lua
 				break;
 			}
 		};
-		traverseTable(f, false);
+		iterateTable(f, false);
 		return table;
-	}
-	void LuaScript::push(const std::nullptr_t) const
-	{
-		lua_pushnil(m_state);
-	}
-	void LuaScript::push(bool val) const
-	{
-		lua_pushboolean(m_state, val);
-	}
-	void LuaScript::push(const std::string& val) const
-	{
-		lua_pushlstring(m_state, val.c_str(), val.size());
-	}
-	void LuaScript::push(int val) const
-	{
-		lua_pushinteger(m_state, val);
-	}
-	void LuaScript::push(double val) const
-	{
-		lua_pushnumber(m_state, val);
-	}
-	void LuaScript::push(float val) const
-	{
-		push(static_cast<double>(val));
 	}
 }
