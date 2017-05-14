@@ -84,6 +84,15 @@ namespace Lua
 		bool setTableField(const std::string& name, const T& val) const;
 		void getGlobalVariable(const std::string& name) const;
 		void getTableField(const std::string& name) const;
+
+
+		template <class T,class... Args>
+		int callRegisteredLambda(T& user_f, std::tuple<Args...>& )
+		{
+			auto result = user_f(get_Impl<Args>()...);
+			push(result);
+			return 1;
+		}
 	};
 	template<class R, class... Args>
 	void LuaScript::register_function(const std::string& name, std::function<R(Args...)>& user_f)
@@ -115,9 +124,9 @@ namespace Lua
 			int stackTop = lua_gettop(m_state);
 			if (stackTop != 0)
 			{
-				auto result = user_f();
-				push(result);
-				return 1;
+				using namespace Utils;
+				callable_arg_types<T> t;
+				return callRegisteredLambda(user_f, t);
 			}
 			return 0;
 		};
