@@ -115,7 +115,8 @@ namespace Lua
 			int stackTop = lua_gettop(m_state);
 			if (stackTop != 0)
 			{
-			
+				auto result = user_f();
+				push(result);
 				return 1;
 			}
 			return 0;
