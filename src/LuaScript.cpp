@@ -1,12 +1,17 @@
 #include "LuaScript.hpp"
 namespace Lua
 {
+	//Static
+	std::string LuaScript::m_userFunctionInCall;
+	std::unordered_map<std::string, std::function<int(lua_State*)>> LuaScript::m_userFunctions;
+
 	//C-tors
 	LuaScript::LuaScript(const std::string& file, bool loadStandardLib)
 		:
-		m_state(luaL_newstate()),
-		m_fileName(file),
-		m_open(true)
+		m_state{ luaL_newstate() },
+		m_fileName{ file },
+		m_open{ true }
+
 	{
 		if (loadStandardLib)
 			luaL_openlibs(m_state);
@@ -32,10 +37,18 @@ namespace Lua
 	LuaScript::~LuaScript()
 	{
 		lua_close(m_state);
+		for (const auto& name :m_localUFunctions)
+		{
+			LuaScript::m_userFunctions.erase(name);
+		}
 	}
 	//Public
 	void LuaScript::call(const LuaFunction<void>& f) const
 	{
+		if (LuaScript::m_userFunctions.find(f.name) != LuaScript::m_userFunctions.end())
+		{
+			LuaScript::m_userFunctionInCall = f.name;
+		}
 		loadFunction(f.name);
 		call_Impl(0, f.resultCount, f.name);
 	}
@@ -93,7 +106,7 @@ namespace Lua
 	{
 		if (luaL_dostring(m_state, luaCode.c_str()))
 		{
-			error(lua_tostring(m_state, -1),true);
+			error(lua_tostring(m_state, -1), true);
 		}
 	}
 	//Private
@@ -113,7 +126,7 @@ namespace Lua
 	{
 		if (luaL_dofile(m_state, name.c_str()))
 		{
-			error(lua_tostring(m_state, -1),true);
+			error(lua_tostring(m_state, -1), true);
 		}
 	}
 	void LuaScript::loadFunction(const std::string& name) const
@@ -137,7 +150,7 @@ namespace Lua
 			error(name + " : " + get_Impl<std::string>());
 		}
 	}
-	void LuaScript::error(const std::string& message,bool popStack) const
+	void LuaScript::error(const std::string& message, bool popStack) const
 	{
 		if (popStack)
 		{
@@ -149,14 +162,14 @@ namespace Lua
 	{
 		lua_pop(m_state, count);
 	}
-	void LuaScript::iterateTable(std::function<void(const std::string&)> predicate,bool popLastValue) const
+	void LuaScript::iterateTable(std::function<void(const std::string&)> predicate, bool popLastValue) const
 	{
 		lua_pushnil(m_state);
 		while (lua_next(m_state, -2) != 0)
 		{
 			/*key=-2, value=-1*/
 			auto str = lua_tostring(m_state, -2);
-			predicate(std::string{str});
+			predicate(std::string{ str });
 			if (popLastValue)
 				pop();
 		}
@@ -202,30 +215,30 @@ namespace Lua
 		Lua::LuaTable table;
 		auto f = [&table, this](const std::string &key)
 		{
-			switch (lua_type(m_state,-1))
+			switch (lua_type(m_state, -1))
 			{
 			case LUA_TNIL:
 				table.values.push_back(Lua::LuaValue(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.values.push_back(Lua::LuaValue(key,get_Impl<bool>()));
+				table.values.push_back(Lua::LuaValue(key, get_Impl<bool>()));
 				break;
 			case LUA_TNUMBER:
-				{
-					double number = lua_tonumber(m_state, -1);
-					if (number == static_cast<int>(number))
-						table.values.push_back(Lua::LuaValue(key, get_Impl<int>()));
-					else
-						table.values.push_back(Lua::LuaValue(key, get_Impl<double>()));
-				}
-				break;
+			{
+				double number = lua_tonumber(m_state, -1);
+				if (number == static_cast<int>(number))
+					table.values.push_back(Lua::LuaValue(key, get_Impl<int>()));
+				else
+					table.values.push_back(Lua::LuaValue(key, get_Impl<double>()));
+			}
+			break;
 			case LUA_TSTRING:
-				{
-					size_t strLength = 0;
-					const char* str = lua_tolstring(m_state, -1, &strLength);
-					table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
-				}
-				break;
+			{
+				size_t strLength = 0;
+				const char* str = lua_tolstring(m_state, -1, &strLength);
+				table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
+			}
+			break;
 			case LUA_TFUNCTION://Ignore functions and tables
 			case LUA_TTABLE:
 				pop();
@@ -235,4 +248,15 @@ namespace Lua
 		iterateTable(f, false);
 		return table;
 	}
+	void LuaScript::register_function_Impl(const std::string& name)
+	{
+		lua_CFunction lua_F = [](lua_State* state)->int {
+			std::string name = LuaScript::m_userFunctionInCall;
+			auto function = LuaScript::m_userFunctions[name];
+			return function(state);
+		};
+		lua_pushcfunction(m_state, lua_F);
+		lua_setglobal(m_state, name.c_str());
+	}
+
 }

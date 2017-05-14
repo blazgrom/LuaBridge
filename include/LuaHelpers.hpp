@@ -1,6 +1,8 @@
-#ifndef LUA_FUNCTION_HPP
-#define LUA_FUNCTION_HPP
+#ifndef LUA_HELPERS_HPP
+#define LUA_HELPERS_HPP
 #include <string>
+#include <iostream>
+#include <tuple>
 #include <vector>
 namespace Lua
 {
@@ -192,4 +194,4 @@ namespace Lua
 		std::vector<LuaValue> values;
 	};
 }
-#endif // !LUA_FUNCTION_HPP
+#endif // !LUA_HELPERS_HPP

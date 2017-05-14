@@ -1,20 +1,27 @@
 #ifndef LUA_SCRIPT_HPP
 #define LUA_SCRIPT_HPP
 #include <map>
+#include <unordered_map>
 #include <tuple>
 #include <vector>
 #include <string>
 #include <functional>
 #include "LuaHelpers.hpp"
+#include "callable_traits.hpp"
+#include "tuple_utils.hpp"
 #include "lua.hpp"
 namespace Lua
 {
+
 	class LuaScript
 	{
 	private:
 		lua_State* m_state;
 		std::string m_fileName;
 		bool m_open;
+		std::vector<std::string> m_localUFunctions;
+		static std::unordered_map<std::string, std::function<int(lua_State*)>> m_userFunctions;
+		static std::string m_userFunctionInCall;
 	public:
 		explicit LuaScript(const std::string& file, bool loadStandardLib = true);
 		LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib = true);
@@ -40,7 +47,15 @@ namespace Lua
 		void call(const LuaFunction<void>& f) const;
 		void run(std::string luaCode);
 		std::map<std::string, std::string> tableInfo(const std::string& table) const;
+		template<class R, class... Args>
+		void register_function(const std::string& name, std::function<R(Args...)>& user_f);
+		template<class R, class... Args>
+		void register_function(const std::string& name, R(*user_f)(Args...));
+		template<class T>
+		void register_function(const std::string& name, T user_f);
 	private:
+
+		void register_function_Impl(const std::string& name);
 		void initialize(const std::vector<std::string>& dependencies, bool loadStandardLib);
 		void loadFile(const std::string& name) const;
 		void loadFunction(const std::string& name) const;
@@ -49,7 +64,7 @@ namespace Lua
 		void error(const std::string& message, bool popStack = false) const;
 		//Pushes on top of the stack a specific field from a the table with the specified index
 		void loadTableField(const std::string& field, int tableIndex = -1) const;
-		void iterateTable(std::function<void(const std::string&)> predicate, bool popLastValue=true) const;
+		void iterateTable(std::function<void(const std::string&)> predicate, bool popLastValue = true) const;
 		LuaTable createLuaTable() const;
 		template <class T>
 		T get_Impl(int stackIndex = -1) const;
@@ -70,6 +85,44 @@ namespace Lua
 		void getGlobalVariable(const std::string& name) const;
 		void getTableField(const std::string& name) const;
 	};
+	template<class R, class... Args>
+	void LuaScript::register_function(const std::string& name, std::function<R(Args...)>& user_f)
+	{
+		m_localUFunctions.push_back(name);
+		LuaScript::m_userFunctions[name] = [this,user_f](lua_State*)->int {
+			int stackTop = lua_gettop(m_state);
+			if (stackTop != 0)
+			{
+				auto result = user_f(get_Impl<Args>()...);
+				push(result);
+				return 1;
+			}
+			return 0;
+		};
+		register_function_Impl(name);
+	}
+	template<class R, class... Args>
+	void LuaScript::register_function(const std::string& name, R(*user_f)(Args...))
+	{
+		std::function<R(Args...)> func = user_f;
+		register_function(name, func);
+	}
+	template<class T>
+	void LuaScript::register_function(const std::string& name, T user_f)
+	{
+		m_localUFunctions.push_back(name);
+		LuaScript::m_userFunctions[name] = [this,user_f](lua_State*)->int {
+			int stackTop = lua_gettop(m_state);
+			if (stackTop != 0)
+			{
+			
+				return 1;
+			}
+			return 0;
+		};
+		register_function_Impl(name);
+	}
+
 	template <class T>
 	T LuaScript::get(const std::string& name) const
 	{
@@ -90,6 +143,10 @@ namespace Lua
 	template <class... R, class... Args>
 	std::tuple<R...> LuaScript::call(const LuaFunction<R...>& f, Args&&... args) const
 	{
+		if (LuaScript::m_userFunctions.find(f.name) != LuaScript::m_userFunctions.end())
+		{
+			LuaScript::m_userFunctionInCall = f.name;
+		}
 		loadFunction(f.name);
 		int argumentsCount = setFunctionParamaters(std::forward<Args>(args)...);
 		call_Impl(argumentsCount, f.resultCount, f.name);
@@ -98,6 +155,10 @@ namespace Lua
 	template <class...Args>
 	void LuaScript::call(const LuaFunction<void>& f, Args&&... args) const
 	{
+		if (LuaScript::m_userFunctions.find(f.name) != LuaScript::m_userFunctions.end())
+		{
+			LuaScript::m_userFunctionInCall = f.name;
+		}
 		loadFunction(f.name);
 		int argumentsCount = setFunctionParamaters(std::forward<Args>(args)...);
 		call_Impl(argumentsCount, f.resultCount, f.name);
@@ -105,6 +166,10 @@ namespace Lua
 	template <class... T>
 	std::tuple<T...> LuaScript::call(const LuaFunction<T...>& f) const
 	{
+		if (LuaScript::m_userFunctions.find(f.name) != LuaScript::m_userFunctions.end())
+		{
+			LuaScript::m_userFunctionInCall = f.name;
+		}
 		loadFunction(f.name);
 		call_Impl(0, f.resultCount, f.name);
 		return getFunctionResult<T...>(f.resultCount);
@@ -114,15 +179,7 @@ namespace Lua
 	{
 		if (!lua_istable(m_state, -1))
 		{
-			//TODO
-			//change error message here, it no longer needs to take typeid because we are converting to LuaTable,
-			//the user type should be constructable from LuaTable however
-			/*
-			What we want here is just the name of the type thus we remove any references and cv qualifiers
-			*/
-			std::string startText = "The variable you are trying to get is not a table, thus cannot be converted to a variable of type ";
-			std::string endText = typeid(typename std::decay<T>::type).name();
-			error(startText + endText);
+			error("The type you are trying to retrieve cannot be constructed with a LuaTable");
 		}
 		return T{ createLuaTable() };
 	}
@@ -208,7 +265,7 @@ namespace Lua
 		lua_pushlstring(m_state, val.c_str(), val.size());
 	}
 	template <>
-	inline void LuaScript::push<int>(const int& val) const
+	inline void LuaScript::push<int>(const int& val) const 
 	{
 		lua_pushinteger(m_state, val);
 	}
