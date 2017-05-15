@@ -37,7 +37,7 @@ namespace Lua
 	LuaScript::~LuaScript()
 	{
 		lua_close(m_state);
-		for (const auto& name :m_localUFunctions)
+		for (const auto& name : m_localFunctions)
 		{
 			LuaScript::m_userFunctions.erase(name);
 		}
@@ -248,7 +248,7 @@ namespace Lua
 		iterateTable(f, false);
 		return table;
 	}
-	void LuaScript::register_function_Impl(const std::string& name)
+	void LuaScript::registerFunctionImpl(const std::string& name)
 	{
 		lua_CFunction lua_F = [](lua_State* state)->int {
 			std::string name = LuaScript::m_userFunctionInCall;
@@ -257,6 +257,30 @@ namespace Lua
 		};
 		lua_pushcfunction(m_state, lua_F);
 		lua_setglobal(m_state, name.c_str());
+	}
+	void LuaScript::push(std::nullptr_t&) const
+	{
+		lua_pushnil(m_state);
+	}
+	void LuaScript::push(bool val) const
+	{
+		lua_pushboolean(m_state, val);
+	}
+	void LuaScript::push(const std::string& val) const
+	{
+		lua_pushlstring(m_state, val.c_str(), val.size());
+	}
+	void LuaScript::push(int val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	void LuaScript::push(double val) const
+	{
+		lua_pushnumber(m_state, val);
+	}
+	void LuaScript::push(float val) const
+	{
+		push(static_cast<double>(val));
 	}
 
 }

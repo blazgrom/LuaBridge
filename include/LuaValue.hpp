@@ -1,40 +1,11 @@
-#ifndef LUA_HELPERS_HPP
-#define LUA_HELPERS_HPP
+#ifndef LUA_VALUE_HPP
+#define LUA_VALUE_HPP
 #include <string>
-#include <iostream>
-#include <tuple>
-#include <vector>
 namespace Lua
 {
 	enum class LuaType :short
 	{
 		Integer, Nil, Boolean, Number, String
-	};
-	template <typename... T>
-	struct LuaFunction
-	{
-		explicit LuaFunction(const std::string& name)
-			:
-			name(name),
-			resultCount(sizeof... (T))
-		{
-
-		}
-		std::string name;
-		unsigned int resultCount;
-	};
-	template <>
-	struct LuaFunction<void>
-	{
-		explicit LuaFunction(const std::string& name)
-			:
-			name(name),
-			resultCount(0)
-		{
-
-		}
-		std::string name;
-		unsigned int resultCount;
 	};
 	struct LuaValue
 	{
@@ -43,21 +14,21 @@ namespace Lua
 			:
 			m_initialized{ LuaType::Nil },
 			m_name{ name },
-			m_nil{data}
+			m_nil{ data }
 		{
 		}
 		LuaValue(const std::string& name, int data)
 			:
 			m_initialized{ LuaType::Integer },
 			m_name{ name },
-			m_integer{data}
+			m_integer{ data }
 		{
 		}
 		LuaValue(const std::string& name, double data)
 			:
 			m_initialized{ LuaType::Number },
 			m_name{ name },
-			m_number{data}
+			m_number{ data }
 		{
 		}
 		LuaValue(const std::string& name, float data)
@@ -71,14 +42,14 @@ namespace Lua
 			:
 			m_initialized{ LuaType::Boolean },
 			m_name{ name },
-			m_bool{data}
+			m_bool{ data }
 		{
 		}
 		LuaValue(const std::string& name, std::string data)
 			:
 			m_initialized{ LuaType::String },
 			m_name{ name },
-			m_string{data}
+			m_string{ data }
 		{
 		}
 		LuaValue(const LuaValue& rhs)
@@ -136,7 +107,7 @@ namespace Lua
 			if (m_initialized == LuaType::Integer)
 				return m_integer;
 			throw std::runtime_error{ "Integer is not initialized" };
-		} 
+		}
 		bool boolean() const
 		{
 			if (m_initialized == LuaType::Boolean)
@@ -156,7 +127,7 @@ namespace Lua
 			throw std::runtime_error{ "String is not initialized" };
 		}
 	private:
-		union 
+		union
 		{
 			std::nullptr_t m_nil;
 			int m_integer;
@@ -189,9 +160,5 @@ namespace Lua
 			}
 		}
 	};
-	struct LuaTable
-	{
-		std::vector<LuaValue> values;
-	};
 }
-#endif // !LUA_HELPERS_HPP
+#endif // !LUA_VALUE_HPP
