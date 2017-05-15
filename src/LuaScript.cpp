@@ -52,9 +52,9 @@ namespace Lua
 		loadFunction(f.name);
 		call_Impl(0, f.resultCount, f.name);
 	}
-	std::map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
+	std::unordered_map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
 	{
-		std::map<std::string, std::string> info;
+		std::unordered_map<std::string, std::string> info;
 		auto process = [&info, this]() {
 			if (lua_istable(m_state, -1)) {
 				auto f = [&info, this](const std::string& key) {
@@ -64,9 +64,9 @@ namespace Lua
 			}
 		};
 		if (table.find('.') == std::string::npos)
-			getGlobalVariable(table);
+			loadGlobal(table);
 		else
-			getTableField(table);
+			loadTabElement(table);
 		process();
 		return info;
 	}
@@ -110,6 +110,36 @@ namespace Lua
 		}
 	}
 	//Private
+	void LuaScript::loadGlobal(const std::string& name) const
+	{
+		lua_getglobal(m_state, name.c_str());
+		if (lua_isnoneornil(m_state, -1))
+		{
+			error("Object with name " + name + " could not be loaded");
+		}
+	}
+	void LuaScript::loadTabElement(const std::string& name) const
+	{
+		std::string tableName = name.substr(0, name.find_first_of('.')), tablefield = name.substr(name.find_first_of('.') + 1);
+		loadGlobal(tableName);
+		bool keepProcessing = true;
+		while (keepProcessing)
+		{
+			auto dotPosition = tablefield.find_first_of('.');
+			if (dotPosition == std::string::npos)
+			{
+				loadTableField(tablefield);
+				keepProcessing = false;
+			}
+			else
+			{
+				std::string parent = tablefield.substr(0, dotPosition);
+				tablefield = tablefield.substr(dotPosition + 1);
+				loadTableField(parent);
+			}
+		}
+	}
+
 	void LuaScript::initialize(const std::vector<std::string>& dependencies, bool loadStandardLib)
 	{
 		if (loadStandardLib)
@@ -138,27 +168,27 @@ namespace Lua
 			}
 		};
 		if (name.find('.') == std::string::npos)
-			getGlobalVariable(name);
+			loadGlobal(name);
 		else
-			getTableField(name);
+			loadTabElement(name);
 		checkType();
 	}
 	void LuaScript::call_Impl(int inputCount, int outputCount, const std::string& name) const
 	{
 		if (lua_pcall(m_state, inputCount, outputCount, 0) != 0)
 		{
-			error(name + " : " + get_Impl<std::string>());
+			error(name + " : " + topLuaStack<std::string>());
 		}
 	}
 	void LuaScript::error(const std::string& message, bool popStack) const
 	{
 		if (popStack)
 		{
-			pop();
+			popLuaStack();
 		}
 		throw std::runtime_error(message.c_str());
 	}
-	void LuaScript::pop(int count) const
+	void LuaScript::popLuaStack(int count) const
 	{
 		lua_pop(m_state, count);
 	}
@@ -171,38 +201,10 @@ namespace Lua
 			auto str = lua_tostring(m_state, -2);
 			predicate(std::string{ str });
 			if (popLastValue)
-				pop();
+				popLuaStack();
 		}
 	}
-	void LuaScript::getGlobalVariable(const std::string& name) const
-	{
-		lua_getglobal(m_state, name.c_str());
-		if (lua_isnoneornil(m_state, -1))
-		{
-			error("Object with name " + name + " could not be loaded");
-		}
-	}
-	void LuaScript::getTableField(const std::string& name) const
-	{
-		std::string tableName = name.substr(0, name.find_first_of('.')), tablefield = name.substr(name.find_first_of('.') + 1);
-		getGlobalVariable(tableName);
-		bool keepProcessing = true;
-		while (keepProcessing)
-		{
-			auto dotPosition = tablefield.find_first_of('.');
-			if (dotPosition == std::string::npos)
-			{
-				loadTableField(tablefield);
-				keepProcessing = false;
-			}
-			else
-			{
-				std::string parent = tablefield.substr(0, dotPosition);
-				tablefield = tablefield.substr(dotPosition + 1);
-				loadTableField(parent);
-			}
-		}
-	}
+	
 	void LuaScript::loadTableField(const std::string& field, int tableIndex) const
 	{
 		if (lua_istable(m_state, tableIndex))
@@ -221,15 +223,15 @@ namespace Lua
 				table.values.push_back(Lua::LuaValue(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.values.push_back(Lua::LuaValue(key, get_Impl<bool>()));
+				table.values.push_back(Lua::LuaValue(key, topLuaStack<bool>()));
 				break;
 			case LUA_TNUMBER:
 			{
 				double number = lua_tonumber(m_state, -1);
 				if (number == static_cast<int>(number))
-					table.values.push_back(Lua::LuaValue(key, get_Impl<int>()));
+					table.values.push_back(Lua::LuaValue(key, topLuaStack<int>()));
 				else
-					table.values.push_back(Lua::LuaValue(key, get_Impl<double>()));
+					table.values.push_back(Lua::LuaValue(key, topLuaStack<double>()));
 			}
 			break;
 			case LUA_TSTRING:
@@ -241,7 +243,7 @@ namespace Lua
 			break;
 			case LUA_TFUNCTION://Ignore functions and tables
 			case LUA_TTABLE:
-				pop();
+				popLuaStack();
 				break;
 			}
 		};
@@ -258,29 +260,4 @@ namespace Lua
 		lua_pushcfunction(m_state, lua_F);
 		lua_setglobal(m_state, name.c_str());
 	}
-	void LuaScript::push(std::nullptr_t&) const
-	{
-		lua_pushnil(m_state);
-	}
-	void LuaScript::push(bool val) const
-	{
-		lua_pushboolean(m_state, val);
-	}
-	void LuaScript::push(const std::string& val) const
-	{
-		lua_pushlstring(m_state, val.c_str(), val.size());
-	}
-	void LuaScript::push(int val) const
-	{
-		lua_pushinteger(m_state, val);
-	}
-	void LuaScript::push(double val) const
-	{
-		lua_pushnumber(m_state, val);
-	}
-	void LuaScript::push(float val) const
-	{
-		push(static_cast<double>(val));
-	}
-
 }
