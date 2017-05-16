@@ -14,7 +14,7 @@ namespace Lua
 
 		}
 		std::string name;
-		unsigned int resultCount;
+		const unsigned int resultCount;
 	};
 	template <>
 	struct LuaFunction<void>

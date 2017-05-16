@@ -2,7 +2,7 @@
 namespace Lua
 {
 	//Static
-	std::string LuaScript::m_userFunctionInCall;
+	std::string LuaScript::m_nextExecution;
 	std::unordered_map<std::string, std::function<int(lua_State*)>> LuaScript::m_userFunctions;
 
 	//C-tors
@@ -15,7 +15,7 @@ namespace Lua
 	{
 		if (loadStandardLib)
 			luaL_openlibs(m_state);
-		loadFile(m_fileName);
+		runFile(m_fileName);
 	}
 	LuaScript::LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib)
 		:
@@ -23,7 +23,7 @@ namespace Lua
 		m_fileName(file),
 		m_open(true)
 	{
-		initialize(dependencies, loadStandardLib);
+		init(dependencies, loadStandardLib);
 	}
 	LuaScript::LuaScript(const std::string& file, const std::string& dependency, bool loadStandardLib)
 		:
@@ -31,7 +31,7 @@ namespace Lua
 		m_fileName(file),
 		m_open(true)
 	{
-		initialize({ dependency }, loadStandardLib);
+		init({ dependency }, loadStandardLib);
 	}
 	//D-tor
 	LuaScript::~LuaScript()
@@ -45,12 +45,8 @@ namespace Lua
 	//Public
 	void LuaScript::call(const LuaFunction<void>& f) const
 	{
-		if (LuaScript::m_userFunctions.find(f.name) != LuaScript::m_userFunctions.end())
-		{
-			LuaScript::m_userFunctionInCall = f.name;
-		}
-		loadFunction(f.name);
-		call_Impl(0, f.resultCount, f.name);
+		prepareForCall(f.name);
+		callFunc(0, f.resultCount, f.name);
 	}
 	std::unordered_map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
 	{
@@ -64,9 +60,9 @@ namespace Lua
 			}
 		};
 		if (table.find('.') == std::string::npos)
-			loadGlobal(table);
+			retrieveGlobal(table);
 		else
-			loadTabElement(table);
+			retrieveTabElement(table);
 		process();
 		return info;
 	}
@@ -75,7 +71,7 @@ namespace Lua
 		if (!m_open)
 		{
 			m_state = luaL_newstate();
-			loadFile(file);
+			runFile(file);
 			m_open = true;
 			m_fileName = file;
 		}
@@ -92,12 +88,12 @@ namespace Lua
 		{
 			lua_close(m_state);
 			m_state = luaL_newstate();
-			loadFile(newFile);
+			runFile(newFile);
 			m_fileName = newFile;
 		}
 		catch (...)
 		{
-			loadFile(m_fileName);
+			runFile(m_fileName);
 			result = false;
 		}
 		return result;
@@ -110,18 +106,45 @@ namespace Lua
 		}
 	}
 	//Private
-	void LuaScript::loadGlobal(const std::string& name) const
+	void LuaScript::init(const std::vector<std::string>& dependencies, bool loadStandardLib)
+	{
+		if (loadStandardLib)
+		{
+			luaL_openlibs(m_state);
+		}
+		for (const std::string& file : dependencies)
+		{
+			runFile(file);
+		}
+		runFile(m_fileName);
+	}
+	void LuaScript::runFile(const std::string& name) const
+	{
+		if (luaL_dofile(m_state, name.c_str()))
+		{
+			error(lua_tostring(m_state, -1), true);
+		}
+	}
+	//Retrieves a lua value and pushes it on top of the stack
+	void LuaScript::retrieveLuaValue(const std::string& name) const
+	{
+		if (name.find('.') == std::string::npos)
+			retrieveGlobal(name);
+		else
+			retrieveTabElement(name);
+	}
+	void LuaScript::retrieveGlobal(const std::string& name) const
 	{
 		lua_getglobal(m_state, name.c_str());
 		if (lua_isnoneornil(m_state, -1))
 		{
-			error("Object with name " + name + " could not be loaded");
+			error("A variable with the name:" + name + " could not be found");
 		}
 	}
-	void LuaScript::loadTabElement(const std::string& name) const
+	void LuaScript::retrieveTabElement(const std::string& name) const
 	{
 		std::string tableName = name.substr(0, name.find_first_of('.')), tablefield = name.substr(name.find_first_of('.') + 1);
-		loadGlobal(tableName);
+		retrieveGlobal(tableName);
 		bool keepProcessing = true;
 		while (keepProcessing)
 		{
@@ -139,41 +162,27 @@ namespace Lua
 			}
 		}
 	}
-
-	void LuaScript::initialize(const std::vector<std::string>& dependencies, bool loadStandardLib)
+	void LuaScript::prepareForCall(const std::string& name) const
 	{
-		if (loadStandardLib)
-		{
-			luaL_openlibs(m_state);
-		}
-		for (const std::string& file : dependencies)
-		{
-			loadFile(file);
-		}
-		loadFile(m_fileName);
-	}
-	void LuaScript::loadFile(const std::string& name) const
-	{
-		if (luaL_dofile(m_state, name.c_str()))
-		{
-			error(lua_tostring(m_state, -1), true);
-		}
+		runningFunction(name);
+		loadFunction(name);
 	}
 	void LuaScript::loadFunction(const std::string& name) const
 	{
-		auto checkType = [&name, this]() {
-			if (!lua_isfunction(m_state, -1))
-			{
-				error(name + "is not a function");
-			}
-		};
-		if (name.find('.') == std::string::npos)
-			loadGlobal(name);
-		else
-			loadTabElement(name);
-		checkType();
+		retrieveLuaValue(name);
+		if (!lua_isfunction(m_state, -1))
+		{
+			error(name + "is not a function");
+		}
 	}
-	void LuaScript::call_Impl(int inputCount, int outputCount, const std::string& name) const
+	void LuaScript::runningFunction(const std::string& func) const
+	{
+		if (LuaScript::m_userFunctions.find(func) != LuaScript::m_userFunctions.end())
+		{
+			LuaScript::m_nextExecution = func;
+		}
+	}
+	void LuaScript::callFunc(int inputCount, int outputCount, const std::string& name) const
 	{
 		if (lua_pcall(m_state, inputCount, outputCount, 0) != 0)
 		{
@@ -204,7 +213,6 @@ namespace Lua
 				popLuaStack();
 		}
 	}
-	
 	void LuaScript::loadTableField(const std::string& field, int tableIndex) const
 	{
 		if (lua_istable(m_state, tableIndex))
@@ -253,11 +261,11 @@ namespace Lua
 	void LuaScript::registerFunctionImpl(const std::string& name)
 	{
 		lua_CFunction lua_F = [](lua_State* state)->int {
-			std::string name = LuaScript::m_userFunctionInCall;
-			auto function = LuaScript::m_userFunctions[name];
+			auto& function = LuaScript::m_userFunctions[LuaScript::m_nextExecution];
 			return function(state);
 		};
 		lua_pushcfunction(m_state, lua_F);
 		lua_setglobal(m_state, name.c_str());
 	}
+	
 }
