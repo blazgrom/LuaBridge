@@ -1,8 +1,9 @@
 ## LuaBz - A simple Lua binding for modern C++
 
 Feature list:
- * Get/Set variable's value
- * Function call
+ * Getting/Setting variable's value
+ * Registering C++ functions
+ * Calling a function
  * Utilities
  * User defined class support
 
@@ -10,7 +11,7 @@ Feature list:
 ```cpp
   LuaBz script("test.lua");
 ```
-#### Get/Set variable's value
+#### Getting/Setting variable's value
 
 * Lua 
 ```lua
@@ -24,7 +25,30 @@ Feature list:
   bool successWidth = script.set("width",newWidthValue);
   bool successPositionX = script.set("Position.x",newAxisXValue);
 ```
-#### Function Calls:
+#### Registering C++ functions
+```cpp
+  //std::function
+  std::function<int(int, int)> func = [](int a, int b)->int { return a+b; };
+  script.register_function("func", func);
+  //lambda
+  script.register_function("lambda", [](int a, int b)->int { return a+b; });
+  //normal function
+  int f(int a,int b)
+  {
+    return a+b;
+  }
+  script.register_function("f",f);
+  //Functor
+  struct Functor
+  {
+    int operator()(int a,int b)
+    {
+      return a+b;
+    }
+  };
+  script.register_function("Functor",Functor{})
+```
+#### Calling a function:
 ##### No input params and no return values
 * Lua
 ```lua
@@ -65,6 +89,5 @@ auto secondresult = script.call(LuaFunction<int, int, int> test("multipleInputMu
   std::map<std::string,std::string>info=script.tableInfo("Entity");
 ```
 #### User defined class support
- In order to use a user defined type in with the wrapper you have to define a constructor that accepts as paramater a LuaTable (see file LuaHelpers.hpp) and
- also define a user defined conversion from your type to a LuaTable
-
+ In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a LuaTable and a conversion from your type to a LuaTable.
+ For more info on LuaTable see LuaTable.hpp.
