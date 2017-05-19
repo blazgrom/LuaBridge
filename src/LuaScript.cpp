@@ -4,7 +4,6 @@ namespace Lua
 	//Static
 	std::string LuaScript::m_nextExecution;
 	std::unordered_map<std::string, std::function<int(lua_State*)>> LuaScript::m_userFunctions;
-
 	//C-tors
 	LuaScript::LuaScript(const std::string& file, bool loadStandardLib)
 		:

@@ -95,7 +95,7 @@ namespace Lua
 		template <class T,class... Args>
 		int callMemberFunction(T& user_f, std::tuple<Args...>&);
 		template <class T>
-		void pushLuaStack(const T& val) const;
+		void pushLuaStack(T val) const;
 		void popLuaStack(int count = 1) const;
 		template <class T>
 		T topLuaStack()const;
@@ -338,7 +338,7 @@ namespace Lua
 		return r;
 	}
 	template <class T>
-	void LuaScript::pushLuaStack(const T& val) const
+	void LuaScript::pushLuaStack(T val) const
 	{
 		lua_newtable(m_state);
 		auto table = static_cast<LuaTable>(val);
@@ -367,32 +367,45 @@ namespace Lua
 		}
 	}
 	template <>
-	inline void LuaScript::pushLuaStack<std::nullptr_t>(const std::nullptr_t&) const
+	inline void LuaScript::pushLuaStack<std::nullptr_t>(std::nullptr_t) const
 	{
 		lua_pushnil(m_state);
 	}
+	template<>
+	inline void LuaScript::pushLuaStack<std::string>(std::string val) const
+	{
+		lua_pushlstring(m_state, val.c_str(), val.size());
+	}
+	
+
+	template<>
+	inline void LuaScript::pushLuaStack<char>(char val) const
+	{
+		std::string s{ val };
+		pushLuaStack(s);
+	}
 	template <>
-	inline void LuaScript::pushLuaStack<bool>(const bool& val) const
+	inline void LuaScript::pushLuaStack<bool>(bool val) const
 	{
 		lua_pushboolean(m_state, val);
 	}
 	template<>
-	inline void LuaScript::pushLuaStack<std::string>(const std::string& val) const
+	inline void LuaScript::pushLuaStack<short>(short val) const
 	{
-		lua_pushlstring(m_state, val.c_str(), val.size());
+		lua_pushinteger(m_state, val);
 	}
 	template <>
-	inline void LuaScript::pushLuaStack<int>(const int& val) const
+	inline void LuaScript::pushLuaStack<int>(int val) const
 	{
 		lua_pushinteger(m_state, val);
 	}
 	template<>
-	inline void LuaScript::pushLuaStack<double>(const double& val) const
+	inline void LuaScript::pushLuaStack<double>(double val) const
 	{
 		lua_pushnumber(m_state, val);
 	}
 	template<>
-	inline void LuaScript::pushLuaStack<float>(const float& val) const
+	inline void LuaScript::pushLuaStack<float>(float val) const
 	{
 		pushLuaStack(static_cast<double>(val));
 	}
