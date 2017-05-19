@@ -266,5 +266,21 @@ namespace Lua
 		lua_pushcfunction(m_state, lua_F);
 		lua_setglobal(m_state, name.c_str());
 	}
-	
+	void LuaScript::pushLuaStack(std::nullptr_t) const
+	{
+		lua_pushnil(m_state);
+	}
+	void LuaScript::pushLuaStack(std::string val) const
+	{
+		lua_pushlstring(m_state, val.c_str(), val.size());
+	}
+	void LuaScript::pushLuaStack(char val) const
+	{
+		std::string s{ val };
+		pushLuaStack(s);
+	}
+	void LuaScript::pushLuaStack(bool val) const
+	{
+		lua_pushboolean(m_state, val);
+	}
 }

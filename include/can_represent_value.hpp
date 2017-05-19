@@ -4,15 +4,29 @@
 #include <type_traits>
 namespace Utils
 {
+	//Signed - Signed
 	template <class OriginalT, class NewT>
 	constexpr  typename std::enable_if<std::is_signed<OriginalT>::value && std::is_signed<NewT>::value, bool>::type can_represent_min()
 	{
 		return std::numeric_limits<OriginalT>::min() >= std::numeric_limits<NewT>::min();
 	}
+	//Unsigned - Unsigned
 	template <class OriginalT, class NewT >
 	constexpr typename std::enable_if<std::is_unsigned<OriginalT>::value && std::is_unsigned<NewT>::value, bool>::type can_represent_min()
 	{
 		return true;
+	}
+	//Unsigned - Signed
+	template <class OriginalT, class NewT >
+	constexpr typename std::enable_if<std::is_unsigned<OriginalT>::value && std::is_signed<NewT>::value, bool>::type can_represent_min()
+	{
+		return true;
+	}	
+	//Signed - Unsigned
+	template <class OriginalT, class NewT >
+	constexpr typename std::enable_if<std::is_signed<OriginalT>::value && std::is_unsigned<NewT>::value, bool>::type can_represent_min()
+	{
+		return false;
 	}
 	template <class OriginalT, class NewT>
 	constexpr bool can_represent_max()

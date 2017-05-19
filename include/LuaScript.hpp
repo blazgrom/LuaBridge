@@ -9,8 +9,8 @@
 #include "lua.hpp"
 #include "LuaTable.hpp"
 #include "LuaFunction.hpp"
-#include "tuple_utils.hpp"
 #include "callable_traits.hpp"
+#include "can_represent_value.hpp"
 namespace Lua
 {
 
@@ -39,9 +39,6 @@ namespace Lua
 		T get(const std::string& name) const;
 		template <class T>
 		bool set(const std::string& name, T&& val) const;
-
-
-
 		template <class... R, class... Args>
 		std::tuple<R...> call(const LuaFunction<R...>& f, Args&&... args) const;
 		template <class First,class Second, class... Args>
@@ -94,13 +91,42 @@ namespace Lua
 		void registerFunctionImpl(const std::string& name);
 		template <class T,class... Args>
 		int callMemberFunction(T& user_f, std::tuple<Args...>&);
-		template <class T>
-		void pushLuaStack(T val) const;
 		void popLuaStack(int count = 1) const;
 		template <class T>
 		T topLuaStack()const;
 		template <class T>
 		T getLuaStackElement(int index = -1) const;
+		
+		//Enable this only if can be converted to LuaTable
+		template <class T>
+		typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type pushLuaStack(T val) const;
+		//Always available
+		void pushLuaStack(std::nullptr_t) const;
+		void pushLuaStack(std::string val) const;
+		void pushLuaStack(char val) const;
+		void pushLuaStack(bool val) const;
+		//Available if lua_Integer can represent the value
+		template<typename = typename std::enable_if<Utils::can_represent_value<short, lua_Integer>()>::type>
+		void pushLuaStack(short val) const;
+		template<typename = typename std::enable_if<Utils::can_represent_value<unsigned short, lua_Integer>()>::type>
+		void pushLuaStack(unsigned short val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<int, lua_Integer>()>::type>
+		void pushLuaStack(int val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<unsigned int, lua_Integer>()>::type>
+		void pushLuaStack(unsigned int val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<long, lua_Integer>()>::type>
+		void pushLuaStack(long val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long, lua_Integer>()>::type>
+		void pushLuaStack(unsigned long val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<long long, lua_Integer>()>::type>
+		void pushLuaStack(long long val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long long, lua_Integer>()>::type>
+		void pushLuaStack(unsigned long long val) const;
+		//Available if lua_Number can represent the value
+		template <typename = typename std::enable_if < Utils::can_represent_value <float, lua_Number>()>::type >
+		void pushLuaStack(float val) const;
+		template <typename = typename std::enable_if<Utils::can_represent_value<double, lua_Number>()>::type>
+		void pushLuaStack(double val) const;
 	};
 	//Get/set
 	template <class T>
@@ -338,7 +364,16 @@ namespace Lua
 		return r;
 	}
 	template <class T>
-	void LuaScript::pushLuaStack(T val) const
+	T LuaScript::topLuaStack()const
+	{
+		const int topElement = -1;
+		T result = getLuaStackElement<T>(topElement);
+		popLuaStack();
+		return result;
+	}
+	
+	template <class T>
+	typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type LuaScript::pushLuaStack(T val) const
 	{
 		lua_newtable(m_state);
 		auto table = static_cast<LuaTable>(val);
@@ -366,56 +401,55 @@ namespace Lua
 			lua_settable(m_state, -3); //automatically pops [key,value] 
 		}
 	}
-	template <>
-	inline void LuaScript::pushLuaStack<std::nullptr_t>(std::nullptr_t) const
-	{
-		lua_pushnil(m_state);
-	}
-	template<>
-	inline void LuaScript::pushLuaStack<std::string>(std::string val) const
-	{
-		lua_pushlstring(m_state, val.c_str(), val.size());
-	}
-	
-
-	template<>
-	inline void LuaScript::pushLuaStack<char>(char val) const
-	{
-		std::string s{ val };
-		pushLuaStack(s);
-	}
-	template <>
-	inline void LuaScript::pushLuaStack<bool>(bool val) const
-	{
-		lua_pushboolean(m_state, val);
-	}
-	template<>
-	inline void LuaScript::pushLuaStack<short>(short val) const
+	template<typename = typename std::enable_if<Utils::can_represent_value<short, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(short val) const
 	{
 		lua_pushinteger(m_state, val);
 	}
-	template <>
-	inline void LuaScript::pushLuaStack<int>(int val) const
+	template<typename = typename std::enable_if<Utils::can_represent_value<unsigned short, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(unsigned short val) const
 	{
 		lua_pushinteger(m_state, val);
 	}
-	template<>
-	inline void LuaScript::pushLuaStack<double>(double val) const
+	template <typename = typename std::enable_if<Utils::can_represent_value<int, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(int val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	template <typename = typename std::enable_if<Utils::can_represent_value<unsigned int, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(unsigned int val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	template <typename = typename std::enable_if<Utils::can_represent_value<long, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(long val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(unsigned long val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	template <typename = typename std::enable_if<Utils::can_represent_value<long long, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(long long val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long long, lua_Integer>()>::type>
+	void LuaScript::pushLuaStack(unsigned long long val) const
+	{
+		lua_pushinteger(m_state, val);
+	}
+	template <typename = typename std::enable_if < Utils::can_represent_value <float, lua_Number>()>::type >
+	void LuaScript::pushLuaStack(float val) const
 	{
 		lua_pushnumber(m_state, val);
 	}
-	template<>
-	inline void LuaScript::pushLuaStack<float>(float val) const
+	template <typename = typename std::enable_if<Utils::can_represent_value<double, lua_Number>()>::type>
+	void LuaScript::pushLuaStack(double val) const
 	{
-		pushLuaStack(static_cast<double>(val));
-	}
-	template <class T>
-	T LuaScript::topLuaStack()const
-	{
-		const int topElement = -1;
-		T result = getLuaStackElement<T>(topElement);
-		popLuaStack();
-		return result;
+		lua_pushnumber(m_state, val);
 	}
 }
 #endif // !LUA_SCRIPT_HPP
