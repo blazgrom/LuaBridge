@@ -38,5 +38,8 @@ namespace Utils
 	{
 		return can_represent_max<OriginalT, NewT>() && can_represent_min<OriginalT, NewT>();
 	}
+	//Struct for when you need type dispatching
+	template <class OriginalT, class NewT>
+	struct Can_represent_value :std::integral_constant<bool, can_represent_value<OriginalT, NewT>()> {};
 }	
 #endif // !CAN_REPRESENT_VALUE_HPP

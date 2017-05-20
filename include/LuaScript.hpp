@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <cassert>
 #include <functional>
 #include <unordered_map>
 #include "lua.hpp"
@@ -95,9 +96,17 @@ namespace Lua
 		template <class T>
 		T topLuaStack()const;
 		template <class T>
-		T getLuaStackElement(int index = -1) const;
+		T getLuaStack(int index = -1) const;
 		
-		//Enable this only if can be converted to LuaTable
+		template<class T>
+		T getLuaNumber(int index, std::true_type) const;
+		template <class T>
+		T getLuaNumber(int index, std::false_type) const;
+		template <class T>
+		T getLuaInteger(int index, std::true_type) const;
+		template <class T>
+		T getLuaInteger(int index, std::false_type) const;
+		//available only if T can be converted to Lua::LuaTable
 		template <class T>
 		typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type pushLuaStack(T val) const;
 		//Always available
@@ -272,7 +281,7 @@ namespace Lua
 	T LuaScript::getOutputImpl(int index) const
 	{
 		if (index != 0)
-			return  getLuaStackElement<T>(index*-1);
+			return  getLuaStack<T>(index*-1);
 		else
 			throw std::runtime_error("You cannot get return values, because there are none");
 	}
@@ -322,35 +331,27 @@ namespace Lua
 		pushLuaStack(result);
 		return 1;
 	}
+	
 	template <class T>
-	T LuaScript::getLuaStackElement(int) const
+	T LuaScript::topLuaStack()const
 	{
+		const int topElement = -1;
+		T result = getLuaStack<T>(topElement);
+		popLuaStack();
+		return result;
+	}
+	template <class T>
+	T LuaScript::getLuaStack(int) const
+	{
+		static_assert(std::is_constructible<T, LuaTable>::value, "Type cannot be constructed from a LuaTable");
 		if (!lua_istable(m_state, -1))
 		{
 			error("The type you are trying to retrieve cannot be constructed with a LuaTable");
 		}
 		return T{ createLuaTable() };
 	}
-	template <>
-	inline double LuaScript::getLuaStackElement<double>(int index) const
-	{
-		auto r = static_cast<double>(lua_tonumber(m_state, index));
-		return r;
-	}
-	template <>
-	inline float LuaScript::getLuaStackElement<float>(int index) const
-	{
-		auto r = static_cast<float>(getLuaStackElement<double>(index));
-		return r;
-	}
-	template <>
-	inline int LuaScript::getLuaStackElement<int>(int index) const
-	{
-		auto r = static_cast<int>(lua_tointeger(m_state, index));
-		return r;
-	}
 	template<>
-	inline std::string LuaScript::getLuaStackElement<std::string>(int index) const
+	inline std::string LuaScript::getLuaStack<std::string>(int index) const
 	{
 		size_t strLength = 0;
 		const char* str = lua_tolstring(m_state, index, &strLength);
@@ -358,20 +359,95 @@ namespace Lua
 		return r;
 	}
 	template <>
-	inline bool LuaScript::getLuaStackElement<bool>(int index) const
+	inline char LuaScript::getLuaStack<char>(int index) const
 	{
-		auto  r = lua_toboolean(m_state, index) != 0;
-		return r;
+		auto str = getLuaStack<std::string>(index);
+		if (str.length() > 1)
+		{
+			throw std::runtime_error("The value you are trying to retrieve has more than one characters");
+		}
+		return str[0];
 	}
-	template <class T>
-	T LuaScript::topLuaStack()const
+	template <>
+	inline bool LuaScript::getLuaStack<bool>(int index) const
 	{
-		const int topElement = -1;
-		T result = getLuaStackElement<T>(topElement);
-		popLuaStack();
+		return lua_toboolean(m_state, index) != 0;
+	}
+	template <>
+	inline short LuaScript::getLuaStack<short>(int index) const
+	{
+		return getLuaInteger<short>(index, Utils::Can_represent_value<lua_Integer, short>{});
+	}
+	template <>
+	inline unsigned short LuaScript::getLuaStack<unsigned short>(int index) const
+	{
+		return getLuaInteger<unsigned short>(index, Utils::Can_represent_value<lua_Integer,unsigned short>{});
+	}
+	template <>
+	inline int LuaScript::getLuaStack<int>(int index) const
+	{
+		return getLuaInteger<int>(index, Utils::Can_represent_value<lua_Integer, int>{});
+	}
+	template <>
+	inline unsigned int LuaScript::getLuaStack<unsigned int>(int index) const
+	{
+		return getLuaInteger<unsigned int>(index, Utils::Can_represent_value<lua_Integer,unsigned int>{});
+	}
+	template <>
+	inline long LuaScript::getLuaStack<long>(int index) const
+	{
+		return getLuaInteger<long>(index, Utils::Can_represent_value<lua_Integer, long>{});
+	}
+	template <>
+	inline unsigned long LuaScript::getLuaStack<unsigned long>(int index) const
+	{
+		return getLuaInteger<unsigned long>(index, Utils::Can_represent_value<lua_Integer,unsigned long>{});
+	}
+	template <>
+	inline long long LuaScript::getLuaStack<long long>(int index) const
+	{
+		return getLuaInteger<long long>(index, Utils::Can_represent_value<lua_Integer,long long>{});
+	}
+	template <>
+	inline unsigned long long LuaScript::getLuaStack<unsigned long long>(int index) const
+	{
+		return getLuaInteger<unsigned long long>(index, Utils::Can_represent_value<lua_Integer, unsigned long long>{});
+	}
+	template <>
+	inline double LuaScript::getLuaStack<double>(int index) const
+	{
+		return getLuaNumber<double>(index, Utils::Can_represent_value<lua_Number, double>{});
+	}
+	template <>
+	inline float LuaScript::getLuaStack<float>(int index) const
+	{
+		return getLuaNumber<float>(index, Utils::Can_represent_value<lua_Number, float>{});
+	}
+	template<class T>
+	T LuaScript::getLuaNumber(int index, std::true_type) const
+	{
+		T result=static_cast<T>(lua_tonumber(m_state, index));
 		return result;
 	}
-	
+	template <class T>
+	T LuaScript::getLuaNumber(int index, std::false_type) const
+	{
+		assert(false, "The type " + typeid(T).name() + "cannot represent a lua_Number");
+		return T{};
+	}
+	template <class T>
+	T LuaScript::getLuaInteger(int index, std::true_type) const
+	{
+		T result = static_cast<T>(lua_tointeger(m_state, index));
+		return result;
+	}
+	template <class T>
+	T LuaScript::getLuaInteger(int index, std::false_type) const
+	{
+		assert(false, "The type " + typeid(T).name() + "cannot represent a lua_Integer");
+		return T{};
+	}
+	//Push value to lua stack
 	template <class T>
 	typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type LuaScript::pushLuaStack(T val) const
 	{
