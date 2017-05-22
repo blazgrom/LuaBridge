@@ -14,7 +14,6 @@
 #include "can_represent_value.hpp"
 namespace Lua
 {
-
 	class LuaScript
 	{
 	private:
@@ -23,7 +22,7 @@ namespace Lua
 		bool m_open;
 		std::vector<std::string> m_localFunctions;
 		static std::unordered_map<std::string, std::function<int(lua_State*)>> m_userFunctions;
-		static std::string m_nextExecution; // The name of the user function that would be executed next
+		static std::string m_userF; // The name of the registered user function that will be called
 	public:
 		explicit LuaScript(const std::string& file, bool loadStandardLib = true);
 		LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib = true);
@@ -68,15 +67,15 @@ namespace Lua
 		void runFile(const std::string& name) const;
 		void retrieveLuaValue(const std::string& name) const;
 		void retrieveGlobal(const std::string& name) const;
-		void retrieveTabElement(const std::string& name) const;
+		void retrieveTableElement(const std::string& name) const;
 		template <class T>
 		bool setGlobal(const std::string& name, const T& val) const;
 		template <class T>
-		bool setTabElement(const std::string& name, const T& val) const;
+		bool setTableElement(const std::string& name, const T& val) const;
 		void prepareForCall(const std::string& name) const;
 		void loadFunction(const std::string& name) const;
-		void runningFunction(const std::string& func) const;
-		void callFunc(int inputCount, int outputCount, const std::string& name) const;
+		void setUserFunctionToRun(const std::string& func) const;
+		void callImpl(int inputCount, int outputCount, const std::string& name) const;
 		void error(const std::string& message, bool popStack = false) const;
 		void loadTableField(const std::string& field, int tableIndex = -1) const;
 		void iterateTable(std::function<void(const std::string&)> predicate, bool popLastValue = true) const;
@@ -97,7 +96,6 @@ namespace Lua
 		T topLuaStack()const;
 		template <class T>
 		T getLuaStack(int index = -1) const;
-		
 		template<class T>
 		T getLuaNumber(int index, std::true_type) const;
 		template <class T>
@@ -106,15 +104,12 @@ namespace Lua
 		T getLuaInteger(int index, std::true_type) const;
 		template <class T>
 		T getLuaInteger(int index, std::false_type) const;
-		//available only if T can be converted to Lua::LuaTable
 		template <class T>
 		typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type pushLuaStack(T val) const;
-		//Always available
 		void pushLuaStack(std::nullptr_t) const;
 		void pushLuaStack(std::string val) const;
 		void pushLuaStack(char val) const;
 		void pushLuaStack(bool val) const;
-		//Available if lua_Integer can represent the value
 		template<typename = typename std::enable_if<Utils::can_represent_value<short, lua_Integer>()>::type>
 		void pushLuaStack(short val) const;
 		template<typename = typename std::enable_if<Utils::can_represent_value<unsigned short, lua_Integer>()>::type>
@@ -131,13 +126,11 @@ namespace Lua
 		void pushLuaStack(long long val) const;
 		template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long long, lua_Integer>()>::type>
 		void pushLuaStack(unsigned long long val) const;
-		//Available if lua_Number can represent the value
 		template <typename = typename std::enable_if < Utils::can_represent_value <float, lua_Number>()>::type >
 		void pushLuaStack(float val) const;
 		template <typename = typename std::enable_if<Utils::can_represent_value<double, lua_Number>()>::type>
 		void pushLuaStack(double val) const;
 	};
-	//Get/set
 	template <class T>
 	T LuaScript::get(const std::string& name) const
 	{
@@ -150,7 +143,7 @@ namespace Lua
 		if (name.find('.') == std::string::npos)
 			return setGlobal(name, val);
 		else
-			return setTabElement(name, val);
+			return setTableElement(name, val);
 	}
 	template <class T>
 	bool LuaScript::setGlobal(const std::string& name, const T& val) const
@@ -167,7 +160,7 @@ namespace Lua
 		}
 	}
 	template <class T>
-	bool LuaScript::setTabElement(const std::string& name, const T& val) const
+	bool LuaScript::setTableElement(const std::string& name, const T& val) const
 	{
 		try
 		{
@@ -197,13 +190,12 @@ namespace Lua
 			return false;
 		}
 	}
-	//Function call 
 	template <class... R, class... Args>
 	std::tuple<R...> LuaScript::call(const LuaFunction<R...>& f, Args&&... args) const
 	{
 		prepareForCall(f.name);
 		const int inputCount = setParameters(std::forward<Args>(args)...);
-		callFunc(inputCount, f.resultCount, f.name);
+		callImpl(inputCount, f.resultCount, f.name);
 		return getOutput<R ...>(f.resultCount);
 	}
 	template <class First, class Second, class... Args>
@@ -212,7 +204,7 @@ namespace Lua
 		prepareForCall(f.name);
 		const int inputCount = setParameters(std::forward<Args>(args)...);
 		const int outputCount = 2;
-		callFunc(inputCount, outputCount, f.name);
+		callImpl(inputCount, outputCount, f.name);
 		auto temp_tuple = getOutput<First, Second>(f.resultCount);
 		return std::make_pair(std::get<0>(temp_tuple), std::get<1>(temp_tuple));
 	}
@@ -221,7 +213,7 @@ namespace Lua
 	{
 		prepareForCall(f.name);
 		const int inputCount = setParameters(std::forward<Args>(args)...);
-		callFunc(inputCount, 1, f.name);
+		callImpl(inputCount, 1, f.name);
 		return std::get<0>(getOutput<T>(f.resultCount));
 	}
 	template <class...Args>
@@ -229,14 +221,14 @@ namespace Lua
 	{
 		prepareForCall(f.name);
 		const int inputCount = setParameters(std::forward<Args>(args)...);
-		callFunc(inputCount, f.resultCount, f.name);
+		callImpl(inputCount, f.resultCount, f.name);
 	}
 	template <class... T>
 	std::tuple<T...> LuaScript::call(const LuaFunction<T...>& f) const
 	{
 		prepareForCall(f.name);
 		const int inputCount = 0;
-		callFunc(inputCount, f.resultCount, f.name);
+		callImpl(inputCount, f.resultCount, f.name);
 		return getOutput<T...>(f.resultCount);
 	}
 	template <class First, class Second>
@@ -244,7 +236,7 @@ namespace Lua
 	{
 		prepareForCall(f.name);
 		const int inputCount = 0, outputCount = 2;
-		callFunc(inputCount, outputCount, f.name);
+		callImpl(inputCount, outputCount, f.name);
 		auto temp_tuple=getOutput<T>(f.resultCount);
 		return std::make_pair(std::get<0>(temp_tuple), std::get<1>(temp_tuple));
 	}
@@ -253,10 +245,9 @@ namespace Lua
 	{
 		prepareForCall(f.name);
 		const int outputCount = 1,inputCount=0;
-		callFunc(inputCount, outputCount, f.name);
+		callImpl(inputCount, outputCount, f.name);
 		return std::get<0>(getOutput<T>(f.resultCount));
 	}
-	//Function utilities
 	template <class T, class... Args>
 	int LuaScript::setParameters(T&& value, Args&&... args) const
 	{
@@ -285,7 +276,11 @@ namespace Lua
 		else
 			throw std::runtime_error("You cannot get return values, because there are none");
 	}
-	//Register C++ function
+	template <class T>
+	void LuaScript::F()
+	{
+
+	}
 	template<class R, class... Args>
 	void LuaScript::register_function(const std::string& name, std::function<R(Args...)>& user_f)
 	{
@@ -331,7 +326,6 @@ namespace Lua
 		pushLuaStack(result);
 		return 1;
 	}
-	
 	template <class T>
 	T LuaScript::topLuaStack()const
 	{
@@ -447,7 +441,6 @@ namespace Lua
 		assert(false, "The type " + typeid(T).name() + "cannot represent a lua_Integer");
 		return T{};
 	}
-	//Push value to lua stack
 	template <class T>
 	typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type LuaScript::pushLuaStack(T val) const
 	{

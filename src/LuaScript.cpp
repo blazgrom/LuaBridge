@@ -2,7 +2,7 @@
 namespace Lua
 {
 	//Static
-	std::string LuaScript::m_nextExecution;
+	std::string LuaScript::m_userF;
 	std::unordered_map<std::string, std::function<int(lua_State*)>> LuaScript::m_userFunctions;
 	//C-tors
 	LuaScript::LuaScript(const std::string& file, bool loadStandardLib)
@@ -45,7 +45,7 @@ namespace Lua
 	void LuaScript::call(const LuaFunction<void>& f) const
 	{
 		prepareForCall(f.name);
-		callFunc(0, f.resultCount, f.name);
+		callImpl(0, f.resultCount, f.name);
 	}
 	std::unordered_map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
 	{
@@ -61,7 +61,7 @@ namespace Lua
 		if (table.find('.') == std::string::npos)
 			retrieveGlobal(table);
 		else
-			retrieveTabElement(table);
+			retrieveTableElement(table);
 		process();
 		return info;
 	}
@@ -130,7 +130,7 @@ namespace Lua
 		if (name.find('.') == std::string::npos)
 			retrieveGlobal(name);
 		else
-			retrieveTabElement(name);
+			retrieveTableElement(name);
 	}
 	void LuaScript::retrieveGlobal(const std::string& name) const
 	{
@@ -140,7 +140,7 @@ namespace Lua
 			error("A variable with the name:" + name + " could not be found");
 		}
 	}
-	void LuaScript::retrieveTabElement(const std::string& name) const
+	void LuaScript::retrieveTableElement(const std::string& name) const
 	{
 		std::string tableName = name.substr(0, name.find_first_of('.')), tablefield = name.substr(name.find_first_of('.') + 1);
 		retrieveGlobal(tableName);
@@ -163,7 +163,7 @@ namespace Lua
 	}
 	void LuaScript::prepareForCall(const std::string& name) const
 	{
-		runningFunction(name);
+		setUserFunctionToRun(name);
 		loadFunction(name);
 	}
 	void LuaScript::loadFunction(const std::string& name) const
@@ -174,14 +174,14 @@ namespace Lua
 			error(name + "is not a function");
 		}
 	}
-	void LuaScript::runningFunction(const std::string& func) const
+	void LuaScript::setUserFunctionToRun(const std::string& func) const
 	{
 		if (LuaScript::m_userFunctions.find(func) != LuaScript::m_userFunctions.end())
 		{
-			LuaScript::m_nextExecution = func;
+			LuaScript::m_userF = func;
 		}
 	}
-	void LuaScript::callFunc(int inputCount, int outputCount, const std::string& name) const
+	void LuaScript::callImpl(int inputCount, int outputCount, const std::string& name) const
 	{
 		if (lua_pcall(m_state, inputCount, outputCount, 0) != 0)
 		{
@@ -260,7 +260,7 @@ namespace Lua
 	void LuaScript::registerFunctionImpl(const std::string& name)
 	{
 		lua_CFunction lua_F = [](lua_State* state)->int {
-			auto& function = LuaScript::m_userFunctions[LuaScript::m_nextExecution];
+			auto& function = LuaScript::m_userFunctions[LuaScript::m_userF];
 			return function(state);
 		};
 		lua_pushcfunction(m_state, lua_F);
