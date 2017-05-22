@@ -1,4 +1,4 @@
-## LuaBz - Modern C++ bindings to Lua
+## LuaBz - Binding between C++ and Lua
 
 Feature list:
  * Getting/Setting variable's value
