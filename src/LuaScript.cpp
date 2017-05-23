@@ -176,7 +176,7 @@ namespace Lua
 	}
 	void LuaScript::setUserFunctionToRun(const std::string& func) const
 	{
-		if (LuaScript::m_userFunctions.find(func) != LuaScript::m_userFunctions.end())
+		if (LuaScript::m_userFunctions.find(func) != LuaScript::m_userFunctions.end() && std::find(m_localFunctions.cbegin(), m_localFunctions.cend(),func)!= m_localFunctions.cend())
 		{
 			LuaScript::m_userF = func;
 		}
