@@ -31,12 +31,12 @@ namespace Utils
 	template <class OriginalT, class NewT>
 	constexpr bool can_represent_max()
 	{
-		return (std::numeric_limits<OriginalT>::max() <= std::numeric_limits<NewT>::max());
+		return (std::numeric_limits<OriginalT>::max() <= std::numeric_limits<NewT>::max());//signed - unsigned mismatch // TODO
 	}
 	template<class OriginalT, class NewT>
 	constexpr bool  can_represent_value()
 	{
-		return can_represent_max<OriginalT, NewT>() && can_represent_min<OriginalT, NewT>();
+		return can_represent_max<OriginalT, NewT>() && can_represent_min<OriginalT, NewT>();//signed - unsigned mismatch  // TODO
 	}
 	//Struct for when you need type dispatching
 	template <class OriginalT, class NewT>

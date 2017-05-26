@@ -61,8 +61,9 @@ namespace Lua
 		template<class R, class... Args>
 		void register_function(const std::string& name, R(*user_f)(Args...));
 		template<class T>
-		void register_function(const std::string& name, T&& user_f);
+		void register_function(const std::string& name, T& user_f);
 	private:
+		
 		void init(const std::vector<std::string>& dependencies, bool loadStandardLib);
 		void runFile(const std::string& name) const;
 		void retrieveLuaValue(const std::string& name) const;
@@ -89,8 +90,12 @@ namespace Lua
 		template <class T>
 		int setParameters(T&& value) const;
 		void registerFunctionImpl(const std::string& name);
-		template <class T,class... Args>
-		int callMemberFunction(T& user_f, std::tuple<Args...>&);
+		template <class T>
+		struct RegisteredFunctionReturnType {};
+		template <class T,class R, class... Args>
+		int callRegisteredFunction(T& user_f, RegisteredFunctionReturnType<R>& , std::tuple<Args...>&);
+		template <class T, class... Args>
+		int callRegisteredFunction(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&);
 		void popLuaStack(int count = 1) const;
 		template <class T>
 		T topLuaStack()const;
@@ -289,9 +294,9 @@ namespace Lua
 			int inputCount = lua_gettop(m_state);
 			if (inputCount==sizeof...(Args))
 			{
-				auto result = user_f(topLuaStack<Args>()...);
-				pushLuaStack(result);
-				return 1;
+				std::tuple<Args...> arguments={};
+				RegisteredFunctionReturnType<R> returnType = {};
+				return callRegisteredFunction(user_f, returnType, arguments);
 			}
 			return 0;
 		};
@@ -304,28 +309,36 @@ namespace Lua
 		register_function(name, func);
 	}
 	template<class T>
-	void LuaScript::register_function(const std::string& name, T&& user_f)
+	void LuaScript::register_function(const std::string& name, T& user_f)
 	{
 		m_localFunctions.push_back(name);
 		LuaScript::m_userFunctions[name] = [this, user_f](lua_State*) mutable ->int   {
 			int stackTop = lua_gettop(m_state);
 			if (stackTop == Utils::callable_traits<T>::args_count)
 			{
-				Utils::callable_arg_types<T> t;
-				return callMemberFunction(user_f, t);
+				Utils::callable_arg_types<T> arguments = {};
+				RegisteredFunctionReturnType<Utils::callable_return_type<T>> returnType = {};
+				return callRegisteredFunction(user_f, returnType, arguments);
 			}
 			return 0;
 		};
 		registerFunctionImpl(name);
 	}
 	//Utilities
-	template <class T, class... Args>
-	int LuaScript::callMemberFunction(T& user_f, std::tuple<Args...>&)
+	template <class T,class R, class... Args >
+	int LuaScript::callRegisteredFunction(T& user_f, RegisteredFunctionReturnType<R>& ,std::tuple<Args...>&)
 	{
 		auto result = user_f(topLuaStack<Args>()...);//This won't work when passing data from lua to c++, test it !
 		pushLuaStack(result);
 		return 1;
 	}
+	template <class T, class... Args>
+	int LuaScript::callRegisteredFunction(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&)
+	{
+		user_f(topLuaStack<Args>()...);//This won't work when passing data from lua to c++, test it !
+		return 0;
+	}
+
 	template <class T>
 	T LuaScript::topLuaStack()const
 	{
