@@ -322,7 +322,7 @@ namespace Lua
 	template <class T, class... Args>
 	int LuaScript::callMemberFunction(T& user_f, std::tuple<Args...>&)
 	{
-		auto result = user_f(topLuaStack<Args>()...);
+		auto result = user_f(topLuaStack<Args>()...);//This won't work when passing data from lua to c++, test it !
 		pushLuaStack(result);
 		return 1;
 	}

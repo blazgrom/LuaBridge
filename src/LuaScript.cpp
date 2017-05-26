@@ -35,11 +35,7 @@ namespace Lua
 	//D-tor
 	LuaScript::~LuaScript()
 	{
-		lua_close(m_state);
-		for (const auto& name : m_localFunctions)
-		{
-			LuaScript::m_userFunctions.erase(name);
-		}
+		close();
 	}
 	//Public
 	void LuaScript::call(const LuaFunction<void>& f) const
@@ -78,6 +74,10 @@ namespace Lua
 	void LuaScript::close() noexcept
 	{
 		lua_close(m_state);
+		for (const auto& name : m_localFunctions)
+		{
+			LuaScript::m_userFunctions.erase(name);
+		}
 		m_open = false;
 	}
 	bool LuaScript::change(const std::string& newFile) noexcept
@@ -248,7 +248,9 @@ namespace Lua
 				table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
 			}
 			break;
-			case LUA_TFUNCTION://Ignore functions and tables
+			//Ignore functions and tables, right now LuaValue cannot rappresent the value of
+			//a cfunction or a table
+			case LUA_TFUNCTION:
 			case LUA_TTABLE:
 				popLuaStack();
 				break;
