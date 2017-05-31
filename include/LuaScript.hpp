@@ -55,7 +55,7 @@ namespace Lua
 		std::pair<First,Second> call(const LuaFunction<First,Second>& f) const;
 		void call(const LuaFunction<void>& f) const;
 		void run(std::string luaCode);
-		std::unordered_map<std::string, std::string> tableInfo(const std::string& table) const;
+		std::unordered_map<std::string, std::string> table_info(const std::string& table) const;
 		template<class R, class... Args>
 		void register_function(const std::string& name, std::function<R(Args...)>& user_f);
 		template<class R, class... Args>
@@ -135,6 +135,7 @@ namespace Lua
 		void pushLuaStack(float val) const;
 		template <typename = typename std::enable_if<Utils::can_represent_value<double, lua_Number>()>::type>
 		void pushLuaStack(double val) const;
+		
 	};
 	template <class T>
 	T LuaScript::get(const std::string& name) const

@@ -43,7 +43,7 @@ namespace Lua
 		prepareForCall(f.name);
 		callImpl(0, f.resultCount, f.name);
 	}
-	std::unordered_map<std::string, std::string> LuaScript::tableInfo(const std::string& table) const
+	std::unordered_map<std::string, std::string> LuaScript::table_info(const std::string& table) const
 	{
 		std::unordered_map<std::string, std::string> info;
 		auto process = [&info, this]() {
@@ -261,13 +261,15 @@ namespace Lua
 	}
 	void LuaScript::registerFunctionImpl(const std::string& name)
 	{
-		lua_CFunction lua_F = [](lua_State* state)->int {
+		lua_CFunction lua_F = [](lua_State* state)->int 
+		{
 			auto& function = LuaScript::m_userFunctions[LuaScript::m_userF];
 			return function(state);
 		};
 		lua_pushcfunction(m_state, lua_F);
 		lua_setglobal(m_state, name.c_str());
 	}
+	
 	void LuaScript::pushLuaStack(std::nullptr_t) const
 	{
 		lua_pushnil(m_state);
