@@ -1,4 +1,5 @@
 #include "LuaScript.hpp"
+#include <iostream>
 namespace Lua
 {
 	//Static
@@ -261,15 +262,19 @@ namespace Lua
 	}
 	void LuaScript::registerFunctionImpl(const std::string& name)
 	{
+		// The name of functions that is being registered is stored as an upvalue for the function itself
+		pushLuaStack(name);
 		lua_CFunction lua_F = [](lua_State* state)->int 
 		{
-			auto& function = LuaScript::m_userFunctions[LuaScript::m_userF];
+			size_t strLength = 0;
+			const char* str = lua_tolstring(state, lua_upvalueindex(1), &strLength);//retrieve upvalue
+			std::string functionName{ str, strLength };
+			auto& function = LuaScript::m_userFunctions[functionName];
 			return function(state);
 		};
-		lua_pushcfunction(m_state, lua_F);
+		lua_pushcclosure(m_state, lua_F, 1);
 		lua_setglobal(m_state, name.c_str());
 	}
-	
 	void LuaScript::pushLuaStack(std::nullptr_t) const
 	{
 		lua_pushnil(m_state);
