@@ -1,10 +1,10 @@
 #include "LuaScript.hpp"
 #include <iostream>
+#include <algorithm>
 namespace Lua
 {
 	//Static
-	std::string LuaScript::m_userF;
-	std::unordered_map<std::string, std::function<int(lua_State*)>> LuaScript::m_userFunctions;
+	std::vector<LuaScript::LuaCF_Intermediary> LuaScript::m_registeredFunctions;
 	//C-tors
 	LuaScript::LuaScript(const std::string& file, bool loadStandardLib)
 		:
@@ -75,9 +75,9 @@ namespace Lua
 	void LuaScript::close() noexcept
 	{
 		lua_close(m_state);
-		for (const auto& name : m_localFunctions)
+		for ( auto index : m_localFunctions)
 		{
-			LuaScript::m_userFunctions.erase(name);
+			m_registeredFunctions.erase(m_registeredFunctions.begin() + index);
 		}
 		m_open = false;
 	}
@@ -164,7 +164,6 @@ namespace Lua
 	}
 	void LuaScript::prepareForCall(const std::string& name) const
 	{
-		setUserFunctionToRun(name);
 		loadFunction(name);
 	}
 	void LuaScript::loadFunction(const std::string& name) const
@@ -173,13 +172,6 @@ namespace Lua
 		if (!lua_isfunction(m_state, -1))
 		{
 			error(name + "is not a function");
-		}
-	}
-	void LuaScript::setUserFunctionToRun(const std::string& func) const
-	{
-		if (LuaScript::m_userFunctions.find(func) != LuaScript::m_userFunctions.end() && std::find(m_localFunctions.cbegin(), m_localFunctions.cend(),func)!= m_localFunctions.cend())
-		{
-			LuaScript::m_userF = func;
 		}
 	}
 	void LuaScript::callImpl(int inputCount, int outputCount, const std::string& name) const
@@ -262,14 +254,13 @@ namespace Lua
 	}
 	void LuaScript::registerFunctionImpl(const std::string& name)
 	{
-		// The name of functions that is being registered is stored as an upvalue for the function itself
-		pushLuaStack(name);
+		//The index at which the function is saved in the static C++ vector becomes an upvalue for the function
+		int index = m_registeredFunctions.size() - 1;
+		pushLuaStack(index);
 		lua_CFunction lua_F = [](lua_State* state)->int 
 		{
-			size_t strLength = 0;
-			const char* str = lua_tolstring(state, lua_upvalueindex(1), &strLength);//retrieve upvalue
-			std::string functionName{ str, strLength };
-			auto& function = LuaScript::m_userFunctions[functionName];
+			auto functionIndex = lua_tointeger(state, lua_upvalueindex(1));//retrieve  upvalue
+			auto& function = m_registeredFunctions.at(functionIndex);
 			return function(state);
 		};
 		lua_pushcclosure(m_state, lua_F, 1);

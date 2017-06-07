@@ -17,12 +17,12 @@ namespace Lua
 	class LuaScript
 	{
 	private:
+		using LuaCF_Intermediary = std::function<int(lua_State*)>;
 		lua_State* m_state;
 		std::string m_fileName;
 		bool m_open;
-		std::vector<std::string> m_localFunctions;
-		static std::unordered_map<std::string, std::function<int(lua_State*)>> m_userFunctions;
-		static std::string m_userF; // The name of the registered user function that will be called
+		std::vector<int> m_localFunctions;//TODO: Every instance of LuaScript should be able to call onyl function registered to itself
+		static std::vector<LuaCF_Intermediary> m_registeredFunctions;
 	public:
 		explicit LuaScript(const std::string& file, bool loadStandardLib = true);
 		LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib = true);
@@ -63,7 +63,6 @@ namespace Lua
 		template<class T>
 		void register_function(const std::string& name, T& user_f);
 	private:
-		
 		void init(const std::vector<std::string>& dependencies, bool loadStandardLib);
 		void runFile(const std::string& name) const;
 		void retrieveLuaValue(const std::string& name) const;
@@ -75,7 +74,6 @@ namespace Lua
 		bool setTableElement(const std::string& name, const T& val) const;
 		void prepareForCall(const std::string& name) const;
 		void loadFunction(const std::string& name) const;
-		void setUserFunctionToRun(const std::string& func) const;
 		void callImpl(int inputCount, int outputCount, const std::string& name) const;
 		void error(const std::string& message, bool popStack = false) const;
 		void loadTableField(const std::string& field, int tableIndex = -1) const;
@@ -290,17 +288,19 @@ namespace Lua
 	template<class R, class... Args>
 	void LuaScript::register_function(const std::string& name, std::function<R(Args...)>& user_f)
 	{
-		m_localFunctions.push_back(name);
-		LuaScript::m_userFunctions[name] = [this, user_f](lua_State*)->int {
+		//WARNING: Not thread safe
+		m_registeredFunctions.emplace_back([this, user_f](lua_State*)->int {
 			int inputCount = lua_gettop(m_state);
-			if (inputCount==sizeof...(Args))
+			if (inputCount == sizeof...(Args))
 			{
-				std::tuple<Args...> arguments={};
+				std::tuple<Args...> arguments = {};
 				RegisteredFunctionReturnType<R> returnType = {};
 				return callRegisteredFunction(user_f, returnType, arguments);
 			}
 			return 0;
-		};
+		});
+		m_localFunctions.push_back(m_registeredFunctions.size()-1);
+
 		registerFunctionImpl(name);
 	}
 	template<class R, class... Args>
@@ -312,8 +312,8 @@ namespace Lua
 	template<class T>
 	void LuaScript::register_function(const std::string& name, T& user_f)
 	{
-		m_localFunctions.push_back(name);
-		LuaScript::m_userFunctions[name] = [this, user_f](lua_State*) mutable ->int   {
+		//WARNING: Not thread safe
+		m_registeredFunctions.emplace_back([this, user_f](lua_State*) mutable ->int {
 			int stackTop = lua_gettop(m_state);
 			if (stackTop == Utils::callable_traits<T>::args_count)
 			{
@@ -322,7 +322,9 @@ namespace Lua
 				return callRegisteredFunction(user_f, returnType, arguments);
 			}
 			return 0;
-		};
+		});
+		m_localFunctions.push_back(m_registeredFunctions.size() - 1);
+
 		registerFunctionImpl(name);
 	}
 	//Utilities
