@@ -1,7 +1,7 @@
 #include "LuaScript.hpp"
 #include <iostream>
 #include <algorithm>
-namespace Lua
+namespace LuaBz
 {
 	//Static
 	std::vector<LuaScript::LuaCF_Intermediary> LuaScript::m_registeredFunctions;
@@ -75,10 +75,10 @@ namespace Lua
 	void LuaScript::close() noexcept
 	{
 		lua_close(m_state);
-		for ( auto index : m_localFunctions)
+		/*for ( auto index : m_localFunctions)
 		{
 			m_registeredFunctions.erase(m_registeredFunctions.begin() + index);
-		}
+		}*/
 		m_open = false;
 	}
 	bool LuaScript::change(const std::string& newFile) noexcept
@@ -214,31 +214,31 @@ namespace Lua
 	}
 	LuaTable LuaScript::create_lua_table() const
 	{
-		Lua::LuaTable table;
+		LuaTable table;
 		auto f = [&table, this](const std::string &key)
 		{
 			switch (lua_type(m_state, -1))
 			{
 			case LUA_TNIL:
-				table.values.push_back(Lua::LuaValue(key, nullptr));
+				table.values.push_back(LuaValue(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.values.push_back(Lua::LuaValue(key, top_lua_stack<bool>()));
+				table.values.push_back(LuaValue(key, top_lua_stack<bool>()));
 				break;
 			case LUA_TNUMBER:
 			{
 				double number = lua_tonumber(m_state, -1);
 				if (number == static_cast<int>(number))
-					table.values.push_back(Lua::LuaValue(key, top_lua_stack<int>()));
+					table.values.push_back(LuaValue(key, top_lua_stack<int>()));
 				else
-					table.values.push_back(Lua::LuaValue(key, top_lua_stack<double>()));
+					table.values.push_back(LuaValue(key, top_lua_stack<double>()));
 			}
 			break;
 			case LUA_TSTRING:
 			{
 				size_t strLength = 0;
 				const char* str = lua_tolstring(m_state, -1, &strLength);
-				table.values.push_back(Lua::LuaValue(key, std::string(str, strLength)));
+				table.values.push_back(LuaValue(key, std::string(str, strLength)));
 			}
 			break;
 			//Ignore functions and tables, right now LuaValue cannot rappresent the value of

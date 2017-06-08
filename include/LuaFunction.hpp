@@ -1,7 +1,7 @@
 #ifndef LUA_FUNCTION_HPP
 #define LUA_FUNCTION_HPP
 #include <string>
-namespace Lua
+namespace LuaBz
 {
 	template <typename... T>
 	struct LuaFunction

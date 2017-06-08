@@ -1,7 +1,7 @@
 #ifndef LUA_VALUE_HPP
 #define LUA_VALUE_HPP
 #include <string>
-namespace Lua
+namespace LuaBz
 {
 	enum class LuaType :short
 	{
@@ -85,7 +85,7 @@ namespace Lua
 		};
 		~LuaValue()
 		{
-			if (m_initialized == Lua::LuaType::String)
+			if (m_initialized == LuaType::String)
 				m_string.~basic_string();
 		}
 		std::string name() const
@@ -141,19 +141,19 @@ namespace Lua
 		{
 			switch (m_initialized)
 			{
-			case Lua::LuaType::Integer:
+			case LuaType::Integer:
 				m_integer = rhs.m_integer;
 				break;
-			case Lua::LuaType::Nil:
+			case LuaType::Nil:
 				m_nil = m_nil;
 				break;
-			case Lua::LuaType::Boolean:
+			case LuaType::Boolean:
 				m_bool = rhs.m_bool;
 				break;
-			case Lua::LuaType::Number:
+			case LuaType::Number:
 				m_number = rhs.m_number;
 				break;
-			case Lua::LuaType::String:
+			case LuaType::String:
 				m_string.~basic_string();
 				new (&m_string)std::string{ m_string };
 				break;

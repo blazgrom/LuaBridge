@@ -12,7 +12,7 @@
 #include "LuaFunction.hpp"
 #include "callable_traits.hpp"
 #include "can_represent_value.hpp"
-namespace Lua
+namespace LuaBz
 {
 	class LuaScript
 	{
@@ -108,7 +108,7 @@ namespace Lua
 		template <class T>
 		T get_lua_integer(int index, std::false_type) const;
 		template <class T>
-		typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type push_lua_stack(T val) const;
+		typename std::enable_if<std::is_convertible<T, LuaTable>::value>::type push_lua_stack(T val) const;
 		void push_lua_stack(std::nullptr_t) const;
 		void push_lua_stack(std::string val) const;
 		void push_lua_stack(char val) const;
@@ -299,7 +299,7 @@ namespace Lua
 			}
 			return 0;
 		});
-		m_localFunctions.push_back(m_registeredFunctions.size()-1);
+		//m_localFunctions.push_back(m_registeredFunctions.size()-1);
 
 		register_function_impl(name);
 	}
@@ -323,7 +323,7 @@ namespace Lua
 			}
 			return 0;
 		});
-		m_localFunctions.push_back(m_registeredFunctions.size() - 1);
+		//m_localFunctions.push_back(m_registeredFunctions.size() - 1);
 
 		register_function_impl(name);
 	}
@@ -458,7 +458,7 @@ namespace Lua
 		return T{};
 	}
 	template <class T>
-	typename std::enable_if<std::is_convertible<T, Lua::LuaTable>::value>::type LuaScript::push_lua_stack(T val) const
+	typename std::enable_if<std::is_convertible<T, LuaTable>::value>::type LuaScript::push_lua_stack(T val) const
 	{
 		lua_newtable(m_state);
 		auto table = static_cast<LuaTable>(val);
