@@ -1,31 +1,9 @@
-#ifndef LUA_HELPERS_HPP
-#define LUA_HELPERS_HPP
-#include <string>
-#include <vector>
+#ifndef LUA_TABLE_HPP
+#define LUA_TABLE_HPP
+#include "LuaContainer.hpp"
 #include "LuaValue.hpp"
 namespace LuaBz
 {
-	
-	//Homogeneous table
-	template<class T>
-	struct LuaTable1
-	{
-
-	};
-	//Heterogeneous table
-	template<>
-	class LuaTable1<LuaValue>
-	{
-		LuaTable1(std::vector<LuaValue>::size_type count,const LuaValue& value)
-		{
-			
-		}
-	private:
-		std::vector<LuaValue> values;
-	};
-	struct LuaTable
-	{
-		std::vector<LuaValue> values;
-	};
+	using LuaTable = LuaContainer<LuaValue>;
 }
-#endif // !LUA_HELPERS_HPP
+#endif // !LUA_TABLE_HPP

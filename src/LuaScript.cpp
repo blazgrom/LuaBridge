@@ -220,25 +220,25 @@ namespace LuaBz
 			switch (lua_type(m_state, -1))
 			{
 			case LUA_TNIL:
-				table.values.push_back(LuaValue(key, nullptr));
+				table.push_back(LuaValue(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.values.push_back(LuaValue(key, top_lua_stack<bool>()));
+				table.push_back(LuaValue(key, top_lua_stack<bool>()));
 				break;
 			case LUA_TNUMBER:
 			{
 				double number = lua_tonumber(m_state, -1);
 				if (number == static_cast<int>(number))
-					table.values.push_back(LuaValue(key, top_lua_stack<int>()));
+					table.push_back(LuaValue(key, top_lua_stack<int>()));
 				else
-					table.values.push_back(LuaValue(key, top_lua_stack<double>()));
+					table.push_back(LuaValue(key, top_lua_stack<double>()));
 			}
 			break;
 			case LUA_TSTRING:
 			{
 				size_t strLength = 0;
 				const char* str = lua_tolstring(m_state, -1, &strLength);
-				table.values.push_back(LuaValue(key, std::string(str, strLength)));
+				table.push_back(LuaValue(key, std::string(str, strLength)));
 			}
 			break;
 			//Ignore functions and tables, right now LuaValue cannot rappresent the value of

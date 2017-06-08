@@ -462,7 +462,7 @@ namespace LuaBz
 	{
 		lua_newtable(m_state);
 		auto table = static_cast<LuaTable>(val);
-		for (const auto& element : table.values)
+		for (const auto& element : table)
 		{
 			push_lua_stack(element.name());
 			switch (element.type())

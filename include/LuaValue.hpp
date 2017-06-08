@@ -3,129 +3,34 @@
 #include <string>
 namespace LuaBz
 {
-	enum class LuaType :short
+	enum class LuaType : short
 	{
-		Integer, Nil, Boolean, Number, String
+		Nil, Boolean, Integer, Number, String
 	};
 	struct LuaValue
 	{
 	public:
-		LuaValue(const std::string& name, std::nullptr_t data)
-			:
-			m_initialized{ LuaType::Nil },
-			m_name{ name },
-			m_nil{ data }
-		{
-		}
-		LuaValue(const std::string& name, int data)
-			:
-			m_initialized{ LuaType::Integer },
-			m_name{ name },
-			m_integer{ data }
-		{
-		}
-		LuaValue(const std::string& name, double data)
-			:
-			m_initialized{ LuaType::Number },
-			m_name{ name },
-			m_number{ data }
-		{
-		}
-		LuaValue(const std::string& name, float data)
-			:
-			m_initialized{ LuaType::Number },
-			m_name{ name },
-			m_number{ static_cast<double>(data) }
-		{
-		}
-		LuaValue(const std::string& name, bool data)
-			:
-			m_initialized{ LuaType::Boolean },
-			m_name{ name },
-			m_bool{ data }
-		{
-		}
-		LuaValue(const std::string& name, std::string data)
-			:
-			m_initialized{ LuaType::String },
-			m_name{ name },
-			m_string{ data }
-		{
-		}
-		LuaValue(const LuaValue& rhs)
-			:
-			m_initialized{ rhs.m_initialized },
-			m_name{ rhs.m_name }
-		{
-			copy(rhs);
-		};
-		LuaValue(LuaValue&& rhs)
-			:
-			m_initialized{ rhs.m_initialized },
-			m_name{ rhs.m_name }
-		{
-			copy(rhs);
-		};
-		LuaValue& operator=(const LuaValue& rhs)
-		{
-			if (this == &rhs)
-			{
-				m_initialized = rhs.m_initialized;
-				m_name = rhs.m_name;
-				copy(rhs);
-			}
-			return *this;
-		};
-		LuaValue& operator=(LuaValue&& rhs)
-		{
-			m_initialized = rhs.m_initialized;
-			m_name = rhs.m_name;
-			copy(rhs);
-			return *this;
-		};
-		~LuaValue()
-		{
-			if (m_initialized == LuaType::String)
-				m_string.~basic_string();
-		}
-		std::string name() const
-		{
-			return m_name;
-		}
-		LuaType type() const
-		{
-			return m_initialized;
-		}
-		double number() const
-		{
-			if (m_initialized == LuaType::Number)
-				return m_number;
-			throw std::runtime_error{ "Number is not initialized" };
-		}
-		int integer() const
-		{
-			if (m_initialized == LuaType::Integer)
-				return m_integer;
-			throw std::runtime_error{ "Integer is not initialized" };
-		}
-		bool boolean() const
-		{
-			if (m_initialized == LuaType::Boolean)
-				return m_bool;
-			throw std::runtime_error{ "Boolean is not initialized" };
-		}
-		std::nullptr_t nil() const
-		{
-			if (m_initialized == LuaType::Nil)
-				return m_nil;
-			throw std::runtime_error{ "Nil is not initialized" };
-		}
-		std::string string() const
-		{
-			if (m_initialized == LuaType::String)
-				return m_string;
-			throw std::runtime_error{ "String is not initialized" };
-		}
+		LuaValue();
+		LuaValue(const std::string& name, std::nullptr_t data);
+		LuaValue(const std::string& name, int data);
+		LuaValue(const std::string& name, double data);
+		LuaValue(const std::string& name, float data);
+		LuaValue(const std::string& name, bool data);
+		LuaValue(const std::string& name, std::string data);
+		LuaValue(const LuaValue& rhs);
+		LuaValue(LuaValue&& rhs);
+		LuaValue& operator=(const LuaValue& rhs);
+		LuaValue& operator=(LuaValue&& rhs);
+		friend bool operator < (const LuaValue& a, const LuaValue& b);
+		friend bool operator ==(const LuaValue& a, const LuaValue& b);
+		~LuaValue();
+		std::string name() const;
+		LuaType type() const;
+		double number() const;
+		int integer() const;
+		bool boolean() const;
+		std::nullptr_t nil() const;
+		std::string string() const;
 	private:
 		union
 		{
@@ -137,28 +42,7 @@ namespace LuaBz
 		};
 		LuaType m_initialized;
 		std::string m_name;
-		void copy(const LuaValue& rhs)
-		{
-			switch (m_initialized)
-			{
-			case LuaType::Integer:
-				m_integer = rhs.m_integer;
-				break;
-			case LuaType::Nil:
-				m_nil = m_nil;
-				break;
-			case LuaType::Boolean:
-				m_bool = rhs.m_bool;
-				break;
-			case LuaType::Number:
-				m_number = rhs.m_number;
-				break;
-			case LuaType::String:
-				m_string.~basic_string();
-				new (&m_string)std::string{ m_string };
-				break;
-			}
-		}
+		void copy(const LuaValue& rhs);
 	};
 }
 #endif // !LUA_VALUE_HPP
