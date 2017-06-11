@@ -1,5 +1,5 @@
-#ifndef LUA_FUNCTION_HPP
-#define LUA_FUNCTION_HPP
+#ifndef LUABZ_LUA_FUNCTION_HPP
+#define LUABZ_LUA_FUNCTION_HPP
 #include <string>
 namespace LuaBz
 {
@@ -30,4 +30,4 @@ namespace LuaBz
 		unsigned int resultCount;
 	};
 }
-#endif // !LUA_FUNCTION_HPP
+#endif // !LUABZ_LUA_FUNCTION_HPP

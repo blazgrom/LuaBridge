@@ -1,5 +1,5 @@
-#ifndef LUA_SCRIPT_HPP
-#define LUA_SCRIPT_HPP
+#ifndef LUABZ_LUA_SCRIPT_HPP
+#define LUABZ_LUA_SCRIPT_HPP
 #include <tuple>
 #include <vector>
 #include <string>
@@ -524,4 +524,4 @@ namespace LuaBz
 		lua_pushnumber(m_state, val);
 	}
 }
-#endif // !LUA_SCRIPT_HPP
+#endif // !LUABZ_LUA_SCRIPT_HPP

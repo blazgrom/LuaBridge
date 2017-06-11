@@ -1,5 +1,5 @@
-#ifndef LUA_CONTAINER_HPP
-#define LUA_CONTAINER_HPP
+#ifndef LUABZ_LUA_CONTAINER_HPP
+#define LUABZ_LUA_CONTAINER_HPP
 #include <vector>
 #include <initializer_list>
 namespace LuaBz
@@ -206,4 +206,4 @@ namespace LuaBz
 		return a.values >= b.values;
 	}
 }
-#endif // !LUA_CONTAINER_HPP
+#endif // !LUABZ_LUA_CONTAINER_HPP

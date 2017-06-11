@@ -1,5 +1,5 @@
-#ifndef LUA_VALUE_HPP
-#define LUA_VALUE_HPP
+#ifndef LUABZ_LUA_VALUE_HPP
+#define LUABZ_LUA_VALUE_HPP
 #include <string>
 #include <cstdint>
 namespace LuaBz
@@ -47,4 +47,4 @@ namespace LuaBz
 		void LuaValue::copy(const LuaValue& rhs);
 	};
 }
-#endif // !LUA_VALUE_HPP
+#endif // !LUABZ_LUA_VALUE_HPP

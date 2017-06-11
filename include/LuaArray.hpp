@@ -1,5 +1,5 @@
-#ifndef LUA_ARRAY_HPP
-#define LUA_ARRAY_HPP
+#ifndef LUABZ_LUA_ARRAY_HPP
+#define LUABZ_LUA_ARRAY_HPP
 #include <LuaContainer.hpp>
 namespace LuaBz
 {
@@ -9,4 +9,4 @@ namespace LuaBz
 	template<class T>
 	using LuaArray = LuaContainer<T>;
 }
-#endif // !LUA_ARRAY_HPP
+#endif // !LUABZ_LUA_ARRAY_HPP
