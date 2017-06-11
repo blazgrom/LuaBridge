@@ -66,6 +66,7 @@ namespace LuaBz
 				}
 			}
 		}
+		return true; //TODO decide if this should be return true
 	}
 	bool operator ==(const LuaValue& a, const LuaValue& b)
 	{
@@ -126,14 +127,14 @@ namespace LuaBz
 		m_initialized{ rhs.m_initialized },
 		m_name{ rhs.m_name }
 	{
-		copy(rhs);
+		construct(rhs);
 	};
 	LuaValue::LuaValue(LuaValue&& rhs)
 		:
 		m_initialized{ rhs.m_initialized },
 		m_name{ rhs.m_name }
 	{
-		copy(rhs);
+		construct(rhs);
 	};
 	LuaValue& LuaValue::operator=(const LuaValue& rhs)
 	{
@@ -195,6 +196,27 @@ namespace LuaBz
 			return m_string;
 		throw std::runtime_error{ "String is not initialized" };
 	}
+	void LuaValue::construct(const LuaValue& rhs)//TODO: Decide if this should sbe a member function
+	{
+		switch (m_initialized)
+		{
+		case LuaType::Integer:
+			m_integer = rhs.m_integer;
+			break;
+		case LuaType::Nil:
+			m_nil = m_nil;
+			break;
+		case LuaType::Boolean:
+			m_bool = rhs.m_bool;
+			break;
+		case LuaType::Number:
+			m_number = rhs.m_number;
+			break;
+		case LuaType::String:
+			new (&m_string)std::string{ rhs.m_string };
+			break;
+		}
+	}
 	void LuaValue::copy(const LuaValue& rhs)//TODO: Decide if this should sbe a member function
 	{
 		switch (m_initialized)
@@ -213,7 +235,7 @@ namespace LuaBz
 			break;
 		case LuaType::String:
 			m_string.~basic_string();
-			new (&m_string)std::string{ m_string };
+			new (&m_string)std::string{ rhs.m_string };
 			break;
 		}
 	}

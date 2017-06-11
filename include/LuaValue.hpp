@@ -1,9 +1,10 @@
 #ifndef LUA_VALUE_HPP
 #define LUA_VALUE_HPP
 #include <string>
+#include <cstdint>
 namespace LuaBz
 {
-	enum class LuaType : short
+	enum class LuaType : int8_t
 	{
 		Nil, Boolean, Integer, Number, String
 	};
@@ -42,7 +43,8 @@ namespace LuaBz
 		};
 		LuaType m_initialized;
 		std::string m_name;
-		void copy(const LuaValue& rhs);
+		void construct(const LuaValue& rhs);
+		void LuaValue::copy(const LuaValue& rhs);
 	};
 }
 #endif // !LUA_VALUE_HPP

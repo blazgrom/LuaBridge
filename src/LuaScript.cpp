@@ -125,6 +125,33 @@ namespace LuaBz
 			error(lua_tostring(m_state, -1), true);
 		}
 	}
+	void LuaScript::push_lua_stack(const LuaTable& val) const
+	{
+		lua_newtable(m_state);
+		for (const auto& element : val)
+		{
+			push_lua_stack(element.name());
+			switch (element.type())
+			{
+			case LuaType::Boolean:
+				push_lua_stack(element.boolean());
+				break;
+			case LuaType::Number:
+				push_lua_stack(element.number());
+				break;
+			case LuaType::Integer:
+				push_lua_stack(element.integer());
+				break;
+			case LuaType::Nil:
+				push_lua_stack(element.nil());
+				break;
+			case LuaType::String:
+				push_lua_stack(element.string());
+				break;
+			}
+			lua_settable(m_state, -3); //automatically pops [key,value] 
+		}
+	}
 	//Retrieves a lua value and pushes it on top of the stack
 	void LuaScript::retrieve_lua_value(const std::string& name) const
 	{
@@ -169,7 +196,8 @@ namespace LuaBz
 	void LuaScript::load_function(const std::string& name) const
 	{
 		retrieve_lua_value(name);
-		if (!lua_isfunction(m_state, -1))
+		const int topElement = -1;
+		if (!lua_isfunction(m_state, topElement))
 		{
 			error(name + "is not a function");
 		}
@@ -178,7 +206,7 @@ namespace LuaBz
 	{
 		if (lua_pcall(m_state, inputCount, outputCount, 0) != 0)
 		{
-			error(name + " : " + top_lua_stack<std::string>());
+			error(name + " : " + get_pop_lua_stack<std::string>());
 		}
 	}
 	void LuaScript::error(const std::string& message, bool popStack) const
@@ -196,11 +224,17 @@ namespace LuaBz
 	void LuaScript::iterate_table(std::function<void(const std::string&)> predicate, bool popLastValue) const
 	{
 		lua_pushnil(m_state);
+		unsigned int tableIndex = 1;
 		while (lua_next(m_state, -2) != 0)
 		{
 			/*key=-2, value=-1*/
-			auto str = lua_tostring(m_state, -2);
-			predicate(std::string{ str });
+			std::string tableKey = std::to_string(tableIndex);
+			if (lua_isstring(m_state, -2) && !lua_isnumber(m_state,-2))
+			{
+				tableKey= lua_tostring(m_state, -2);
+			}
+			predicate(std::string{ tableKey });
+			++tableIndex;
 			if (popLastValue)
 				pop_lua_stack();
 		}
@@ -223,22 +257,20 @@ namespace LuaBz
 				table.push_back(LuaValue(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.push_back(LuaValue(key, top_lua_stack<bool>()));
+				table.push_back(LuaValue(key, get_pop_lua_stack<bool>()));
 				break;
 			case LUA_TNUMBER:
 			{
 				double number = lua_tonumber(m_state, -1);
 				if (number == static_cast<int>(number))
-					table.push_back(LuaValue(key, top_lua_stack<int>()));
+					table.push_back(LuaValue(key, get_pop_lua_stack<int>()));
 				else
-					table.push_back(LuaValue(key, top_lua_stack<double>()));
+					table.push_back(LuaValue(key, get_pop_lua_stack<double>()));
 			}
 			break;
 			case LUA_TSTRING:
 			{
-				size_t strLength = 0;
-				const char* str = lua_tolstring(m_state, -1, &strLength);
-				table.push_back(LuaValue(key, std::string(str, strLength)));
+				table.push_back(LuaValue(key, get_pop_lua_stack<std::string>()));
 			}
 			break;
 			//Ignore functions and tables, right now LuaValue cannot rappresent the value of

@@ -36,7 +36,7 @@ namespace Utils
 	template<class OriginalT, class NewT>
 	constexpr bool  can_represent_value()
 	{
-		return can_represent_max<OriginalT, NewT>() && can_represent_min<OriginalT, NewT>();//signed - unsigned mismatch  // TODO
+		return can_represent_max<OriginalT, NewT>() && can_represent_min<OriginalT, NewT>();//unsigned - signed mismatch  // TODO
 	}
 	//Struct for when you need type dispatching
 	template <class OriginalT, class NewT>

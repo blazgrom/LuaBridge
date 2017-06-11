@@ -96,7 +96,7 @@ namespace LuaBz
 		int call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&);
 		void pop_lua_stack(int count = 1) const;
 		template <class T>
-		T top_lua_stack()const;
+		T get_pop_lua_stack()const;
 		template <class T>
 		T get_lua_stack(int index = -1) const;
 		template<class T>
@@ -109,6 +109,7 @@ namespace LuaBz
 		T get_lua_integer(int index, std::false_type) const;
 		template <class T>
 		typename std::enable_if<std::is_convertible<T, LuaTable>::value>::type push_lua_stack(T val) const;
+		void push_lua_stack(const LuaTable& val) const;
 		void push_lua_stack(std::nullptr_t) const;
 		void push_lua_stack(std::string val) const;
 		void push_lua_stack(char val) const;
@@ -139,7 +140,7 @@ namespace LuaBz
 	T LuaScript::get(const std::string& name) const
 	{
 		retrieve_lua_value(name);
-		return top_lua_stack<T>();
+		return get_pop_lua_stack<T>();
 	}
 	template <class T>
 	bool LuaScript::set(const std::string& name, T&& val) const
@@ -331,19 +332,19 @@ namespace LuaBz
 	template <class T,class R, class... Args >
 	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<R>& ,std::tuple<Args...>&)
 	{
-		auto result = user_f(top_lua_stack<Args>()...);//This won't work when passing data from lua to c++, test it !
+		auto result = user_f(get_pop_lua_stack<Args>()...);//TODO:This won't work when passing data from lua to c++, test it !
 		push_lua_stack(result);
 		return 1;
 	}
 	template <class T, class... Args>
 	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&)
 	{
-		user_f(top_lua_stack<Args>()...);//This won't work when passing data from lua to c++, test it !
+		user_f(get_pop_lua_stack<Args>()...);//TODO:This won't work when passing data from lua to c++, test it !
 		return 0;
 	}
 
 	template <class T>
-	T LuaScript::top_lua_stack()const
+	T LuaScript::get_pop_lua_stack() const//TODO :Change the name of this to something like getPop
 	{
 		const int topElement = -1;
 		T result = get_lua_stack<T>(topElement);
@@ -351,14 +352,23 @@ namespace LuaBz
 		return result;
 	}
 	template <class T>
-	T LuaScript::get_lua_stack(int) const
+	T LuaScript::get_lua_stack(int index) const
 	{
 		static_assert(std::is_constructible<T, LuaTable>::value, "Type cannot be constructed from a LuaTable");
-		if (!lua_istable(m_state, -1))
+		if (!lua_istable(m_state, index))
 		{
 			error("The type you are trying to retrieve cannot be constructed with a LuaTable");
 		}
 		return T{ create_lua_table() };
+	}
+	template<>
+	inline LuaTable LuaScript::get_lua_stack(int index) const
+	{
+		if (!lua_istable(m_state, index))
+		{
+			error("The type you are trying to retrieve cannot be constructed with a LuaTable");
+		}
+		return  create_lua_table();
 	}
 	template<>
 	inline std::string LuaScript::get_lua_stack<std::string>(int index) const
@@ -442,7 +452,7 @@ namespace LuaBz
 	template <class T>
 	T LuaScript::get_lua_number(int index, std::false_type) const
 	{
-		assert(false, "The type " + typeid(T).name() + "cannot represent a lua_Number");
+		assert(false);
 		return T{};
 	}
 	template <class T>
@@ -454,37 +464,14 @@ namespace LuaBz
 	template <class T>
 	T LuaScript::get_lua_integer(int index, std::false_type) const
 	{
-		assert(false, "The type " + typeid(T).name() + "cannot represent a lua_Integer");
+		assert(false);
 		return T{};
 	}
 	template <class T>
 	typename std::enable_if<std::is_convertible<T, LuaTable>::value>::type LuaScript::push_lua_stack(T val) const
 	{
-		lua_newtable(m_state);
 		auto table = static_cast<LuaTable>(val);
-		for (const auto& element : table)
-		{
-			push_lua_stack(element.name());
-			switch (element.type())
-			{
-			case LuaType::Boolean:
-				push_lua_stack(element.boolean());
-				break;
-			case LuaType::Number:
-				push_lua_stack(element.number());
-				break;
-			case LuaType::Integer:
-				push_lua_stack(element.integer());
-				break;
-			case LuaType::Nil:
-				push_lua_stack(element.nil());
-				break;
-			case LuaType::String:
-				push_lua_stack(element.string());
-				break;
-			}
-			lua_settable(m_state, -3); //automatically pops [key,value] 
-		}
+		push_lua_stack(table);
 	}
 	template<typename = typename std::enable_if<Utils::can_represent_value<short, lua_Integer>()>::type>
 	void LuaScript::push_lua_stack(short val) const
@@ -538,4 +525,3 @@ namespace LuaBz
 	}
 }
 #endif // !LUA_SCRIPT_HPP
-
