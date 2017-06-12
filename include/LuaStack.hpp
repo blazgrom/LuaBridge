@@ -80,19 +80,19 @@ namespace LuaBz
 				switch (element.type())
 				{
 				case LuaType::Boolean:
-					push(element.boolean());
+					push(element.value<bool>());
 					break;
 				case LuaType::Number:
-					push(element.number());
+					push(element.value<double>());
 					break;
 				case LuaType::Integer:
-					push(element.integer());
+					push(element.value<int>());
 					break;
 				case LuaType::Nil:
-					push(element.nil());
+					push(element.value<std::nullptr_t>());
 					break;
 				case LuaType::String:
-					push(element.string());
+					push(element.value<std::string>());
 					break;
 				}
 				lua_settable(m_state, -3); //automatically pops the pair [key,value] 
@@ -189,7 +189,7 @@ namespace LuaBz
 		{
 			if (luaL_dostring(m_state, code.c_str()))
 			{
-				throw LuaError(lua_tostring(m_state, -1));
+				throw LuaError(lua_tostring(m_state, topElement));
 			}
 		}
 		void destroy()
@@ -209,6 +209,8 @@ namespace LuaBz
 		{
 			try
 			{
+				//TODO:The try catch and change the return type of set_global_variable
+				//and set_table_element
 				push(value);
 				lua_setglobal(m_state, name.c_str());
 				return true;
@@ -410,7 +412,7 @@ namespace LuaBz
 			LuaTable table;
 			auto callback = [&table, this](const std::string &key)
 			{
-				switch (lua_type(m_state, -1))
+				switch (lua_type(m_state, topElement))
 				{
 				case LUA_TNIL:
 					table.push_back(LuaValue(key, nullptr));
@@ -420,7 +422,7 @@ namespace LuaBz
 					break;
 				case LUA_TNUMBER:
 				{
-					double number = lua_tonumber(m_state, -1);
+					double number = lua_tonumber(m_state, topElement);
 					if (number == static_cast<int>(number))
 						table.push_back(LuaValue(key, top_element<int>()));
 					else
