@@ -1,78 +1,93 @@
-#include <stdexcept>
+#include <cmath>
+#include <string>
 #include <cassert>
+#include <stdexcept>
 #include "LuaValue.hpp"
 namespace LuaBz
 {
-	bool operator < (const LuaValue& a, const LuaValue& b)
+	bool operator < (const LuaValue& lhs, const LuaValue& rhs)
 	{
-		if (b.m_type == LuaType::Nil)
+		//Note:
+		//It emulates as best as it can the logic of Lua
+		//LuaTypeX < Nil -> false, because it's not possible to compare types with nil in Lua
+		//Nil < LuaTypeX -> true, see LuaTypeX < Nil. True because we have inverted the position of Nil
+		//LuaTypeX < LuaTypeX -> compare type if possible, if not possible returns false
+		if (rhs.type() == LuaType::Nil)
 		{
-			return false;
+			return false; 
 		}
-		else if (a.m_type == LuaType::Nil)
+		else if (lhs.type() == LuaType::Nil)
 		{
 			return true;
 		}
 		else
 		{
-			if (a.m_type == LuaType::Boolean)
+			if (lhs.type() == LuaType::Integer)
 			{
-				if (b.m_type == LuaType::Boolean)
+				if (rhs.type() == LuaType::Integer)
 				{
-					return a.boolean() < b.boolean();
+					return lhs.value<int>() < rhs.value<int>();
 				}
-				else
+				else if (rhs.type() == LuaType::Number)
 				{
-					return false;
+					return lhs.value<int>() < rhs.value<double>();
 				}
 			}
-			else if (a.m_type == LuaType::Integer)
+			else if (lhs.type() == LuaType::Number)
 			{
-				if (b.m_type == LuaType::Integer)
+				if (rhs.type() == LuaType::Integer)
 				{
-					return a.integer() < b.integer();
+					return lhs.value<double>() < rhs.value<int>();
 				}
-				else if (b.m_type == LuaType::Number)
+				else if (rhs.type() == LuaType::Number)
 				{
-					return a.integer() < b.number();
-				}
-				else
-				{
-					return false;
+					return lhs.value<double>() < rhs.value<double>();
 				}
 			}
-			else if (a.m_type == LuaType::Number)
+			else if (lhs.type() == LuaType::String)
 			{
-				if (b.m_type == LuaType::Integer)
+				if (rhs.type() == LuaType::String)
 				{
-					return a.number() < b.integer();
-				}
-				else if (b.m_type == LuaType::Number)
-				{
-					return a.number() < b.number();
-				}
-				else
-				{
-					return false;
-				}
-			}
-			else if (a.m_type == LuaType::String)
-			{
-				if (b.m_type == LuaType::String)
-				{
-					return a.string() < b.string();
-				}
-				else
-				{
-					return false;
+					return lhs.value<std::string>() < rhs.value<std::string>();
 				}
 			}
 		}
-		return true; //TODO decide if this should be return true
+		return false;
 	}
-	bool operator ==(const LuaValue& a, const LuaValue& b)
+	bool operator ==(const LuaValue& lhs, const LuaValue& rhs)
 	{
-		return a.m_type==b.m_type;//TODO:Check if the value is the same;
+		//Note:
+		//Two LuaValues compare equal if they have the save type and the value they hold is the same
+		bool sameType = lhs.type() == rhs.type();
+		if (sameType)
+		{
+			switch (lhs.type())
+			{
+			case LuaType::Integer:
+				return lhs.value<int>() == rhs.value<int>();
+				break;
+			case LuaType::Nil:
+				return lhs.value<std::nullptr_t>() == rhs.value<std::nullptr_t>();
+				break;
+			case LuaType::Boolean:
+				return lhs.value<bool>() && rhs.value<bool>();
+				break;
+			case LuaType::Number:
+				{
+					double threshold = (0.1) / 10000000000;
+					auto absoluteDifference = std::fabs(lhs.value<double>() - rhs.value<double>());
+					return absoluteDifference <= threshold;
+				}
+				break;
+			case LuaType::String:
+				return lhs.value<std::string>() == rhs.value<std::string>();
+				break;
+			default:
+				assert(false);
+				break;
+			}
+		}
+		return false;
 	}
 	LuaValue::LuaValue()
 		:
@@ -134,14 +149,14 @@ namespace LuaBz
 		m_type{ rhs.m_type },
 		m_name{ rhs.m_name }
 	{
-		construct(rhs);
+		init(rhs);
 	};
 	LuaValue::LuaValue(LuaValue&& rhs)
 		:
 		m_type{ rhs.m_type },
 		m_name{ rhs.m_name }
 	{
-		construct(rhs);
+		init(rhs);
 	};
 	LuaValue& LuaValue::operator=(const LuaValue& rhs)
 	{
@@ -186,7 +201,7 @@ namespace LuaBz
 		}
 		m_nil = newVal;
 	}
-	void LuaValue::value(int newVal)//TODO: will need overloads for everything up to int
+	void LuaValue::value(int newVal)
 	{
 		if (m_type != LuaType::Integer)
 		{
@@ -236,7 +251,7 @@ namespace LuaBz
 		adjust_type(newType);
 		value(newVal);
 	}
-	void LuaValue::value(int newVal, LuaType newType)//TODO: will need overloads for everything up to int
+	void LuaValue::value(int newVal, LuaType newType)
 	{
 		if (newType != LuaType::Integer)
 		{
@@ -313,9 +328,9 @@ namespace LuaBz
 			m_type = newType;
 		}
 	}
-	void LuaValue::construct(const LuaValue& rhs)//TODO: Decide if this should sbe a member function
+	void LuaValue::init(const LuaValue& rhs)
 	{
-		switch (m_type)
+		switch (rhs.m_type)
 		{
 		case LuaType::Integer:
 			m_integer = rhs.m_integer;
@@ -337,35 +352,13 @@ namespace LuaBz
 			break;
 		}
 	}
-	void LuaValue::copy(const LuaValue& rhs)//TODO: Decide if this should sbe a member function
+	void LuaValue::copy(const LuaValue& rhs)
 	{
 		if (m_type == LuaType::String)
 		{
 			m_string.~basic_string();
 		}
-		switch (rhs.type())
-		{
-		case LuaType::Integer:
-			m_integer = rhs.m_integer;
-			break;
-		case LuaType::Nil:
-			m_nil = rhs.m_nil;
-			break;
-		case LuaType::Boolean:
-			m_bool = rhs.m_bool;
-			break;
-		case LuaType::Number:
-			m_number = rhs.m_number;
-			break;
-		case LuaType::String:
-			{
-				new (&m_string)std::string{ rhs.m_string };
-			}
-			break;
-		default:
-			assert(false);
-			break;
-		}
+		init(rhs);
 		m_type = rhs.m_type;
 	}
 }

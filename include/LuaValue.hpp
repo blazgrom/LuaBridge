@@ -23,8 +23,6 @@ namespace LuaBz
 		LuaValue(LuaValue&& rhs);
 		LuaValue& operator=(const LuaValue& rhs);
 		LuaValue& operator=(LuaValue&& rhs);
-		friend bool operator < (const LuaValue& a, const LuaValue& b);
-		friend bool operator ==(const LuaValue& a, const LuaValue& b);
 		~LuaValue();
 		const std::string& name() const;
 		LuaType type() const;
@@ -68,8 +66,6 @@ namespace LuaBz
 		void value(const std::string& newVal);
 		void value(const char* newVal);
 		//Overwrite type and set new type
-		//TODO:
-		//Test if the user can specify type different from the one inside LuaType
 		void value(bool newVal, LuaType newType);
 		void value(std::nullptr_t newVal, LuaType newType);
 		void value(int newVal, LuaType newType);
@@ -94,8 +90,10 @@ namespace LuaBz
 		std::nullptr_t nil() const;
 		std::string string() const;
 		void adjust_type(LuaType newType);
-		void construct(const LuaValue& rhs);
+		void init(const LuaValue& rhs);
 		void copy(const LuaValue& rhs);
 	};
+	bool operator < (const LuaValue& lhs, const LuaValue& rhs);
+	bool operator ==(const LuaValue& lhs, const LuaValue& rhs);
 }
 #endif // !LUABZ_LUA_VALUE_HPP

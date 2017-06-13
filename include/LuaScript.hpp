@@ -22,7 +22,7 @@ namespace LuaBz
 		LuaStack m_stack;
 		std::string m_fileName;
 		bool m_open;
-		std::vector<int> m_localFunctions; //TODO: Every instance of LuaScript should be able to call onyl function registered to itself
+		std::vector<int> m_localFunctions; //TODO: Every instance of LuaScript should be able to call only function registered to itself
 		static std::vector<LuaCF_Intermediary> m_registeredFunctions;
 	public:
 		explicit LuaScript(const std::string& file, bool loadStandardLib = true);

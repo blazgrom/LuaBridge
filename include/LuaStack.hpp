@@ -1,12 +1,12 @@
-#ifndef LUABZ_LUA_STATE_HPP
-#define LUABZ_LUA_STATE_HPP
+#ifndef LUABZ_LUA_STACK_HPP
+#define LUABZ_LUA_STACK_HPP
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <functional>
-#include <LuaError.hpp>
 #include "lua.hpp"
 #include "LuaTable.hpp"
+#include "LuaError.hpp"
 #include "can_represent_value.hpp"
 namespace LuaBz
 {
@@ -449,4 +449,4 @@ namespace LuaBz
 		
 	};
 }
-#endif // !LUABZ_LUA_STATE_HPP
+#endif // !LUABZ_LUA_STACK_HPP
