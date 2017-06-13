@@ -4,7 +4,6 @@ Feature list:
  * Getting/Setting variable's value
  * Registering C++ functions
  * Calling a function
- * Utilities
  * User defined class support
 
 
@@ -38,15 +37,15 @@ Feature list:
     return a+b;
   }
   script.register_function("f",f);
-  //Functor
-  struct Functor
+  //Function object
+  struct FunObj
   {
     int operator()(int a,int b)
     {
       return a+b;
     }
   };
-  script.register_function("Functor",Functor{})
+  script.register_function("FunctionObject",FunObj{})
 ```
 #### Calling a function:
 ##### No input params and no return values
@@ -79,14 +78,6 @@ auto result=script.call(LuaFunction<int,int,double>("multipleReturnValues"));
 script.call(LuaFunction<void>("multipleInputNoResult"), 1, 2, 3);
 
 auto secondresult = script.call(LuaFunction<int, int, int> test("multipleInputMultipleResultValues"), 1, 2, 3); 
-```
-#### Utilities
-```cpp
-  script.open("test.lua");
-  script.change("newTest.lua");
-  script.close();
-  //key = variable's name,value = variable's type
-  std::map<std::string,std::string>info=script.tableInfo("Entity");
 ```
 #### User defined class support
  In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a LuaTable and a conversion from your type to a LuaTable.

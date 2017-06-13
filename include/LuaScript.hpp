@@ -39,7 +39,7 @@ namespace LuaBz
 		template <class T>
 		T get(const std::string& name) const;
 		template <class T>
-		bool set(const std::string& name, T&& val) const;
+		void set(const std::string& name, T&& val) const;
 		template <class... R, class... Args>
 		std::tuple<R...> call(const LuaFunction<R...>& f, Args&&... args) const;
 		template <class First,class Second, class... Args>
@@ -87,9 +87,9 @@ namespace LuaBz
 		return m_stack.top_element<T>(true);
 	}
 	template <class T>
-	bool LuaScript::set(const std::string& name, T&& val) const
+	void LuaScript::set(const std::string& name, T&& val) const
 	{
-		return m_stack.set_element(name, val);
+		m_stack.set_element(name, val);
 	}
 	template <class... R, class... Args>
 	std::tuple<R...> LuaScript::call(const LuaFunction<R...>& f, Args&&... args) const

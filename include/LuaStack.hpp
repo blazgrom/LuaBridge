@@ -52,13 +52,12 @@ namespace LuaBz
 			return get<T>(topElement);
 		}
 		template <class T>
-		bool set_element(const std::string& name, T&& value) const
+		void set_element(const std::string& name, T&& value) const
 		{
 			if (name.find('.') == std::string::npos)
 				set_global_variable(name, value);
 			else
 				set_table_element(name, value);
-			return true;
 		}
 		template <class T>
 		T get_element(unsigned int index) const
@@ -95,12 +94,16 @@ namespace LuaBz
 					push(element.value<std::string>());
 					break;
 				}
-				lua_settable(m_state, -3); //automatically pops the pair [key,value] 
+				lua_settable(m_state, -3); //Note: automatically pops the pair [key,value] 
 			}
 		}
 		void push(lua_CFunction function) const
 		{
-			lua_pushcclosure(m_state, function, 1);//All C++ function are inserted as closures
+			//Note:
+			//All C++ function are inserted as closures with one upvalue, this upvalue contains the index in the static element containing all the 
+			//user defined functions
+			const int upvalue_count = 1;
+			lua_pushcclosure(m_state, function, upvalue_count);
 		}
 		void push(std::nullptr_t) const
 		{
@@ -205,26 +208,15 @@ namespace LuaBz
 		lua_State* m_state;
 		static const int topElement = -1;
 		template <class T>
-		bool set_global_variable(const std::string& name, T&& value) const
+		void set_global_variable(const std::string& name, T&& value) const
 		{
-			try
-			{
-				//TODO:The try catch and change the return type of set_global_variable
-				//and set_table_element
 				push(value);
 				lua_setglobal(m_state, name.c_str());
-				return true;
-			}
-			catch (const std::runtime_error&)
-			{
-				return false;
-			}
 		}
 		template <class T>
-		bool set_table_element(const std::string& name, const T& val) const
+		void set_table_element(const std::string& name, const T& val) const
 		{
-			try
-			{
+			
 				std::string tableName = name.substr(0, name.find_first_of('.')), tableField = name.substr(name.find_first_of('.') + 1);
 				get_global_variable(tableName);//
 				auto keepProcessing = true;
@@ -244,12 +236,6 @@ namespace LuaBz
 						load_table_field(parent);
 					}
 				}
-				return true;
-			}
-			catch (const std::runtime_error&)
-			{
-				return false;
-			}
 		}
 		void run_file(const std::string& name) const
 		{
@@ -346,10 +332,6 @@ namespace LuaBz
 		char get<char>(int index) const
 		{
 			auto str = get<std::string>(index);
-			if (str.length() > 1)
-			{
-				throw LuaError("The value you are trying to retrieve has more than one characters");
-			}
 			return str[0];
 		}
 		template <>
@@ -447,17 +429,20 @@ namespace LuaBz
 		void iterate_table(std::function<void(const std::string&)> callback) const
 		{
 			lua_pushnil(m_state);//Initial key
-			unsigned int tableIndex = 1;
 			const int keyIndex = -2;
 			while (lua_next(m_state, keyIndex) != 0)
 			{
 				/*key=-2, value=-1*/
-				std::string tableKey = std::to_string(tableIndex++);
+				std::string tableKey{};
 				if (lua_isstring(m_state, keyIndex) && !lua_isnumber(m_state, keyIndex))
 				{
 					tableKey = lua_tostring(m_state, keyIndex);
 				}
-				callback(std::string{ tableKey });
+				else if (lua_isnumber(m_state, keyIndex))
+				{
+					tableKey=std::to_string(get<int>(keyIndex));
+				}
+				callback(tableKey);
 				pop();
 			}
 		}
