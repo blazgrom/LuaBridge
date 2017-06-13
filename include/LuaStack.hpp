@@ -417,7 +417,7 @@ namespace LuaBz
 				}
 				break;
 				//TODO:
-				//Add support for LUATFUNCTION and LUATTABLE, for now these types are ignored
+				//Add support for LUA_TFUNCTION and LUA_TTABLE
 				case LUA_TFUNCTION:
 				case LUA_TTABLE:
 					break;

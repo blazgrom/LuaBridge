@@ -22,7 +22,6 @@ namespace LuaBz
 		LuaStack m_stack;
 		std::string m_fileName;
 		bool m_open;
-		std::vector<int> m_localFunctions; //TODO: Every instance of LuaScript should be able to call only function registered to itself
 		static std::vector<LuaCF_Intermediary> m_registeredFunctions;
 	public:
 		explicit LuaScript(const std::string& file, bool loadStandardLib = true);
@@ -187,7 +186,6 @@ namespace LuaBz
 			}
 			return 0;
 		});
-		//m_localFunctions.push_back(m_registeredFunctions.size()-1);
 		register_function_impl(name);
 	}
 	template<class R, class... Args>
@@ -209,7 +207,6 @@ namespace LuaBz
 			}
 			return 0;
 		});
-		//m_localFunctions.push_back(m_registeredFunctions.size() - 1);
 		register_function_impl(name);
 	}
 	//Utilities

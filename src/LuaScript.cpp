@@ -46,10 +46,6 @@ namespace LuaBz
 	void LuaScript::close() noexcept
 	{
 		m_stack.destroy();
-		/*for ( auto index : m_localFunctions)
-		{
-			m_registeredFunctions.erase(m_registeredFunctions.begin() + index);
-		}*/
 		m_open = false;
 	}
 	bool LuaScript::change(const std::string& newFile) noexcept
@@ -84,6 +80,7 @@ namespace LuaBz
 	}
 	void LuaScript::register_function_impl(const std::string& name)
 	{
+		//Note:
 		//The index at which the function is saved in the static C++ vector becomes an upvalue for the function
 		int index = m_registeredFunctions.size() - 1;
 		m_stack.push(index);
