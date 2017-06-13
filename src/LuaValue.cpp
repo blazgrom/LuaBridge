@@ -1,5 +1,6 @@
-#include "LuaValue.hpp"
+#include <stdexcept>
 #include <cassert>
+#include "LuaValue.hpp"
 namespace LuaBz
 {
 	bool operator < (const LuaValue& a, const LuaValue& b)
@@ -219,21 +220,37 @@ namespace LuaBz
 	}
 	void LuaValue::value(bool newVal, LuaType newType)
 	{
+		if (newType != LuaType::Boolean)
+		{
+			throw std::logic_error("LuaType different from the type of the value");
+		}
 		adjust_type(newType);
 		value(newVal);
 	}
 	void LuaValue::value(std::nullptr_t newVal, LuaType newType)
 	{
+		if (newType != LuaType::Nil)
+		{
+			throw std::logic_error("LuaType different from the type of the value");
+		}
 		adjust_type(newType);
 		value(newVal);
 	}
 	void LuaValue::value(int newVal, LuaType newType)//TODO: will need overloads for everything up to int
 	{
+		if (newType != LuaType::Integer)
+		{
+			throw std::logic_error("LuaType different from the type of the value");
+		}
 		adjust_type(newType);
 		value(newVal);
 	}
 	void LuaValue::value(double newVal, LuaType newType)
 	{
+		if (newType != LuaType::Number)
+		{
+			throw std::logic_error("LuaType different from the type of the value");
+		}
 		adjust_type(newType);
 		value(newVal);
 	}
@@ -243,6 +260,10 @@ namespace LuaBz
 	}
 	void LuaValue::value(const std::string& newVal, LuaType newType)
 	{
+		if (newType != LuaType::String)
+		{
+			throw std::logic_error("LuaType different from the type of the value");
+		}
 		adjust_type(newType);
 		new (&m_string)std::string{ newVal };
 	}
