@@ -213,16 +213,22 @@ namespace LuaBz
 	template <class T,class R, class... Args >
 	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<R>& ,std::tuple<Args...>&)
 	{
+		//TODO: Find solution for the following problem
+		//auto result = user_f(m_stack.top_element<Args>(popTopElement)...);
+		//works only because of Microsoft compiler, in gcc and clang it won't work
 		bool popTopElement = true;
-		auto result = user_f(m_stack.top_element<Args>(popTopElement)...);//TODO:This won't work when passing data from lua to c++, test it !
+		auto result = user_f(m_stack.top_element<Args>(popTopElement)...);
 		m_stack.push(result);
 		return 1;
 	}
 	template <class T, class... Args>
 	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&)
 	{
+		//TODO: Find solution for the following problem
+		//auto result = user_f(m_stack.top_element<Args>(popTopElement)...);
+		//works only because of Microsoft compiler, in gcc and clang it won't work
 		bool popTopElement = true;
-		user_f(m_stack.top_element<Args>(popTopElement)...);//TODO:This won't work when passing data from lua to c++, test it ! The order of the arguments is wrong is wrong 
+		user_f(m_stack.top_element<Args>(popTopElement)...);
 		return 0;
 	}
 }

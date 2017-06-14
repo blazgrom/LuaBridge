@@ -271,7 +271,7 @@ namespace LuaBz
 	}
 	void LuaValue::value(float newVal, LuaType newType)
 	{
-		value(static_cast<double>(newVal));
+		value(static_cast<double>(newVal),newType);
 	}
 	void LuaValue::value(const std::string& newVal, LuaType newType)
 	{
