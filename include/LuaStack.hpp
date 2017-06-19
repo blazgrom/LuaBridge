@@ -52,9 +52,10 @@ namespace LuaBz
 				set_table_element(name, value);
 		}
 		template <class T>
-		T get_element(unsigned int index) const
+		T get_element(int index) const
 		{
-			return get<T>(index);
+			auto d = get<T>(index);
+			return d;
 		}
 		template <class T>
 		typename std::enable_if<std::is_convertible<T, LuaTable>::value>::type push(T val) const

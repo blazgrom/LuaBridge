@@ -8,11 +8,12 @@
 #include <functional>
 #include <unordered_map>
 #include "lua.hpp"
+#include "LuaStack.hpp"
 #include "LuaTable.hpp"
 #include "LuaFunction.hpp"
+#include "variadic_index.hpp"
 #include "callable_traits.hpp"
 #include "can_represent_value.hpp"
-#include "LuaStack.hpp"
 namespace LuaBz
 {
 	class LuaScript
@@ -211,24 +212,27 @@ namespace LuaBz
 	}
 	//Utilities
 	template <class T,class R, class... Args >
-	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<R>& ,std::tuple<Args...>&)
+	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<R>& ,std::tuple<Args...>& v)
 	{
 		//TODO: Find solution for the following problem
-		//auto result = user_f(m_stack.top_element<Args>(popTopElement)...);
-		//works only because of Microsoft compiler, in gcc and clang it won't work
-		bool popTopElement = true;
-		auto result = user_f(m_stack.top_element<Args>(popTopElement)...);
+		//auto result = user_f(m_stack.get_element<Args>((index_generator.get_index() + 1)*-1)...);
+		//This solution works under Microsoft  compiler and GCC compiler
+		Utils::variadric_index<Args...> index_generator;
+		auto result = user_f(m_stack.get_element<Args>((index_generator.get_index() + 1)*-1)...);
+		m_stack.pop(sizeof...(Args));
 		m_stack.push(result);
 		return 1;
 	}
 	template <class T, class... Args>
-	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&)
+	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>& v)
 	{
+		
 		//TODO: Find solution for the following problem
-		//auto result = user_f(m_stack.top_element<Args>(popTopElement)...);
-		//works only because of Microsoft compiler, in gcc and clang it won't work
-		bool popTopElement = true;
-		user_f(m_stack.top_element<Args>(popTopElement)...);
+		//user_f(m_stack.get_element<Args>((index_generator.get_index() + 1)*-1)...);
+		//This solution works under Microsoft  compiler and GCC compiler
+		Utils::variadric_index<Args...> index_generator;
+		user_f(m_stack.get_element<Args>((index_generator.get_index() + 1)*-1)...);
+		m_stack.pop(sizeof...(Args));
 		return 0;
 	}
 }
