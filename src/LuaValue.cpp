@@ -1,5 +1,4 @@
 #include <cmath>
-#include <string>
 #include <cassert>
 #include <stdexcept>
 #include "LuaValue.hpp"
@@ -132,6 +131,11 @@ namespace LuaBz
 		m_bool{ data }
 	{
 	}
+	LuaValue::LuaValue(const std::string& name, const char* data)
+		:
+		LuaValue(name, std::string(data))
+	{
+	}
 	LuaValue::LuaValue(const std::string& name, const std::string& data)
 		:
 		m_type{ LuaType::String },
@@ -139,11 +143,15 @@ namespace LuaBz
 		m_string{ data }
 	{
 	}
-	LuaValue::LuaValue(const std::string& name, const char* data)
+	LuaValue::LuaValue(const std::string& name, const LuaContainer<LuaValue>& data)
 		:
-		LuaValue(name, std::string(data))
+		m_type{ LuaType::Table },
+		m_name{ name },
+		m_table{ data }
 	{
+
 	}
+
 	LuaValue::LuaValue(const LuaValue& rhs)
 		:
 		m_type{ rhs.m_type },
@@ -227,12 +235,23 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaValue does not have value of type string");
 		}
+		m_string.~basic_string();
 		new (&m_string)std::string{ newVal };
 	}
 	void LuaValue::value(const char* newVal)
 	{
 		value(std::string(newVal));
 	}
+	void LuaValue::value(const LuaContainer<LuaValue>& newVal)
+	{
+		if(m_type!=LuaType::Table)
+		{
+			throw std::logic_error("LuaValue does not have value of type LuaTable");
+		}
+		m_table.~LuaContainer();
+		new (&m_table) LuaContainer<LuaValue>(newVal);
+	}
+	
 	void LuaValue::value(bool newVal, LuaType newType)
 	{
 		if (newType != LuaType::Boolean)
@@ -286,6 +305,15 @@ namespace LuaBz
 	{
 		value(std::string(newVal), newType);
 	}
+	void LuaValue::value(const LuaContainer<LuaValue>& newVal, LuaType newType)
+	{
+		if (newType != LuaType::Table)
+		{
+			throw std::logic_error("LuaType different from the type of the value");
+		}
+		adjust_type(newType);
+		new (&m_table) LuaContainer<LuaValue>(newVal);
+	}
 	//Private
 	double LuaValue::number() const
 	{
@@ -317,6 +345,10 @@ namespace LuaBz
 			return m_string;
 		throw std::logic_error{ "String is not initialized" };
 	}
+	LuaContainer<LuaValue> LuaValue::table() const
+	{
+		return m_table;
+	}
 	void LuaValue::adjust_type(LuaType newType)
 	{
 		if (newType != m_type)
@@ -324,6 +356,10 @@ namespace LuaBz
 			if (m_type == LuaType::String)
 			{
 				m_string.~basic_string();
+			}
+			else if (m_type == LuaType::Table)
+			{
+				m_table.~LuaContainer();
 			}
 			m_type = newType;
 		}
@@ -345,7 +381,10 @@ namespace LuaBz
 			m_number = rhs.m_number;
 			break;
 		case LuaType::String:
-			new (&m_string)std::string{ rhs.m_string };
+			new (&m_string)std::string( rhs.m_string );
+			break;
+		case LuaType::Table:
+			new (&m_table) LuaContainer<LuaValue>(rhs.m_table);
 			break;
 		default:
 			assert(false);
@@ -357,6 +396,10 @@ namespace LuaBz
 		if (m_type == LuaType::String)
 		{
 			m_string.~basic_string();
+		}
+		else if (m_type == LuaType::Table)
+		{
+			m_table.~LuaContainer();
 		}
 		init(rhs);
 		m_type = rhs.m_type;

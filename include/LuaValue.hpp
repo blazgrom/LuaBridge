@@ -1,11 +1,12 @@
 #ifndef LUABZ_LUA_VALUE_HPP
 #define LUABZ_LUA_VALUE_HPP
 #include <string>
+#include "LuaContainer.hpp"
 namespace LuaBz
 {
 	enum class LuaType : int8_t
 	{
-		Nil, Boolean, Integer, Number, String
+		Nil, Boolean, Integer, Number, String, Table
 	};
 	class LuaValue
 	{
@@ -17,7 +18,8 @@ namespace LuaBz
 		LuaValue(const std::string& name, float data);
 		LuaValue(const std::string& name, bool data);
 		LuaValue(const std::string& name, const char* data);
-		LuaValue(const std::string& name,const std::string& data);
+		LuaValue(const std::string& name, const std::string& data);
+		LuaValue(const std::string& name,const LuaContainer<LuaValue>& data);
 		LuaValue(const LuaValue& rhs);
 		LuaValue(LuaValue&& rhs);
 		LuaValue& operator=(const LuaValue& rhs);
@@ -64,6 +66,7 @@ namespace LuaBz
 		void value(float newVal);
 		void value(const std::string& newVal);
 		void value(const char* newVal);
+		void value(const LuaContainer<LuaValue>& newVal);
 		//Overwrite type and set new type
 		void value(bool newVal, LuaType newType);
 		void value(std::nullptr_t newVal, LuaType newType);
@@ -72,6 +75,7 @@ namespace LuaBz
 		void value(float newVal, LuaType newType);
 		void value(const std::string& newVal, LuaType newType);
 		void value(const char* newVal, LuaType newType);
+		void value(const LuaContainer<LuaValue>& newVal, LuaType newType);
 	private:
 		LuaType m_type;
 		std::string m_name;
@@ -82,12 +86,14 @@ namespace LuaBz
 			double m_number;
 			bool m_bool;
 			std::string m_string;
+			LuaContainer <LuaValue> m_table;
 		};
 		double number() const;
 		int integer() const;
 		bool boolean() const;
 		std::nullptr_t nil() const;
 		std::string string() const;
+		LuaContainer<LuaValue> table() const;
 		void adjust_type(LuaType newType);
 		void init(const LuaValue& rhs);
 		void copy(const LuaValue& rhs);
