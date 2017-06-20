@@ -189,7 +189,7 @@ namespace LuaBz
 	{
 		if (m_type != LuaType::Boolean)
 		{
-			throw std::exception("LuaValue does not have value of type bool");
+			throw std::logic_error("LuaValue does not have value of type bool");
 		}
 		m_bool = newVal;
 	}
@@ -197,7 +197,7 @@ namespace LuaBz
 	{
 		if (m_type != LuaType::Nil)
 		{
-			throw std::exception("LuaValue does not have value of type nil");
+			throw std::logic_error("LuaValue does not have value of type nil");
 		}
 		m_nil = newVal;
 	}
@@ -205,7 +205,7 @@ namespace LuaBz
 	{
 		if (m_type != LuaType::Integer)
 		{
-			throw std::exception("LuaValue does not have value of type integer");
+			throw std::logic_error("LuaValue does not have value of type integer");
 		}
 		m_integer = newVal;
 	}
@@ -213,7 +213,7 @@ namespace LuaBz
 	{
 		if (m_type != LuaType::Number)
 		{
-			throw std::exception("LuaValue does not have value of type number");
+			throw std::logic_error("LuaValue does not have value of type number");
 		}
 		m_number = newVal;
 	}
@@ -225,7 +225,7 @@ namespace LuaBz
 	{
 		if (m_type != LuaType::String)
 		{
-			throw std::exception("LuaValue does not have value of type string");
+			throw std::logic_error("LuaValue does not have value of type string");
 		}
 		new (&m_string)std::string{ newVal };
 	}
@@ -309,13 +309,13 @@ namespace LuaBz
 	{
 		if (m_type == LuaType::Nil)
 			return m_nil;
-		throw std::runtime_error{ "Nil is not initialized" };
+		throw std::logic_error{ "Nil is not initialized" };
 	}
 	std::string LuaValue::string() const
 	{
 		if (m_type == LuaType::String)
 			return m_string;
-		throw std::runtime_error{ "String is not initialized" };
+		throw std::logic_error{ "String is not initialized" };
 	}
 	void LuaValue::adjust_type(LuaType newType)
 	{

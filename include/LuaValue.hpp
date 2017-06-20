@@ -1,7 +1,6 @@
 #ifndef LUABZ_LUA_VALUE_HPP
 #define LUABZ_LUA_VALUE_HPP
 #include <string>
-#include <cstdint>
 namespace LuaBz
 {
 	enum class LuaType : int8_t
