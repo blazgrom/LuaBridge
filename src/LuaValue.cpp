@@ -11,6 +11,7 @@ namespace LuaBz
 		//LuaTypeX < Nil -> false, because it's not possible to compare types with nil in Lua
 		//Nil < LuaTypeX -> true, see LuaTypeX < Nil. True because we have inverted the position of Nil
 		//LuaTypeX < LuaTypeX -> compare type if possible, if not possible returns false
+		//TODO:Add logic for when the type is LuaTable
 		if (rhs.type() == LuaType::Nil)
 		{
 			return false; 
@@ -57,6 +58,7 @@ namespace LuaBz
 	{
 		//Note:
 		//Two LuaValues compare equal if they have the save type and the value they hold is the same
+		//TODO:Add logic for when the type is LuaTable
 		bool sameType = lhs.type() == rhs.type();
 		if (sameType)
 		{
@@ -258,7 +260,7 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaType different from the type of the value");
 		}
-		adjust_type(newType);
+		m_type = newType;
 		value(newVal);
 	}
 	void LuaValue::value(std::nullptr_t newVal, LuaType newType)
@@ -267,7 +269,7 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaType different from the type of the value");
 		}
-		adjust_type(newType);
+		m_type = newType;
 		value(newVal);
 	}
 	void LuaValue::value(int newVal, LuaType newType)
@@ -276,7 +278,7 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaType different from the type of the value");
 		}
-		adjust_type(newType);
+		m_type = newType;
 		value(newVal);
 	}
 	void LuaValue::value(double newVal, LuaType newType)
@@ -285,7 +287,7 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaType different from the type of the value");
 		}
-		adjust_type(newType);
+		m_type = newType;
 		value(newVal);
 	}
 	void LuaValue::value(float newVal, LuaType newType)
@@ -298,8 +300,8 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaType different from the type of the value");
 		}
-		adjust_type(newType);
-		new (&m_string)std::string{ newVal };
+		m_type = newType;
+		value(newVal);
 	}
 	void LuaValue::value(const char* newVal, LuaType newType)
 	{
@@ -311,8 +313,8 @@ namespace LuaBz
 		{
 			throw std::logic_error("LuaType different from the type of the value");
 		}
-		adjust_type(newType);
-		new (&m_table) LuaContainer<LuaValue>(newVal);
+		m_type = newType;
+		value(newVal);
 	}
 	//Private
 	double LuaValue::number() const
@@ -348,21 +350,6 @@ namespace LuaBz
 	LuaContainer<LuaValue> LuaValue::table() const
 	{
 		return m_table;
-	}
-	void LuaValue::adjust_type(LuaType newType)
-	{
-		if (newType != m_type)
-		{
-			if (m_type == LuaType::String)
-			{
-				m_string.~basic_string();
-			}
-			else if (m_type == LuaType::Table)
-			{
-				m_table.~LuaContainer();
-			}
-			m_type = newType;
-		}
 	}
 	void LuaValue::init(const LuaValue& rhs)
 	{

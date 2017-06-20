@@ -94,7 +94,6 @@ namespace LuaBz
 		std::nullptr_t nil() const;
 		std::string string() const;
 		LuaContainer<LuaValue> table() const;
-		void adjust_type(LuaType newType);
 		void init(const LuaValue& rhs);
 		void copy(const LuaValue& rhs);
 	};
