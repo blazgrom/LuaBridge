@@ -5,41 +5,50 @@
 namespace Utils
 {
 	//Signed - Signed
-	template <class OriginalT, class NewT>
-	constexpr  typename std::enable_if<std::is_signed<OriginalT>::value && std::is_signed<NewT>::value, bool>::type can_represent_min()
+	template <class OldT, class NewT>
+	constexpr  typename std::enable_if<std::is_signed<OldT>::value && std::is_signed<NewT>::value, bool>::type can_represent_min()
 	{
-		return std::numeric_limits<OriginalT>::min() >= std::numeric_limits<NewT>::min();
+		return std::numeric_limits<OldT>::min() >= std::numeric_limits<NewT>::min();
 	}
 	//Unsigned - Unsigned
-	template <class OriginalT, class NewT >
-	constexpr typename std::enable_if<std::is_unsigned<OriginalT>::value && std::is_unsigned<NewT>::value, bool>::type can_represent_min()
+	template <class OldT, class NewT >
+	constexpr typename std::enable_if<std::is_unsigned<OldT>::value && std::is_unsigned<NewT>::value, bool>::type can_represent_min()
 	{
 		return true;
 	}
 	//Unsigned - Signed
-	template <class OriginalT, class NewT >
-	constexpr typename std::enable_if<std::is_unsigned<OriginalT>::value && std::is_signed<NewT>::value, bool>::type can_represent_min()
-	{
-		return true;
-	}	
-	//Signed - Unsigned
-	template <class OriginalT, class NewT >
-	constexpr typename std::enable_if<std::is_signed<OriginalT>::value && std::is_unsigned<NewT>::value, bool>::type can_represent_min()
+	template <class OldT, class NewT >
+	constexpr typename std::enable_if<std::is_unsigned<OldT>::value && std::is_signed<NewT>::value, bool>::type can_represent_min()
 	{
 		return false;
 	}
-	template <class OriginalT, class NewT>
+	//Signed - Unsigned
+	template <class OldT, class NewT >
+	constexpr typename std::enable_if<std::is_signed<OldT>::value && std::is_unsigned<NewT>::value, bool>::type can_represent_min()
+	{
+		return false;
+	}
+	template <class OldT, class NewT>
 	constexpr bool can_represent_max()
 	{
-		return (std::numeric_limits<OriginalT>::max() <= std::numeric_limits<NewT>::max());//signed - unsigned mismatch // TODO
+		//Note:
+		//This will raise a warning signaling signed/unsigned mismatch, but the code works follows an explanation
+		//The warning is raised only with the following combination of types
+		//unsigned int - int , unsigned long - unsigned long , unsigned long long - long long
+		//Explanation: When the calls to max() return we will have two values, one signed and one unsigned.
+		//Based on the C++ rules of comparision between unsigned and signed, the signed value is promoted to unsigned,
+		//and specificaly the unsigned we are comparing againts because the rules of C++ says that when type promotation
+		//is needed, the value's type  is promoted to the first type that can represent it's correctly it's content, in our
+		//case this is the unsigned  we are comparing against
+		return (std::numeric_limits<OldT>::max() <= std::numeric_limits<NewT>::max());
 	}
-	template<class OriginalT, class NewT>
+	template<class OldT, class NewT>
 	constexpr bool  can_represent_value()
 	{
-		return can_represent_max<OriginalT, NewT>() && can_represent_min<OriginalT, NewT>();//unsigned - signed mismatch  // TODO
+		return can_represent_max<OldT, NewT>() && can_represent_min<OldT, NewT>();
 	}
 	//Struct for when you need type dispatching
-	template <class OriginalT, class NewT>
-	struct Can_represent_value :std::integral_constant<bool, can_represent_value<OriginalT, NewT>()> {};
+	template <class OldT, class NewT>
+	struct Can_represent_value :std::integral_constant<bool, can_represent_value<OldT, NewT>()> {};
 }	
 #endif // !CAN_REPRESENT_VALUE_HPP
