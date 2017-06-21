@@ -11,10 +11,9 @@ namespace LuaBz
 		//LuaTypeX < Nil -> false, because it's not possible to compare types with nil in Lua
 		//Nil < LuaTypeX -> true, see LuaTypeX < Nil. True because we have inverted the position of Nil
 		//LuaTypeX < LuaTypeX -> compare type if possible, if not possible returns false
-		//TODO:Add logic for when the type is LuaTable
 		if (rhs.type() == LuaType::Nil)
 		{
-			return false; 
+			return false;
 		}
 		else if (lhs.type() == LuaType::Nil)
 		{
@@ -58,7 +57,6 @@ namespace LuaBz
 	{
 		//Note:
 		//Two LuaValues compare equal if they have the save type and the value they hold is the same
-		//TODO:Add logic for when the type is LuaTable
 		bool sameType = lhs.type() == rhs.type();
 		if (sameType)
 		{
@@ -74,15 +72,34 @@ namespace LuaBz
 				return lhs.value<bool>() && rhs.value<bool>();
 				break;
 			case LuaType::Number:
-				{
-					double threshold = (0.1) / 10000000000;
-					auto absoluteDifference = std::fabs(lhs.value<double>() - rhs.value<double>());
-					return absoluteDifference <= threshold;
-				}
-				break;
+			{
+				double threshold = (0.1) / 10000000000;
+				auto absoluteDifference = std::fabs(lhs.value<double>() - rhs.value<double>());
+				return absoluteDifference <= threshold;
+			}
+			break;
 			case LuaType::String:
 				return lhs.value<std::string>() == rhs.value<std::string>();
 				break;
+			case LuaType::Table:
+			{
+				if (lhs.value<LuaContainer<LuaValue>>().size() != rhs.value<LuaContainer<LuaValue>>().size())
+				{
+					return false;
+				}
+				for (const auto& lhsValue : lhs.value<LuaContainer<LuaValue>>())
+				{
+					for (const auto& rhsValue : rhs.value<LuaContainer<LuaValue>>())
+					{
+						if (!(lhsValue == rhsValue))
+						{
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+			break;
 			default:
 				assert(false);
 				break;
@@ -153,7 +170,6 @@ namespace LuaBz
 	{
 
 	}
-
 	LuaValue::LuaValue(const LuaValue& rhs)
 		:
 		m_type{ rhs.m_type },
@@ -181,12 +197,60 @@ namespace LuaBz
 		copy(rhs);
 		return *this;
 	};
+	LuaValue& LuaValue::operator=(int rhs)
+	{
+		destroy_complex();
+		m_integer = rhs;
+		m_type = LuaType::Integer;
+		return *this;
+	}
+	LuaValue& LuaValue::operator=(double rhs)
+	{
+		destroy_complex();
+		m_number = rhs;
+		m_type = LuaType::Number;
+		return *this;
+	}
+	LuaValue& LuaValue::operator=(float rhs)
+	{
+		return operator=(static_cast<double>(rhs));
+	}
+	LuaValue& LuaValue::operator=(bool rhs)
+	{
+		destroy_complex();
+		m_bool = rhs;
+		m_type = LuaType::Boolean;
+		return *this;
+	}
+	LuaValue& LuaValue::operator=(std::nullptr_t rhs)
+	{
+		destroy_complex();
+		m_nil = rhs;
+		m_type = LuaType::Nil;
+		return *this;
+	}
+	LuaValue& LuaValue::operator=(const std::string& rhs)
+	{
+		destroy_complex();
+		new (&m_string)std::string(rhs );
+		m_type = LuaType::String;
+		return *this;
+	}
+	LuaValue& LuaValue::operator=(const char* rhs)
+	{
+		return operator=(std::string(rhs));
+	}
+	LuaValue& LuaValue::operator=(const LuaContainer<LuaValue>& rhs)
+	{
+		destroy_complex();
+		new (&m_table) LuaContainer<LuaValue>(rhs);
+		m_type = LuaType::Table;
+		return *this;
+	}
 	LuaValue::~LuaValue()
 	{
-		if (m_type == LuaType::String)
-			m_string.~basic_string();
+		destroy_complex();
 	}
-	//Public
 	const std::string& LuaValue::name() const
 	{
 		return m_name;
@@ -195,145 +259,23 @@ namespace LuaBz
 	{
 		return m_type;
 	}
-	void LuaValue::value(bool newVal)
-	{
-		if (m_type != LuaType::Boolean)
-		{
-			throw std::logic_error("LuaValue does not have value of type bool");
-		}
-		m_bool = newVal;
-	}
-	void LuaValue::value(std::nullptr_t newVal)
-	{
-		if (m_type != LuaType::Nil)
-		{
-			throw std::logic_error("LuaValue does not have value of type nil");
-		}
-		m_nil = newVal;
-	}
-	void LuaValue::value(int newVal)
-	{
-		if (m_type != LuaType::Integer)
-		{
-			throw std::logic_error("LuaValue does not have value of type integer");
-		}
-		m_integer = newVal;
-	}
-	void LuaValue::value(double newVal)
-	{
-		if (m_type != LuaType::Number)
-		{
-			throw std::logic_error("LuaValue does not have value of type number");
-		}
-		m_number = newVal;
-	}
-	void LuaValue::value(float newVal)
-	{
-		value(static_cast<double>(newVal));
-	}
-	void LuaValue::value(const std::string& newVal)
-	{
-		if (m_type != LuaType::String)
-		{
-			throw std::logic_error("LuaValue does not have value of type string");
-		}
-		m_string.~basic_string();
-		new (&m_string)std::string{ newVal };
-	}
-	void LuaValue::value(const char* newVal)
-	{
-		value(std::string(newVal));
-	}
-	void LuaValue::value(const LuaContainer<LuaValue>& newVal)
-	{
-		if(m_type!=LuaType::Table)
-		{
-			throw std::logic_error("LuaValue does not have value of type LuaTable");
-		}
-		m_table.~LuaContainer();
-		new (&m_table) LuaContainer<LuaValue>(newVal);
-	}
-	
-	void LuaValue::value(bool newVal, LuaType newType)
-	{
-		if (newType != LuaType::Boolean)
-		{
-			throw std::logic_error("LuaType different from the type of the value");
-		}
-		m_type = newType;
-		value(newVal);
-	}
-	void LuaValue::value(std::nullptr_t newVal, LuaType newType)
-	{
-		if (newType != LuaType::Nil)
-		{
-			throw std::logic_error("LuaType different from the type of the value");
-		}
-		m_type = newType;
-		value(newVal);
-	}
-	void LuaValue::value(int newVal, LuaType newType)
-	{
-		if (newType != LuaType::Integer)
-		{
-			throw std::logic_error("LuaType different from the type of the value");
-		}
-		m_type = newType;
-		value(newVal);
-	}
-	void LuaValue::value(double newVal, LuaType newType)
-	{
-		if (newType != LuaType::Number)
-		{
-			throw std::logic_error("LuaType different from the type of the value");
-		}
-		m_type = newType;
-		value(newVal);
-	}
-	void LuaValue::value(float newVal, LuaType newType)
-	{
-		value(static_cast<double>(newVal),newType);
-	}
-	void LuaValue::value(const std::string& newVal, LuaType newType)
-	{
-		if (newType != LuaType::String)
-		{
-			throw std::logic_error("LuaType different from the type of the value");
-		}
-		m_type = newType;
-		value(newVal);
-	}
-	void LuaValue::value(const char* newVal, LuaType newType)
-	{
-		value(std::string(newVal), newType);
-	}
-	void LuaValue::value(const LuaContainer<LuaValue>& newVal, LuaType newType)
-	{
-		if (newType != LuaType::Table)
-		{
-			throw std::logic_error("LuaType different from the type of the value");
-		}
-		m_type = newType;
-		value(newVal);
-	}
-	//Private
 	double LuaValue::number() const
 	{
 		if (m_type == LuaType::Number)
 			return m_number;
-		throw std::runtime_error{ "Number is not initialized" };
+		throw std::logic_error{ "Number is not initialized" };
 	}
 	int LuaValue::integer() const
 	{
 		if (m_type == LuaType::Integer)
 			return m_integer;
-		throw std::runtime_error{ "Integer is not initialized" };
+		throw std::logic_error{ "Integer is not initialized" };
 	}
 	bool LuaValue::boolean() const
 	{
 		if (m_type == LuaType::Boolean)
 			return m_bool;
-		throw std::runtime_error{ "Boolean is not initialized" };
+		throw std::logic_error{ "Boolean is not initialized" };
 	}
 	std::nullptr_t LuaValue::nil() const
 	{
@@ -341,15 +283,17 @@ namespace LuaBz
 			return m_nil;
 		throw std::logic_error{ "Nil is not initialized" };
 	}
-	std::string LuaValue::string() const
+	const std::string& LuaValue::string() const
 	{
 		if (m_type == LuaType::String)
 			return m_string;
 		throw std::logic_error{ "String is not initialized" };
 	}
-	LuaContainer<LuaValue> LuaValue::table() const
+	const LuaContainer<LuaValue>& LuaValue::table() const
 	{
-		return m_table;
+		if (m_type == LuaType::Table)
+			return m_table;
+		throw std::logic_error{ "Table is not initialized" };
 	}
 	void LuaValue::init(const LuaValue& rhs)
 	{
@@ -380,6 +324,12 @@ namespace LuaBz
 	}
 	void LuaValue::copy(const LuaValue& rhs)
 	{
+		destroy_complex();
+		init(rhs);
+		m_type = rhs.m_type;
+	}
+	void LuaValue::destroy_complex()
+	{
 		if (m_type == LuaType::String)
 		{
 			m_string.~basic_string();
@@ -388,7 +338,6 @@ namespace LuaBz
 		{
 			m_table.~LuaContainer();
 		}
-		init(rhs);
-		m_type = rhs.m_type;
+
 	}
 }

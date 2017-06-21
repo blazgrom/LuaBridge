@@ -24,6 +24,14 @@ namespace LuaBz
 		LuaValue(LuaValue&& rhs);
 		LuaValue& operator=(const LuaValue& rhs);
 		LuaValue& operator=(LuaValue&& rhs);
+		LuaValue& operator=(int rhs);
+		LuaValue& operator=(double rhs);
+		LuaValue& operator=(float rhs);
+		LuaValue& operator=(bool rhs);
+		LuaValue& operator=(std::nullptr_t rhs);
+		LuaValue& operator=(const std::string& rhs);
+		LuaValue& operator=(const char* rhs);
+		LuaValue& operator=(const LuaContainer<LuaValue>& rhs);
 		~LuaValue();
 		const std::string& name() const;
 		LuaType type() const;
@@ -58,24 +66,46 @@ namespace LuaBz
 		{
 			return nil();
 		}
-		//Set new value
-		void value(bool newVal);
-		void value(std::nullptr_t newVal);
-		void value(int newVal);
-		void value(double newVal);
-		void value(float newVal);
-		void value(const std::string& newVal);
-		void value(const char* newVal);
-		void value(const LuaContainer<LuaValue>& newVal);
-		//Overwrite type and set new type
-		void value(bool newVal, LuaType newType);
-		void value(std::nullptr_t newVal, LuaType newType);
-		void value(int newVal, LuaType newType);
-		void value(double newVal, LuaType newType);
-		void value(float newVal, LuaType newType);
-		void value(const std::string& newVal, LuaType newType);
-		void value(const char* newVal, LuaType newType);
-		void value(const LuaContainer<LuaValue>& newVal, LuaType newType);
+		template<>
+		LuaContainer<LuaValue> value() const
+		{
+			return table();
+		}
+		template <class T>
+		const T& value()
+		{
+			static_assert(false, "Use of a type not supported by LuaValue");
+		}
+		template <>
+		const int& value<int>()
+		{
+			return m_integer;
+		}
+		template <>
+		const double& value<double>()
+		{
+			return m_number;
+		}
+		template <>
+		const bool& value<bool>()
+		{
+			return m_bool;
+		}
+		template <>
+		const std::string& value<std::string>()
+		{
+			return string();
+		}
+		template <>
+		const nullptr_t& value<std::nullptr_t>()
+		{
+			return m_nil;
+		}
+		template<>
+		const LuaContainer<LuaValue>& value()
+		{
+			return table();
+		}
 	private:
 		LuaType m_type;
 		std::string m_name;
@@ -92,10 +122,11 @@ namespace LuaBz
 		int integer() const;
 		bool boolean() const;
 		std::nullptr_t nil() const;
-		std::string string() const;
-		LuaContainer<LuaValue> table() const;
+		const std::string& string() const;
+		const LuaContainer<LuaValue>& table() const;
 		void init(const LuaValue& rhs);
 		void copy(const LuaValue& rhs);
+		void destroy_complex();
 	};
 	bool operator < (const LuaValue& lhs, const LuaValue& rhs);
 	bool operator ==(const LuaValue& lhs, const LuaValue& rhs);
