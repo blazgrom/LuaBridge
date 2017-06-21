@@ -35,6 +35,9 @@ namespace LuaBz
 			case LuaType::String:
 				push(element.value<std::string>());
 				break;
+			case LuaType::Table:
+				push(element.value<LuaTable>());
+				break;
 			}
 			lua_settable(m_state, -3); //Note: automatically pops the pair [key,value] 
 		}
@@ -163,14 +166,14 @@ namespace LuaBz
 			}
 			break;
 			case LUA_TSTRING:
-			{
 				table.push_back(LuaValue(key, top_element<std::string>()));
-			}
 			break;
-			//TODO:
-			//Add support for LUA_TFUNCTION and LUA_TTABLE
-			case LUA_TFUNCTION:
 			case LUA_TTABLE:
+				table.push_back(LuaValue(key, top_element<LuaTable>()));
+				break;
+			//Note:TODO
+			//LuaValue does not support Lua Cfunction so we only pop the value, later on maybe i will add support
+			case LUA_TFUNCTION:
 				break;
 			}
 		};

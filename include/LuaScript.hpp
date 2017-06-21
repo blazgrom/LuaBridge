@@ -181,7 +181,7 @@ namespace LuaBz
 			if (m_stack.size() == sizeof...(Args))
 			{
 				std::tuple<Args...> arguments = {};
-				RegisteredFunctionReturnType<R> returnType = {};
+				Utils::type_container<R> returnType = {};
 				return call_registered_function(user_f, returnType, arguments);
 			}
 			return 0;
@@ -202,7 +202,7 @@ namespace LuaBz
 			if (m_stack.size() == Utils::callable_traits<T>::args_count)
 			{
 				Utils::callable_arg_types<T> arguments = {};
-				RegisteredFunctionReturnType<Utils::callable_return_type<T>> returnType = {};
+				Utils::type_container<Utils::callable_return_type<T>> returnType = {};
 				return call_registered_function(user_f, returnType, arguments);
 			}
 			return 0;
