@@ -3,31 +3,60 @@
 #include <string>
 namespace LuaBz
 {
+	
 	template <typename... T>
-	struct LuaFunction
+	class LuaFunction
 	{
+	public:
 		explicit LuaFunction(const std::string& name)
 			:
-			name(name),
-			resultCount(sizeof... (T))
+			m_name(name),
+			m_resultCount(sizeof... (T))
 		{
 
 		}
-		std::string name;
-		const unsigned int resultCount;
+		const std::string& name()
+		{
+			return m_name;
+		}
+		std::string name() const
+		{
+			return m_name;
+		}
+		const unsigned int result_count() const
+		{
+			return m_resultCount;
+		}
+	private:
+		std::string m_name;
+		const unsigned int m_resultCount;
 	};
 	template <>
-	struct LuaFunction<void>
+	class LuaFunction<void>
 	{
+	public:
 		explicit LuaFunction(const std::string& name)
 			:
-			name(name),
-			resultCount(0)
+			m_name(name),
+			m_resultCount(0)
 		{
 
 		}
-		std::string name;
-		unsigned int resultCount;
+		const std::string& name()
+		{
+			return m_name;
+		}
+		std::string name() const
+		{
+			return m_name;
+		}
+		const unsigned int result_count() const
+		{
+			return m_resultCount;
+		}
+	private:
+		std::string m_name;
+		unsigned int m_resultCount;
 	};
 }
 #endif // !LUABZ_LUA_FUNCTION_HPP

@@ -31,8 +31,8 @@ namespace LuaBz
 	//Public
 	void LuaScript::call(const LuaFunction<void>& f) const
 	{
-		load_function(f.name);
-		m_stack.call_function(0, f.resultCount);
+		load_function(f.name());
+		m_stack.call_function(0, f.result_count());
 	}
 	void LuaScript::open(const std::string& file)
 	{

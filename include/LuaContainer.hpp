@@ -5,37 +5,37 @@
 namespace LuaBz
 {
 	template<class T>
-	struct LuaContainer
+	class LuaContainer
 	{
-		//Special functions
+	public:
 		LuaContainer()
 			:
-			values{}
+			m_values{}
 		{
 
 		}
 		LuaContainer(typename std::vector<T>::size_type count, const T& value)
 			:
-			values(count, value)
+			m_values(count, value)
 		{
 
 		}
 		explicit LuaContainer(typename std::vector<T>::size_type count)
 			:
-			values(count)
+			m_values(count)
 		{
 
 		}
 		template <class Iter>
 		LuaContainer(Iter first, Iter last)
 			:
-			values(first, last)
+			m_values(first, last)
 		{
 
 		}
 		LuaContainer(std::initializer_list<T> init)
 			:
-			values(init)
+			m_values(init)
 		{
 
 		}
@@ -43,129 +43,124 @@ namespace LuaBz
 		LuaContainer(LuaContainer<T>&& rhs) = default;
 		LuaContainer operator=(std::initializer_list<T> ilist)
 		{
-			values = ilist;
+			m_values = ilist;
 		}
 		LuaContainer& operator=(const LuaContainer<T>& rhs) = default;
 		LuaContainer& operator=(LuaContainer<T>&& rhs) = default;
 		~LuaContainer() = default;
-		//Element access
 		typename std::vector<T>::reference at(typename std::vector<T>::size_type pos)
 		{
-			return values.at(pos);
+			return m_values.at(pos);
 		}
 		typename std::vector<T>::const_reference at(typename std::vector<T>::size_type pos) const
 		{
-			return values.at(pos);
+			return m_values.at(pos);
 		}
 		typename std::vector<T>::reference operator[](typename std::vector<T>::size_type pos)
 		{
-			return values.at(pos);
+			return m_values.at(pos);
 		}
 		typename std::vector<T>::const_reference operator[](typename std::vector<T>::size_type pos) const
 		{
-			return values.at(pos);
+			return m_values.at(pos);
 		}
 		typename std::vector<T>::reference front()
 		{
-			return values.front();
+			return m_values.front();
 		}
 		typename std::vector<T>::const_reference front() const
 		{
-			return values.front();
+			return m_values.front();
 		}
 		typename std::vector<T>::reference back()
 		{
-			return values.back();
+			return m_values.back();
 		}
 		typename std::vector<T>::const_reference back() const
 		{
-			return values.back();
+			return m_values.back();
 		}
-		//Iterators
 		typename std::vector<T>::iterator begin() noexcept
 		{
-			return values.begin();
+			return m_values.begin();
 		}
 		typename std::vector<T>::const_iterator begin() const noexcept
 		{
-			return values.begin();
+			return m_values.begin();
 		}
 		typename std::vector<T>::const_iterator cbegin() const noexcept
 		{
-			return values.cbegin();
+			return m_values.cbegin();
 		}
 		typename std::vector<T>::iterator end() noexcept
 		{
-			return values.end();
+			return m_values.end();
 		}
 		typename std::vector<T>::const_iterator end() const noexcept
 		{
-			return values.end();
+			return m_values.end();
 		}
 		typename std::vector<T>::const_iterator cend() const noexcept
 		{
-			return values.cend();
+			return m_values.cend();
 		}
 		typename std::vector<T>::reverse_iterator rbegin() noexcept
 		{
-			return values.rbegin();
+			return m_values.rbegin();
 		}
 		typename std::vector<T>::const_reverse_iterator rbegin() const noexcept
 		{
-			return values.rbegin();
+			return m_values.rbegin();
 		}
 		typename std::vector<T>::const_reverse_iterator crbegin() const noexcept
 		{
-			return values.crbegin();
+			return m_values.crbegin();
 		}
 		typename std::vector<T>::reverse_iterator rend() noexcept
 		{
-			return values.rend();
+			return m_values.rend();
 		}
 		typename std::vector<T>::const_reverse_iterator rend() const noexcept
 		{
-			return values.rend();
+			return m_values.rend();
 		}
 		typename std::vector<T>::const_reverse_iterator crend() const noexcept
 		{
-			return values.crend();
+			return m_values.crend();
 		}
-		//Capacity
 		bool empty() const noexcept
 		{
-			return values.empty();
+			return m_values.empty();
 		}
 		typename std::vector<T>::size_type size() const noexcept
 		{
-			return values.size();
+			return m_values.size();
 		}
-		//Modifiers
 		void clear() noexcept
 		{
-			values.clear();
+			m_values.clear();
 		}
 		void push_back(const T& val)
 		{
-			values.push_back(val);
+			m_values.push_back(val);
 		}
 		void push_back(T&& val)
 		{
-			values.push_back(val);
+			m_values.push_back(val);
 		}
 		void pop_back()
 		{
-			return values.pop_back();
+			return m_values.pop_back();
 		}
 		template <class...Args>
 		void emplace_back(Args&&... args)
 		{
-			values.emplace_back(std::forward<Args>(args)...);
+			m_values.emplace_back(std::forward<Args>(args)...);
 		}
 		void swap(LuaContainer<T>& other)
 		{
-			values.swap(other.values);
+			m_values.swap(other.m_values);
 		}
-		//Non member functions
 		friend bool operator==(const LuaContainer<T>& a, const LuaContainer<T>& b);
 		friend bool operator!=(const LuaContainer<T>& a, const LuaContainer<T>& b);
 		friend bool operator<(const LuaContainer<T>& a, const LuaContainer<T>& b);
@@ -173,37 +168,37 @@ namespace LuaBz
 		friend bool operator>(const LuaContainer<T>& a, const LuaContainer<T>& b);
 		friend bool operator>=(const LuaContainer<T>& a, const LuaContainer<T>& b);
 	private:
-		std::vector<T> values;
+		std::vector<T> m_values;
 	};
 	template<class T>
 	bool operator==(const LuaContainer<T>& a, const LuaContainer<T>& b)
 	{
-		return a.values == b.values;
+		return a.m_values == b.m_values;
 	}
 	template<class T>
 	bool operator!=(const LuaContainer<T>& a, const LuaContainer<T>& b)
 	{
-		return a.values != b.values;
+		return a.m_values != b.m_values;
 	}
 	template<class T>
 	bool operator<(const LuaContainer<T>& a, const LuaContainer<T>& b)
 	{
-		return a.values < b.values;
+		return a.m_values < b.m_values;
 	}
 	template<class T>
 	bool operator<=(const LuaContainer<T>& a, const LuaContainer<T>& b)
 	{
-		return a.values <= b.values;
+		return a.m_values <= b.m_values;
 	}
 	template<class T>
 	bool operator>(const LuaContainer<T>& a, const LuaContainer<T>& b)
 	{
-		return a.values > b.values;
+		return a.m_values > b.m_values;
 	}
 	template<class T>
 	bool operator>=(const LuaContainer<T>& a, const LuaContainer<T>& b)
 	{
-		return a.values >= b.values;
+		return a.m_values >= b.m_values;
 	}
 }
 #endif // !LUABZ_LUA_CONTAINER_HPP

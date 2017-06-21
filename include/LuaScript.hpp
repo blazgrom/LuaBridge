@@ -94,60 +94,60 @@ namespace LuaBz
 	template <class... R, class... Args>
 	std::tuple<R...> LuaScript::call(const LuaFunction<R...>& f, Args&&... args) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int inputCount = set_parameters(std::forward<Args>(args)...);
-		m_stack.call_function(inputCount, f.resultCount);
-		return get_output<R ...>(f.resultCount);
+		m_stack.call_function(inputCount, f.result_count());
+		return get_output<R ...>(f.result_count());
 	}
 	template <class First, class Second, class... Args>
 	std::pair<First, Second> LuaScript::call(const LuaFunction<First, Second>& f, Args&&... args) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int inputCount = set_parameters(std::forward<Args>(args)...);
 		const int outputCount = 2;
 		m_stack.call_function(inputCount, outputCount);
-		auto temp_tuple = get_output<First, Second>(f.resultCount);
+		auto temp_tuple = get_output<First, Second>(f.result_count());
 		return std::make_pair(std::get<0>(temp_tuple), std::get<1>(temp_tuple));
 	}
 	template <class T, class... Args>
 	T LuaScript::call(const LuaFunction<T>& f, Args&&... args) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int inputCount = set_parameters(std::forward<Args>(args)...);
 		m_stack.call_function(inputCount, 1);
-		return std::get<0>(get_output<T>(f.resultCount));
+		return std::get<0>(get_output<T>(f.result_count()));
 	}
 	template <class...Args>
 	void LuaScript::call(const LuaFunction<void>& f, Args&&... args) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int inputCount = set_parameters(std::forward<Args>(args)...);
-		m_stack.call_function(inputCount, f.resultCount);
+		m_stack.call_function(inputCount, f.result_count());
 	}
 	template <class... T>
 	std::tuple<T...> LuaScript::call(const LuaFunction<T...>& f) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int inputCount = 0;
-		m_stack.call_function(inputCount, f.resultCount);
-		return get_output<T...>(f.resultCount);
+		m_stack.call_function(inputCount, f.result_count());
+		return get_output<T...>(f.result_count());
 	}
 	template <class First, class Second>
 	std::pair<First, Second> LuaScript::call(const LuaFunction<First, Second>& f) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int inputCount = 0, outputCount = 2;
 		m_stack.call_function(inputCount, outputCount);
-		auto temp_tuple=get_output<T>(f.resultCount);
+		auto temp_tuple=get_output<T>(f.result_count());
 		return std::make_pair(std::get<0>(temp_tuple), std::get<1>(temp_tuple));
 	}
 	template <class T>
 	T LuaScript::call(const LuaFunction<T>& f) const
 	{
-		load_function(f.name);
+		load_function(f.name());
 		const int outputCount = 1,inputCount=0;
 		m_stack.call_function(inputCount, outputCount);
-		return std::get<0>(get_output<T>(f.resultCount));
+		return std::get<0>(get_output<T>(f.result_count()));
 	}
 	template <class T, class... Args>
 	int LuaScript::set_parameters(T&& value, Args&&... args) const
