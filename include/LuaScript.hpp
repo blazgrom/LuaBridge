@@ -14,6 +14,7 @@
 #include "variadic_index.hpp"
 #include "callable_traits.hpp"
 #include "can_represent_value.hpp"
+#include "type_container.hpp"
 namespace LuaBz
 {
 	class LuaScript
@@ -73,12 +74,10 @@ namespace LuaBz
 		template <class T>
 		int set_parameters(T&& value) const;
 		void register_function_impl(const std::string& name);
-		template <class T>
-		struct RegisteredFunctionReturnType {};
 		template <class T,class R, class... Args>
-		int call_registered_function(T& user_f, RegisteredFunctionReturnType<R>& , std::tuple<Args...>&);
+		int call_registered_function(T& user_f, Utils::type_container<R> , std::tuple<Args...>&);
 		template <class T, class... Args>
-		int call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>&);
+		int call_registered_function(T& user_f, Utils::type_container<void> , std::tuple<Args...>&);
 	};
 	template <class T>
 	T LuaScript::get(const std::string& name) const
@@ -212,7 +211,7 @@ namespace LuaBz
 	}
 	//Utilities
 	template <class T,class R, class... Args >
-	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<R>& ,std::tuple<Args...>& v)
+	int LuaScript::call_registered_function(T& user_f, Utils::type_container<R> ,std::tuple<Args...>& v)
 	{
 		//TODO: Find solution for the following problem
 		//auto result = user_f(m_stack.get_element<Args>((index_generator.get_index() + 1)*-1)...);
@@ -224,7 +223,7 @@ namespace LuaBz
 		return 1;
 	}
 	template <class T, class... Args>
-	int LuaScript::call_registered_function(T& user_f, RegisteredFunctionReturnType<void>& , std::tuple<Args...>& v)
+	int LuaScript::call_registered_function(T& user_f, Utils::type_container<void>, std::tuple<Args...>& v)
 	{
 		
 		//TODO: Find solution for the following problem
