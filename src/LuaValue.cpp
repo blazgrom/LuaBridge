@@ -303,7 +303,7 @@ namespace LuaBz
 			m_integer = rhs.m_integer;
 			break;
 		case LuaType::Nil:
-			m_nil = m_nil;
+			m_nil = rhs.m_nil;
 			break;
 		case LuaType::Boolean:
 			m_bool = rhs.m_bool;

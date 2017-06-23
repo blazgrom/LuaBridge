@@ -33,7 +33,7 @@ namespace LuaBz
 		{
 
 		}
-		LuaContainer(std::initializer_list<T> init)
+		LuaContainer(const std::initializer_list<T>& init)
 			:
 			m_values(init)
 		{

@@ -7,12 +7,12 @@ namespace LuaBz
 	class LuaError : public std::runtime_error
 	{
 	public:
-		LuaError(const std::string& msg)
+		explicit LuaError(const std::string& msg)
 			:std::runtime_error(msg)
 		{
 
 		}
-		LuaError(const char* msg)
+		explicit LuaError(const char* msg)
 			:std::runtime_error(msg)
 		{
 
