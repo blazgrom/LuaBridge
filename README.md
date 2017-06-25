@@ -82,3 +82,7 @@ auto secondresult = script.call(LuaFunction<int, int, int> test("multipleInputMu
 #### User defined class support
  In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a LuaTable and a conversion from your type to a LuaTable.
  For more info on LuaTable see LuaTable.hpp.
+
+#### Dependencies
+* Lua 5.1.5
+* [Utils](https://github.com/blazgrom/LuaBridge)
