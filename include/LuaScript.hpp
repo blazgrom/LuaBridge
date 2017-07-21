@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include "lua.hpp"
 #include "LuaStack.hpp"
-#include "LuaTable.hpp"
 #include "LuaFunction.hpp"
 #include "variadic_index.hpp"
 #include "callable_traits.hpp"

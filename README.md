@@ -85,4 +85,4 @@ auto secondresult = script.call(LuaFunction<int, int, int> test("multipleInputMu
 
 #### Dependencies
 * Lua 5.1.5
-* [Utils](https://github.com/blazgrom/LuaBridge)
+* [Utils](https://github.com/blazgrom/Utils)

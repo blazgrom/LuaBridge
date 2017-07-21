@@ -1,9 +1,166 @@
-#include <cmath>
 #include <cassert>
-#include <stdexcept>
-#include "LuaValue.hpp"
-namespace LuaBz
+#include "LuaTable.hpp"
+namespace LuaBz 
 {
+	//LuaTable
+	LuaTable::LuaTable()
+		:
+		m_values{}
+	{
+	}
+	LuaTable::LuaTable(typename std::vector<LuaValue>::size_type count, const LuaValue& value)
+		:
+		m_values(count, value)
+	{
+	}
+	LuaTable::LuaTable(typename std::vector<LuaValue>::size_type count)
+		:
+		m_values(count)
+	{
+	}
+	LuaTable::LuaTable(const std::initializer_list<LuaValue>& init)
+		:
+		m_values(init)
+	{
+	}
+	LuaTable& LuaTable::operator=(std::initializer_list<LuaValue> ilist)
+	{
+		m_values = ilist;
+		return *this;
+	}
+	typename std::vector<LuaValue>::reference LuaTable::at(typename std::vector<LuaValue>::size_type pos)
+	{
+		return m_values.at(pos);
+	}
+	typename std::vector<LuaValue>::const_reference LuaTable::at(typename std::vector<LuaValue>::size_type pos) const
+	{
+		return m_values.at(pos);
+	}
+	typename std::vector<LuaValue>::reference LuaTable::operator[](typename std::vector<LuaValue>::size_type pos)
+	{
+		return m_values.at(pos);
+	}
+	typename std::vector<LuaValue>::const_reference LuaTable::operator[](typename std::vector<LuaValue>::size_type pos) const
+	{
+		return m_values.at(pos);
+	}
+	typename std::vector<LuaValue>::reference LuaTable::front()
+	{
+		return m_values.front();
+	}
+	typename std::vector<LuaValue>::const_reference LuaTable::front() const
+	{
+		return m_values.front();
+	}
+	typename std::vector<LuaValue>::reference LuaTable::back()
+	{
+		return m_values.back();
+	}
+	typename std::vector<LuaValue>::const_reference LuaTable::back() const
+	{
+		return m_values.back();
+	}
+	typename std::vector<LuaValue>::iterator LuaTable::begin() noexcept
+	{
+		return m_values.begin();
+	}
+	typename std::vector<LuaValue>::const_iterator LuaTable::begin() const noexcept
+	{
+		return m_values.begin();
+	}
+	typename std::vector<LuaValue>::const_iterator LuaTable::cbegin() const noexcept
+	{
+		return m_values.cbegin();
+	}
+	typename std::vector<LuaValue>::iterator LuaTable::end() noexcept
+	{
+		return m_values.end();
+	}
+	typename std::vector<LuaValue>::const_iterator LuaTable::end() const noexcept
+	{
+		return m_values.end();
+	}
+	typename std::vector<LuaValue>::const_iterator LuaTable::cend() const noexcept
+	{
+		return m_values.cend();
+	}
+	typename std::vector<LuaValue>::reverse_iterator LuaTable::rbegin() noexcept
+	{
+		return m_values.rbegin();
+	}
+	typename std::vector<LuaValue>::const_reverse_iterator LuaTable::rbegin() const noexcept
+	{
+		return m_values.rbegin();
+	}
+	typename std::vector<LuaValue>::const_reverse_iterator LuaTable::crbegin() const noexcept
+	{
+		return m_values.crbegin();
+	}
+	typename std::vector<LuaValue>::reverse_iterator LuaTable::rend() noexcept
+	{
+		return m_values.rend();
+	}
+	typename std::vector<LuaValue>::const_reverse_iterator LuaTable::rend() const noexcept
+	{
+		return m_values.rend();
+	}
+	typename std::vector<LuaValue>::const_reverse_iterator LuaTable::crend() const noexcept
+	{
+		return m_values.crend();
+	}
+	bool LuaTable::empty() const noexcept
+	{
+		return m_values.empty();
+	}
+	typename std::vector<LuaValue>::size_type LuaTable::size() const noexcept
+	{
+		return m_values.size();
+	}
+	void LuaTable::clear() noexcept
+	{
+		m_values.clear();
+	}
+	void LuaTable::push_back(const LuaValue& val)
+	{
+		m_values.push_back(val);
+	}
+	void LuaTable::push_back(LuaValue&& val)
+	{
+		m_values.push_back(val);
+	}
+	void LuaTable::pop_back()
+	{
+		return m_values.pop_back();
+	}
+	void LuaTable::swap(LuaTable& other)
+	{
+		m_values.swap(other.m_values);
+	}
+	bool operator==(const LuaTable& lhs, const LuaTable& rhs)
+	{
+		return lhs.m_values == rhs.m_values;
+	}
+	bool operator!=(const LuaTable& lhs, const LuaTable& rhs)
+	{
+		return lhs.m_values != rhs.m_values;
+	}
+	bool operator<(const LuaTable& lhs, const LuaTable& rhs)
+	{
+		return lhs.m_values < rhs.m_values;
+	}
+	bool operator<=(const LuaTable& lhs, const LuaTable& rhs)
+	{
+		return lhs.m_values <= rhs.m_values;
+	}
+	bool operator>(const LuaTable& lhs, const LuaTable& rhs)
+	{
+		return lhs.m_values > rhs.m_values;
+	}
+	bool operator>=(const LuaTable& lhs, const LuaTable& rhs)
+	{
+		return lhs.m_values >= rhs.m_values;
+	}
+	//LuaValue
 	bool operator < (const LuaValue& lhs, const LuaValue& rhs)
 	{
 		//Note:
@@ -83,13 +240,13 @@ namespace LuaBz
 				break;
 			case LuaType::Table:
 			{
-				if (lhs.value<LuaContainer<LuaValue>>().size() != rhs.value<LuaContainer<LuaValue>>().size())
+				if (lhs.value<LuaTable>().size() != rhs.value<LuaTable>().size())
 				{
 					return false;
 				}
-				for (const auto& lhsValue : lhs.value<LuaContainer<LuaValue>>())
+				for (const auto& lhsValue : lhs.value<LuaTable>())
 				{
-					for (const auto& rhsValue : rhs.value<LuaContainer<LuaValue>>())
+					for (const auto& rhsValue : rhs.value<LuaTable>())
 					{
 						if (!(lhsValue == rhsValue))
 						{
@@ -162,7 +319,7 @@ namespace LuaBz
 		m_string{ data }
 	{
 	}
-	LuaValue::LuaValue(const std::string& name, const LuaContainer<LuaValue>& data)
+	LuaValue::LuaValue(const std::string& name, const LuaTable& data)
 		:
 		m_type{ LuaType::Table },
 		m_name{ name },
@@ -232,7 +389,7 @@ namespace LuaBz
 	LuaValue& LuaValue::operator=(const std::string& rhs)
 	{
 		destroy_complex();
-		new (&m_string)std::string(rhs );
+		new (&m_string)std::string(rhs);
 		m_type = LuaType::String;
 		return *this;
 	}
@@ -240,10 +397,10 @@ namespace LuaBz
 	{
 		return operator=(std::string(rhs));
 	}
-	LuaValue& LuaValue::operator=(const LuaContainer<LuaValue>& rhs)
+	LuaValue& LuaValue::operator=(const LuaTable& rhs)
 	{
 		destroy_complex();
-		new (&m_table) LuaContainer<LuaValue>(rhs);
+		new (&m_table) LuaTable(rhs);
 		m_type = LuaType::Table;
 		return *this;
 	}
@@ -289,7 +446,7 @@ namespace LuaBz
 			return m_string;
 		throw std::logic_error{ "String is not initialized" };
 	}
-	const LuaContainer<LuaValue>& LuaValue::table() const
+	const LuaTable& LuaValue::table() const
 	{
 		if (m_type == LuaType::Table)
 			return m_table;
@@ -312,10 +469,10 @@ namespace LuaBz
 			m_number = rhs.m_number;
 			break;
 		case LuaType::String:
-			new (&m_string)std::string( rhs.m_string );
+			new (&m_string)std::string(rhs.m_string);
 			break;
 		case LuaType::Table:
-			new (&m_table) LuaContainer<LuaValue>(rhs.m_table);
+			new (&m_table) LuaTable(rhs.m_table);
 			break;
 		default:
 			assert(false);
@@ -336,7 +493,7 @@ namespace LuaBz
 		}
 		else if (m_type == LuaType::Table)
 		{
-			m_table.~LuaContainer();
+			m_table.~LuaTable();
 		}
 
 	}
