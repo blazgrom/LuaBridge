@@ -1,5 +1,5 @@
-#include "LuaScript.hpp"
-#include "LuaError.hpp"
+#include "core/LuaScript.hpp"
+#include "core/LuaError.hpp"
 #include <algorithm>
 namespace LuaBz
 {

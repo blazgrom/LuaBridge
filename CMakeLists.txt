@@ -62,4 +62,9 @@ if(ENABLE_CODE_COVERAGE)
         ##TODO : Add script for test coverage
 endif()
 
+#----------------------
+#       Submodules
+#----------------------
+include_directories(Utils)
+
 add_subdirectory(src)

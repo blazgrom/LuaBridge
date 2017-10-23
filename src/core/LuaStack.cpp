@@ -1,4 +1,4 @@
-#include "LuaStack.hpp"
+#include "core/LuaStack.hpp"
 namespace LuaBz
 {
 	void LuaStack::pop(int count) const

@@ -1,5 +1,5 @@
 #include <cassert>
-#include "LuaTable.hpp"
+#include "core/LuaTable.hpp"
 namespace LuaBz 
 {
 	//LuaTable
