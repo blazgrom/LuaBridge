@@ -136,7 +136,7 @@ namespace LuaBz
 		load_function(f.name());
 		const int inputCount = 0, outputCount = 2;
 		m_stack.call_function(inputCount, outputCount);
-		auto temp_tuple=get_output<T>(f.result_count());
+		auto temp_tuple=get_output<First,Second>(f.result_count());
 		return std::make_pair(std::get<0>(temp_tuple), std::get<1>(temp_tuple));
 	}
 	template <class T>

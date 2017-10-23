@@ -17,7 +17,7 @@ namespace LuaBz
 		{
 
 		}
-		const char* what() const
+		const char* what() const noexcept
 		{
 			return m_msg.c_str();
 		}

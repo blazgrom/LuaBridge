@@ -23,7 +23,7 @@ namespace LuaBz
 		{
 			return m_name;
 		}
-		const unsigned int result_count() const
+		unsigned int result_count() const
 		{
 			return m_resultCount;
 		}
@@ -50,7 +50,7 @@ namespace LuaBz
 		{
 			return m_name;
 		}
-		const unsigned int result_count() const
+		unsigned int result_count() const
 		{
 			return m_resultCount;
 		}

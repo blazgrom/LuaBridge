@@ -1,5 +1,7 @@
 #ifndef LUABZ_LUA_TABLE_HPP
 #define	LUABZ_LUA_TABLE_HPP
+
+#include <cassert>
 #include <vector>
 #include <initializer_list>
 namespace LuaBz
@@ -102,72 +104,16 @@ namespace LuaBz
 		template <class T>
 		T value() const
 		{
-			static_assert(false, "Use of a type not supported by LuaValue");
-		}
-		template <>
-		int value<int>() const
-		{
-			return integer();
-		}
-		template <>
-		double value<double>() const
-		{
-			return number();
-		}
-		template <>
-		bool value<bool>() const
-		{
-			return boolean();
-		}
-		template <>
-		std::string value<std::string>() const
-		{
-			return string();
-		}
-		template <>
-		nullptr_t value<std::nullptr_t>() const
-		{
-			return nil();
-		}
-		template<>
-		LuaTable value<LuaTable>() const
-		{
-			return table();
+			//TODO: Find out why this fails with static_assert
+			//static_assert(false, "Use of a type not supported by LuaValue");
+			assert(false);
 		}
 		template <class T>
 		const T& value()
 		{
-			static_assert(false, "Use of a type not supported by LuaValue");
-		}
-		template <>
-		const int& value<int>()
-		{
-			return m_integer;
-		}
-		template <>
-		const double& value<double>()
-		{
-			return m_number;
-		}
-		template <>
-		const bool& value<bool>()
-		{
-			return m_bool;
-		}
-		template <>
-		const std::string& value<std::string>()
-		{
-			return string();
-		}
-		template <>
-		const nullptr_t& value<std::nullptr_t>()
-		{
-			return m_nil;
-		}
-		template<>
-		const LuaTable& value<LuaTable>()
-		{
-			return table();
+			//TODO: Find out why this fails with static_assert
+			//static_assert(false, "Use of a type not supported by LuaValue");
+			assert(false);
 		}
 	private:
 		LuaType m_type;
@@ -194,5 +140,67 @@ namespace LuaBz
 	bool operator < (const LuaTable::LuaValue& lhs, const LuaTable::LuaValue& rhs);
 	bool operator ==(const LuaTable::LuaValue& lhs, const LuaTable::LuaValue& rhs);
 	using LuaValue = LuaTable::LuaValue;
+
+	//Explicit specializations
+	template <>
+	int LuaTable::LuaValue::value<int>() const
+	{
+		return integer();
+	}
+	template <>
+	double LuaTable::LuaValue::value<double>() const
+	{
+		return number();
+	}
+	template <>
+	bool LuaTable::LuaValue::value<bool>() const
+	{
+		return boolean();
+	}
+	template <>
+	std::string LuaTable::LuaValue::value<std::string>() const
+	{
+		return string();
+	}
+	template <>
+	nullptr_t LuaTable::LuaValue::value<std::nullptr_t>() const
+	{
+		return nil();
+	}
+	template<>
+	LuaTable LuaTable::LuaValue::value<LuaTable>() const
+	{
+		return table();
+	}
+	template <>
+	const int& LuaTable::LuaValue::value<int>()
+	{
+		return m_integer;
+	}
+	template <>
+	const double& LuaTable::LuaValue::value<double>()
+	{
+		return m_number;
+	}
+	template <>
+	const bool& LuaTable::LuaValue::value<bool>()
+	{
+		return m_bool;
+	}
+	template <>
+	const std::string& LuaTable::LuaValue::value<std::string>()
+	{
+		return string();
+	}
+	template <>
+	const nullptr_t& LuaTable::LuaValue::value<std::nullptr_t>()
+	{
+		return m_nil;
+	}
+	template<>
+	const LuaTable& LuaTable::LuaValue::value<LuaTable>()
+	{
+		return table();
+	}
 }
 #endif // ! LUABZ_LUA_TABLE_HPP

@@ -6,8 +6,6 @@ set (PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(Lua51 REQUIRED) 
 include_directories(${LUA_INCLUDE_DIR})
 
-#target_link_libraries(cmqhd ${LUA_LIBRARIES} ${Boost_LIBRARIES} ${GOBJECT_LIBRARIES} -lntl -lm -lgmp )
-
 
 file (GLOB LUABZ_SOURCES "${PROJECT_SOURCE_DIR}/*.cpp")
 add_library(${PROJECT_NAME} ${LUABZ_SOURCES})
