@@ -3,10 +3,14 @@
 
 #include <cassert>
 #include <vector>
+#include <stdexcept>
+#include <string>
 #include <initializer_list>
 namespace LuaBz
 {
-	enum class LuaType : int8_t
+	//TODO:
+	//Inherit from uint8
+	enum class LuaType
 	{
 		Nil, Boolean, Integer, Number, String, Table
 	};

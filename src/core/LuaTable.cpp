@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include "core/LuaTable.hpp"
 namespace LuaBz 
 {
@@ -333,14 +334,14 @@ namespace LuaBz
 		m_name{ rhs.m_name }
 	{
 		init(rhs);
-	};
+	}
 	LuaValue::LuaValue(LuaValue&& rhs)
 		:
 		m_type{ rhs.m_type },
 		m_name{ rhs.m_name }
 	{
 		init(rhs);
-	};
+	}
 	LuaValue& LuaValue::operator=(const LuaValue& rhs)
 	{
 		if (this != &rhs)
@@ -348,12 +349,12 @@ namespace LuaBz
 			copy(rhs);
 		}
 		return *this;
-	};
+	}
 	LuaValue& LuaValue::operator=(LuaValue&& rhs)
 	{
 		copy(rhs);
 		return *this;
-	};
+	}
 	LuaValue& LuaValue::operator=(int rhs)
 	{
 		destroy_complex();
