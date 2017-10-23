@@ -5,12 +5,11 @@
 #include <vector>
 #include <stdexcept>
 #include <string>
+#include <cstdint>
 #include <initializer_list>
 namespace LuaBz
 {
-	//TODO:
-	//Inherit from uint8
-	enum class LuaType
+	enum class LuaType : uint8_t
 	{
 		Nil, Boolean, Integer, Number, String, Table
 	};
@@ -105,14 +104,15 @@ namespace LuaBz
 		const std::string& name() const;
 		LuaType type() const;
 		//Get
-		template <class T>
+		template <typename T>
 		T value() const
 		{
 			//TODO: Find out why this fails with static_assert
 			//static_assert(false, "Use of a type not supported by LuaValue");
-			assert(false);
+			//assert(false);
 		}
-		template <class T>
+		//Set
+		template <typename T>
 		const T& value()
 		{
 			//TODO: Find out why this fails with static_assert
@@ -167,7 +167,7 @@ namespace LuaBz
 		return string();
 	}
 	template <>
-	nullptr_t LuaTable::LuaValue::value<std::nullptr_t>() const
+	std::nullptr_t LuaTable::LuaValue::value<std::nullptr_t>() const
 	{
 		return nil();
 	}
@@ -197,7 +197,7 @@ namespace LuaBz
 		return string();
 	}
 	template <>
-	const nullptr_t& LuaTable::LuaValue::value<std::nullptr_t>()
+	const std::nullptr_t& LuaTable::LuaValue::value<std::nullptr_t>()
 	{
 		return m_nil;
 	}

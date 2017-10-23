@@ -210,7 +210,7 @@ namespace LuaBz
 	}
 	//Utilities
 	template <class T,class R, class... Args >
-	int LuaScript::call_registered_function(T& user_f, Utils::type_container<R> ,std::tuple<Args...>& v)
+	int LuaScript::call_registered_function(T& user_f, Utils::type_container<R> ,std::tuple<Args...>& )
 	{
 		//TODO: Find solution for the following problem
 		//auto result = user_f(m_stack.get_element<Args>((index_generator.get_index() + 1)*-1)...);
@@ -222,7 +222,7 @@ namespace LuaBz
 		return 1;
 	}
 	template <class T, class... Args>
-	int LuaScript::call_registered_function(T& user_f, Utils::type_container<void>, std::tuple<Args...>& v)
+	int LuaScript::call_registered_function(T& user_f, Utils::type_container<void>, std::tuple<Args...>& )
 	{
 		
 		//TODO: Find solution for the following problem
