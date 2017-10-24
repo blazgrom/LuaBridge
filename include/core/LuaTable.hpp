@@ -7,6 +7,8 @@
 #include <string>
 #include <cstdint>
 #include <initializer_list>
+#include <type_traits>
+#include "various.hpp"
 namespace LuaBz
 {
 	enum class LuaType : uint8_t
@@ -107,17 +109,13 @@ namespace LuaBz
 		template <typename T>
 		T value() const
 		{
-			//TODO: Find out why this fails with static_assert
-			//static_assert(false, "Use of a type not supported by LuaValue");
-			//assert(false);
+			static_assert(Utils::always_false<T>::value, "Use of a type not supported by LuaValue");
 		}
 		//Set
 		template <typename T>
 		const T& value()
 		{
-			//TODO: Find out why this fails with static_assert
-			//static_assert(false, "Use of a type not supported by LuaValue");
-			assert(false);
+			static_assert(Utils::always_false<T>::value, "Use of a type not supported by LuaValue");
 		}
 	private:
 		LuaType m_type;
