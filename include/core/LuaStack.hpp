@@ -11,6 +11,7 @@
 #include "can_represent_value.hpp"
 namespace LuaBz
 {
+
 	class LuaStack
 	{
 	public:
@@ -69,57 +70,15 @@ namespace LuaBz
 		void push(std::string val) const;
 		void push(char val) const;
 		void push(bool val) const;
-		template<typename = typename std::enable_if<Utils::can_represent_value<short, lua_Integer>()>::type>
-		void push(short val) const
-		{
-			lua_pushinteger(m_state, val);
-		}
-		//TODO: Uncomment the commented parts and find a way to disable them when the values cannot be repressented
-		// template<typename = typename std::enable_if<Utils::can_represent_value<unsigned short, lua_Integer>()>::type>
-		// void push(unsigned short val) const
-		// {
-		// 	lua_pushinteger(m_state, val);
-		// }
-		template <typename = typename std::enable_if<Utils::can_represent_value<int, lua_Integer>()>::type>
-		void push(int val) const
-		{
-			lua_pushinteger(m_state, val);
-		}
-		// template <typename = typename std::enable_if<Utils::can_represent_value<unsigned int, lua_Integer>()>::type>
-		// void push(unsigned int val) const
-		// {
-		// 	lua_pushinteger(m_state, val);
-		// }
-		template <typename = typename std::enable_if<Utils::can_represent_value<long, lua_Integer>()>::type>
-		void push(long val) const
-		{
-			lua_pushinteger(m_state, val);
-		}
-		// template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long, lua_Integer>()>::type>
-		// void push(unsigned long val) const
-		// {
-		// 	lua_pushinteger(m_state, val);
-		// }
-		template <typename = typename std::enable_if<Utils::can_represent_value<long long, lua_Integer>()>::type>
-		void push(long long val) const
-		{
-			lua_pushinteger(m_state, val);
-		}
-		// template <typename = typename std::enable_if<Utils::can_represent_value<unsigned long long, lua_Integer>()>::type>
-		// void push(unsigned long long val) const
-		// {
-		// 	lua_pushinteger(m_state, val);
-		// }
-		template <typename = typename std::enable_if < Utils::can_represent_value <float, lua_Number>()>::type >
-		void push(float val) const
-		{
-			lua_pushnumber(m_state, val);
-		}
-		template <typename = typename std::enable_if<Utils::can_represent_value<double, lua_Number>()>::type>
-		void push(double val) const
-		{
-			lua_pushnumber(m_state, val);
-		}
+		void push(short val) const;
+		void push(int val) const;
+		void push(unsigned int val) const;
+		void push(long val) const;
+		void push(unsigned long val) const;
+		void push(long long val) const;
+		void push(unsigned long long val) const;
+		void push(float val) const;
+		void push(double val) const;
 		void call_function(int inputCount, int outputCount) const;
 		bool is_function(int index = -1) const;
 		int size() const;

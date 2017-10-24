@@ -1,6 +1,7 @@
 #include "core/LuaStack.hpp"
 namespace LuaBz
 {
+	using Utils::can_represent_v;
 	void LuaStack::pop(int count) const
 	{
 		lua_pop(m_state, count);
@@ -66,6 +67,60 @@ namespace LuaBz
 	void LuaStack::push(bool val) const
 	{
 		lua_pushboolean(m_state, val);
+	}
+	void LuaStack::push(short val) const
+	{
+		auto pre_cond=can_represent_v<short,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(int val) const
+	{
+		auto pre_cond=can_represent_v<int,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(unsigned int val) const
+	{
+		auto pre_cond=can_represent_v<unsigned int,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(long val) const
+	{
+		auto pre_cond=can_represent_v<long,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(unsigned long val) const
+	{
+		auto pre_cond=can_represent_v<unsigned long,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(long long val) const
+	{
+		auto pre_cond=can_represent_v<long long,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(unsigned long long val) const
+	{
+		auto pre_cond=can_represent_v<unsigned long long,lua_Integer>;
+		assert(pre_cond);
+		lua_pushinteger(m_state, val);
+	}
+	void LuaStack::push(float val) const
+	{
+		auto pre_cond=can_represent_v<float,lua_Number>;
+		assert(pre_cond);
+		lua_pushnumber(m_state, val);
+	}
+	void LuaStack::push(double val) const
+	{
+		auto pre_cond=can_represent_v<double,lua_Number>;
+		assert(pre_cond);
+		lua_pushnumber(m_state, val);
 	}
 	void LuaStack::call_function(int inputCount, int outputCount) const
 	{
