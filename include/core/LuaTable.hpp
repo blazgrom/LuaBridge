@@ -28,7 +28,7 @@ namespace LuaBz
 			:
 			m_values(first, last)
 		{
-
+	
 		}
 		LuaTable(const std::initializer_list<LuaValue>& init);
 		LuaTable(const LuaTable& rhs) = default;
@@ -145,62 +145,62 @@ namespace LuaBz
 
 	//Explicit specializations
 	template <>
-	int LuaTable::LuaValue::value<int>() const
+	inline int LuaTable::LuaValue::value<int>() const
 	{
 		return integer();
 	}
 	template <>
-	double LuaTable::LuaValue::value<double>() const
+	inline double LuaTable::LuaValue::value<double>() const
 	{
 		return number();
 	}
 	template <>
-	bool LuaTable::LuaValue::value<bool>() const
+	inline bool LuaTable::LuaValue::value<bool>() const
 	{
 		return boolean();
 	}
 	template <>
-	std::string LuaTable::LuaValue::value<std::string>() const
+	inline std::string LuaTable::LuaValue::value<std::string>() const
 	{
 		return string();
 	}
 	template <>
-	std::nullptr_t LuaTable::LuaValue::value<std::nullptr_t>() const
+	inline std::nullptr_t LuaTable::LuaValue::value<std::nullptr_t>() const
 	{
 		return nil();
 	}
 	template<>
-	LuaTable LuaTable::LuaValue::value<LuaTable>() const
+	inline LuaTable LuaTable::LuaValue::value<LuaTable>() const
 	{
 		return table();
 	}
 	template <>
-	const int& LuaTable::LuaValue::value<int>()
+	inline const int& LuaTable::LuaValue::value<int>()
 	{
 		return m_integer;
 	}
 	template <>
-	const double& LuaTable::LuaValue::value<double>()
+	inline const double& LuaTable::LuaValue::value<double>()
 	{
 		return m_number;
 	}
 	template <>
-	const bool& LuaTable::LuaValue::value<bool>()
+	inline const bool& LuaTable::LuaValue::value<bool>()
 	{
 		return m_bool;
 	}
 	template <>
-	const std::string& LuaTable::LuaValue::value<std::string>()
+	inline const std::string& LuaTable::LuaValue::value<std::string>()
 	{
 		return string();
 	}
 	template <>
-	const std::nullptr_t& LuaTable::LuaValue::value<std::nullptr_t>()
+	inline const std::nullptr_t& LuaTable::LuaValue::value<std::nullptr_t>()
 	{
 		return m_nil;
 	}
 	template<>
-	const LuaTable& LuaTable::LuaValue::value<LuaTable>()
+	inline const LuaTable& LuaTable::LuaValue::value<LuaTable>()
 	{
 		return table();
 	}

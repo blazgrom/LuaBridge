@@ -17,12 +17,7 @@ namespace LuaBz
 		{
 
 		}
-		const char* what() const noexcept
-		{
-			return m_msg.c_str();
-		}
 	private:
-		std::string m_msg;
 	};
 }
 #endif // !LUABZ_LUA_ERROR_HPP

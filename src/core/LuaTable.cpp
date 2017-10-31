@@ -496,6 +496,5 @@ namespace LuaBz
 		{
 			m_table.~LuaTable();
 		}
-
 	}
 }

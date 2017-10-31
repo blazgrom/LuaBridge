@@ -158,7 +158,7 @@ namespace LuaBz
 	};
 	//Explicit specializations
 	template<>
-	LuaTable LuaStack::get<LuaTable>(int index) const
+	inline LuaTable LuaStack::get<LuaTable>(int index) const
 	{
 		if (!lua_istable(m_state, index))
 		{
@@ -167,7 +167,7 @@ namespace LuaBz
 		return  create_lua_table();
 	}
 	template<>
-	std::string LuaStack::get<std::string>(int index) const
+	inline std::string LuaStack::get<std::string>(int index) const
 	{
 		size_t strLength = 0;
 		const char* str = lua_tolstring(m_state, index, &strLength);
@@ -175,63 +175,63 @@ namespace LuaBz
 		return r;
 	}
 	template <>
-	char LuaStack::get<char>(int index) const
+	inline char LuaStack::get<char>(int index) const
 	{
 		auto str = get<std::string>(index);
 		return str[0];
 	}
 	template <>
-	bool LuaStack::get<bool>(int index) const
+	inline bool LuaStack::get<bool>(int index) const
 	{
 		return lua_toboolean(m_state, index) != 0;
 	}
 	template <>
-	short LuaStack::get<short>(int index) const
+	inline short LuaStack::get<short>(int index) const
 	{
 		return get_lua_integer<short>(index, Utils::Can_represent_value<lua_Integer, short>{});
 	}
 	template <>
-	unsigned short LuaStack::get<unsigned short>(int index) const
+	inline unsigned short LuaStack::get<unsigned short>(int index) const
 	{
 		return get_lua_integer<unsigned short>(index, Utils::Can_represent_value<lua_Integer, unsigned short>{});
 	}
 	template <>
-	int LuaStack::get<int>(int index) const
+	inline int LuaStack::get<int>(int index) const
 	{
 		return get_lua_integer<int>(index, Utils::Can_represent_value<lua_Integer, int>{});
 	}
 	template <>
-	unsigned int LuaStack::get<unsigned int>(int index) const
+	inline unsigned int LuaStack::get<unsigned int>(int index) const
 	{
 		return get_lua_integer<unsigned int>(index, Utils::Can_represent_value<lua_Integer, unsigned int>{});
 	}
 	template <>
-	long LuaStack::get<long>(int index) const
+	inline long LuaStack::get<long>(int index) const
 	{
 		return get_lua_integer<long>(index, Utils::Can_represent_value<lua_Integer, long>{});
 	}
 	template <>
-	unsigned long LuaStack::get<unsigned long>(int index) const
+	inline unsigned long LuaStack::get<unsigned long>(int index) const
 	{
 		return get_lua_integer<unsigned long>(index, Utils::Can_represent_value<lua_Integer, unsigned long>{});
 	}
 	template <>
-	long long LuaStack::get<long long>(int index) const
+	inline long long LuaStack::get<long long>(int index) const
 	{
 		return get_lua_integer<long long>(index, Utils::Can_represent_value<lua_Integer, long long>{});
 	}
 	template <>
-	unsigned long long LuaStack::get<unsigned long long>(int index) const
+	inline unsigned long long LuaStack::get<unsigned long long>(int index) const
 	{
 		return get_lua_integer<unsigned long long>(index, Utils::Can_represent_value<lua_Integer, unsigned long long>{});
 	}
 	template <>
-	double  LuaStack::get<double>(int index) const
+	inline double  LuaStack::get<double>(int index) const
 	{
 		return get_lua_number<double>(index, Utils::Can_represent_value<lua_Number, double>{});
 	}
 	template <>
-	float  LuaStack::get<float>(int index) const
+	inline float  LuaStack::get<float>(int index) const
 	{
 		return get_lua_number<float>(index, Utils::Can_represent_value<lua_Number, float>{});
 	}

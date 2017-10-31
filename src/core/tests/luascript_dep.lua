@@ -1,0 +1,1 @@
+dependency="This is lua script dependency"

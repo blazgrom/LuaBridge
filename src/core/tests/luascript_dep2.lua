@@ -1,0 +1,1 @@
+dependency2="This is a second dependency"
