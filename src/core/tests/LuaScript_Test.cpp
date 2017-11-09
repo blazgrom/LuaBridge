@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "can_represent_value.hpp"
 #include "core/LuaScript.hpp"
 #include <string>
 using namespace ::testing;
@@ -11,54 +12,66 @@ public:
     string main_script_dep2;
     string main_script;
     string script_folder_path;
+    string first_dependecy_string;
+    std::string second_dependency_string;
+    LuaBz::LuaScript script;
     void SetUp() override
     {
         script_folder_path="../src/core/tests/";
         main_script_dep=script_folder_path+"luascript_dep.lua";
         main_script_dep2=script_folder_path+"luascript_dep2.lua";
         main_script=script_folder_path+"luascript_test.lua";
+        first_dependecy_string="This is lua script dependency";
+        second_dependency_string="This is a second dependency";
+        std::vector<string> dependencies{main_script_dep,main_script_dep2};
+        script.open(main_script,dependencies);
     }
 };
 TEST_F(LuaScriptF,LoadingDependencyAndMainScript)
 {
-    std::string expected="This is lua script dependency";
-    LuaScript script(main_script,main_script_dep);
-    ASSERT_TRUE(expected==script.get<string>("dependency"));
+    ASSERT_TRUE(first_dependecy_string==script.get<string>("dependency"));
 }
 TEST_F(LuaScriptF,LoadingMultipleDependenciesAndMainScript)
 {
-    std::string first_dep="This is lua script dependency";
-    std::string second_dep="This is a second dependency";
-    std::vector<string> dependencies{main_script_dep,main_script_dep2};
-    LuaScript script(main_script,dependencies);
-    ASSERT_TRUE(first_dep==script.get<string>("dependency"));
-    ASSERT_TRUE(second_dep==script.get<string>("dependency2"));
+    ASSERT_TRUE(first_dependecy_string==script.get<string>("dependency"));
+    ASSERT_TRUE(second_dependency_string==script.get<string>("dependency2"));
 }
-TEST_F(LuaScriptF,GetVariableBool)
+TEST_F(LuaScriptF,GetLuaBool)
 {
-    LuaScript script(main_script);
     ASSERT_TRUE(script.get<bool>("boolt_var"));
     ASSERT_FALSE(script.get<bool>("boolf_var"));
 }
-TEST_F(LuaScriptF,GetVariableString)
+TEST_F(LuaScriptF,GetLuaString)
 {
-    LuaScript script(main_script);
     string expected="This is some string";
     ASSERT_TRUE(expected==script.get<string>("string_var"));
 }
-TEST_F(LuaScriptF,GetVariableInteger)
+TEST_F(LuaScriptF,GetLuaInteger)
 {
-    LuaScript script(main_script);
-    auto a=script.get<int>("integer_var");
-    ASSERT_EQ(1,script.get<int>("integer_var"));
+     ASSERT_EQ(100,script.get<long>("integer_var"));
 }
-// TEST_F(LuaScriptF,GetVariableDouble)
-// {
-//     LuaScript script(main_script);
-//     ASSERT_DOUBLE_EQ(102.0351,script.get<double>("double_var"));
-// }
-// TEST_F(LuaScriptF,GetVariableFloat)
-// {
-//     LuaScript script(main_script);
-//     ASSERT_FLOAT_EQ(88.15836,script.get<float>("float_var"));
-// }
+TEST_F(LuaScriptF,GetLuaNumber)
+{
+    ASSERT_DOUBLE_EQ(102.0351,script.get<double>("double_var"));
+}
+TEST_F(LuaScriptF,SetLuaBool)
+{
+    script.set("boolt_var",false);
+    ASSERT_FALSE(script.get<bool>("boolt_var"));
+}
+TEST_F(LuaScriptF,SetLuaString)
+{
+    std::string new_value="This is the new value for the lua string";
+    script.set("string_var",new_value);
+    ASSERT_TRUE(new_value==script.get<string>("string_var"));    
+}
+TEST_F(LuaScriptF,SetLuaInteger)
+{
+    script.set("integer_var",666);
+    ASSERT_EQ(666,script.get<long>("integer_var"));
+}
+TEST_F(LuaScriptF,SetLuaNumber)
+{
+    script.set("double_var",10.132265);
+    ASSERT_DOUBLE_EQ(10.132265,script.get<double>("double_var"));
+}

@@ -25,15 +25,16 @@ namespace LuaBz
 		bool m_open;
 		static std::vector<LuaCF_Intermediary> m_registeredFunctions;
 	public:
-		explicit LuaScript(const std::string& file, bool loadStandardLib = true);
-		LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib = true);
-		LuaScript(const std::string& file, const std::string& dependency, bool loadStandardLib = true);
+		LuaScript();
+		explicit LuaScript(const std::string& file, bool loadStandardLib = false);
+		LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib =false);
+		LuaScript(const std::string& file, const std::string& dependency, bool loadStandardLib = false);
 		~LuaScript()=default;
 		LuaScript(const LuaScript& rhs) = delete;
 		LuaScript& operator=(const LuaScript& rhs) = delete;
 		LuaScript(LuaScript&& rhs) = default;
 		LuaScript& operator=(LuaScript&& rhs) = default;
-		void open(const std::string& file);
+		void open(const std::string& file,std::vector<std::string> dependencies={},bool loadStandardLib=false);
 		void close() noexcept;
 		bool change(const std::string& newFile) noexcept;
 		template <class T>

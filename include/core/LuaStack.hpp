@@ -11,21 +11,22 @@
 #include "can_represent_value.hpp"
 namespace LuaBz
 {
-
+	//TODO: Remove all implicetly inlined functions
 	class LuaStack
 	{
 	public:
-		LuaStack(bool loadStd, const std::string& file, std::vector<std::string> dependencies = {})
+		LuaStack()
 			:
-			m_state{ luaL_newstate() }
+			m_state{nullptr}
 		{
-			if (loadStd)
-				luaL_openlibs(m_state);
-			for (const std::string& depend : dependencies)
-			{
-				run_file(depend);
-			}
-			run_file(file);
+
+		}
+		//TODO:
+		LuaStack(bool loadStandardLib, const std::string& file, std::vector<std::string> dependencies = {})
+			:
+			m_state{ nullptr }
+		{
+			create(file,dependencies,loadStandardLib);
 		}
 		~LuaStack()
 		{
@@ -84,7 +85,7 @@ namespace LuaBz
 		int size() const;
 		void execute(const std::string& code) const;
 		void destroy();
-		void create(const std::string& file);
+		void create(const std::string& file,const std::vector<std::string>& dependencies={},bool loadStandardLib=false);
 	private:
 		lua_State* m_state;
 		static const int topElement = -1;
@@ -143,7 +144,7 @@ namespace LuaBz
 		template <class T>
 		T get_lua_integer(int , std::false_type) const
 		{
-			assert(false);
+			assert(false);	
 			return T{};
 		}
 		template <class T>

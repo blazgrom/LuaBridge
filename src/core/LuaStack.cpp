@@ -149,9 +149,15 @@ namespace LuaBz
 	{
 		lua_close(m_state);
 	}
-	void LuaStack::create(const std::string& file)
+	void LuaStack::create(const std::string& file,const std::vector<std::string> & dependencies,bool loadStandardLib)
 	{
 		m_state = luaL_newstate();
+		if (loadStandardLib)
+			luaL_openlibs(m_state);
+		for (const std::string& depend : dependencies)
+		{
+			run_file(depend);
+		}
 		run_file(file);
 	}
 	void LuaStack::run_file(const std::string& name) const

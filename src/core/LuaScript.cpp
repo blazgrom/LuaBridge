@@ -6,6 +6,14 @@ namespace LuaBz
 	//Static
 	std::vector<LuaScript::LuaCF_Intermediary> LuaScript::m_registeredFunctions;
 	//C-tors
+	LuaScript::LuaScript()
+		:
+		m_stack{},
+		m_fileName{""},
+		m_open{false}
+	{
+
+	}
 	LuaScript::LuaScript(const std::string& file, bool loadStandardLib)
 		:
 		m_stack{ loadStandardLib,file },
@@ -34,11 +42,11 @@ namespace LuaBz
 		load_function(f.name());
 		m_stack.call_function(0, f.result_count());
 	}
-	void LuaScript::open(const std::string& file)
+	void LuaScript::open(const std::string& file,std::vector<std::string> dependencies,bool loadStandardLib)
 	{
 		if (!m_open)
 		{
-			m_stack.create(file);
+			m_stack.create(file,dependencies,loadStandardLib);
 			m_open = true;
 			m_fileName = file;
 		}
