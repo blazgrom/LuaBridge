@@ -6,7 +6,7 @@
 #include <string>
 #include <functional>
 #include "lua.hpp"
-#include "LuaTable.hpp"
+#include "lua_table.hpp"
 #include "lua_error.hpp"
 #include "can_represent_value.hpp"
 namespace LuaBz
@@ -60,12 +60,12 @@ namespace LuaBz
 			return d;
 		}
 		template <class T>
-		typename std::enable_if<std::is_convertible<T, LuaTable>::value>::type push(T val) const
+		typename std::enable_if<std::is_convertible<T, lua_table>::value>::type push(T val) const
 		{
-			auto table = static_cast<LuaTable>(val);
+			auto table = static_cast<lua_table>(val);
 			push(table);
 		}
-		void push(const LuaTable& val) const;
+		void push(const lua_table& val) const;
 		void push(lua_CFunction function) const;
 		void push(std::nullptr_t) const;
 		void push(std::string val) const;
@@ -150,11 +150,11 @@ namespace LuaBz
 		template <class T>
 		T get(int index) const
 		{
-			static_assert(std::is_constructible<T, LuaTable>::value, "Type cannot be constructed from a LuaTable");
-			return T{ get<LuaTable>(index)};
+			static_assert(std::is_constructible<T, lua_table>::value, "Type cannot be constructed from a lua_table");
+			return T{ get<lua_table>(index)};
 		}
 	
-		LuaTable create_lua_table() const;
+		lua_table create_lua_table() const;
 		void iterate_table(std::function<void(const std::string&)> callback) const;
 	};
 	#include "lua_stack.tpp"

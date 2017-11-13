@@ -13,7 +13,7 @@ namespace LuaBz
 		else
 			get_table_element(name);
 	}
-	void lua_stack::push(const LuaTable& val) const
+	void lua_stack::push(const lua_table& val) const
 	{
 		lua_newtable(m_state);
 		for (const auto& element : val)
@@ -37,7 +37,7 @@ namespace LuaBz
 				push(element.value<std::string>());
 				break;
 			case LuaType::Table:
-				push(element.value<LuaTable>());
+				push(element.value<lua_table>());
 				break;
 			}
 			lua_settable(m_state, -3); //Note: automatically pops the pair [key,value] 
@@ -204,36 +204,36 @@ namespace LuaBz
 		}
 		lua_getfield(m_state, topElement, name.c_str());
 	}
-	LuaTable lua_stack::create_lua_table() const
+	lua_table lua_stack::create_lua_table() const
 	{
-		LuaTable table;
+		lua_table table;
 		auto callback = [&table, this](const std::string &key)
 		{
 			switch (lua_type(m_state, topElement))
 			{
 			case LUA_TNIL:
-				table.push_back(LuaValue(key, nullptr));
+				table.push_back(lua_value(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.push_back(LuaValue(key, top_element<bool>()));
+				table.push_back(lua_value(key, top_element<bool>()));
 				break;
 			case LUA_TNUMBER:
 			{
 				double number = lua_tonumber(m_state, topElement);
 				if (number == static_cast<int>(number))
-					table.push_back(LuaValue(key, top_element<int>()));
+					table.push_back(lua_value(key, top_element<int>()));
 				else
-					table.push_back(LuaValue(key, top_element<double>()));
+					table.push_back(lua_value(key, top_element<double>()));
 			}
 			break;
 			case LUA_TSTRING:
-				table.push_back(LuaValue(key, top_element<std::string>()));
+				table.push_back(lua_value(key, top_element<std::string>()));
 			break;
 			case LUA_TTABLE:
-				table.push_back(LuaValue(key, top_element<LuaTable>()));
+				table.push_back(lua_value(key, top_element<lua_table>()));
 				break;
 			//Note:TODO
-			//LuaValue does not support Lua Cfunction so we only pop the value, later on maybe i will add support
+			//lua_value does not support Lua Cfunction so we only pop the value, later on maybe i will add support
 			case LUA_TFUNCTION:
 				break;
 			}

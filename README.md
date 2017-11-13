@@ -80,8 +80,8 @@ script.call(lua_function<void>("multipleInputNoResult"), 1, 2, 3);
 auto secondresult = script.call(lua_function<int, int, int> test("multipleInputMultipleResultValues"), 1, 2, 3); 
 ```
 #### User defined class support
- In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a LuaTable and a conversion from your type to a LuaTable.
- For more info on LuaTable see LuaTable.hpp.
+ In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a lua_table and a conversion from your type to a lua_table.
+ For more info on lua_table see lua_table.hpp.
 
 #### Dependencies
 * Lua 5.1.5

@@ -1,10 +1,10 @@
 //Explicit specializations
 template<>
-inline LuaTable lua_stack::get<LuaTable>(int index) const
+inline lua_table lua_stack::get<lua_table>(int index) const
 {
     if (!lua_istable(m_state, index))
     {
-        throw lua_error("The type you are trying to retrieve cannot be constructed with a LuaTable");
+        throw lua_error("The type you are trying to retrieve cannot be constructed with a lua_table");
     }
     return  create_lua_table();
 }
