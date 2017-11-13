@@ -1,12 +1,12 @@
-#include "core/LuaScript.hpp"
+#include "core/lua_script.hpp"
 #include "core/lua_error.hpp"
 #include <algorithm>
 namespace LuaBz
 {
 	//Static
-	std::vector<LuaScript::LuaCF_Intermediary> LuaScript::m_registeredFunctions;
+	std::vector<lua_script::LuaCF_Intermediary> lua_script::m_registeredFunctions;
 	//C-tors
-	LuaScript::LuaScript()
+	lua_script::lua_script()
 		:
 		m_stack{},
 		m_fileName{""},
@@ -14,21 +14,21 @@ namespace LuaBz
 	{
 
 	}
-	LuaScript::LuaScript(const std::string& file, bool loadStandardLib)
+	lua_script::lua_script(const std::string& file, bool loadStandardLib)
 		:
 		m_stack{ loadStandardLib,file },
 		m_fileName{ file },
 		m_open{ true }
 	{
 	}
-	LuaScript::LuaScript(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib)
+	lua_script::lua_script(const std::string& file, const std::vector<std::string>& dependencies, bool loadStandardLib)
 		:
 		m_stack{ loadStandardLib,file,dependencies },
 		m_fileName{ file },
 		m_open{ true }
 	{
 	}
-	LuaScript::LuaScript(const std::string& file, const std::string& dependency, bool loadStandardLib)
+	lua_script::lua_script(const std::string& file, const std::string& dependency, bool loadStandardLib)
 		:
 		m_stack{ loadStandardLib,file,{ dependency } },
 		m_fileName{ file },
@@ -37,12 +37,12 @@ namespace LuaBz
 	}
 	
 	//Public
-	void LuaScript::call(const lua_function<void>& f) const
+	void lua_script::call(const lua_function<void>& f) const
 	{
 		load_function(f.name());
 		m_stack.call_function(0, f.result_count());
 	}
-	void LuaScript::open(const std::string& file,std::vector<std::string> dependencies,bool loadStandardLib)
+	void lua_script::open(const std::string& file,std::vector<std::string> dependencies,bool loadStandardLib)
 	{
 		if (!m_open)
 		{
@@ -51,12 +51,12 @@ namespace LuaBz
 			m_fileName = file;
 		}
 	}
-	void LuaScript::close() noexcept
+	void lua_script::close() noexcept
 	{
 		m_stack.destroy();
 		m_open = false;
 	}
-	bool LuaScript::change(const std::string& newFile) noexcept
+	bool lua_script::change(const std::string& newFile) noexcept
 	{
 		bool result = true;
 		try
@@ -73,11 +73,11 @@ namespace LuaBz
 		}
 		return result;
 	}
-	void LuaScript::run(std::string luaCode)
+	void lua_script::run(std::string luaCode)
 	{
 		m_stack.execute(luaCode);
 	}
-	void LuaScript::load_function(const std::string& name) const
+	void lua_script::load_function(const std::string& name) const
 	{
 		m_stack.set_top_element(name);
 		const int topElement = -1;
@@ -86,7 +86,7 @@ namespace LuaBz
 			throw lua_error(name + "is not a function");
 		}
 	}
-	void LuaScript::register_function_impl(const std::string& name)
+	void lua_script::register_function_impl(const std::string& name)
 	{
 		//Note:
 		//The index at which the function is saved in the static C++ vector becomes an upvalue for the function
