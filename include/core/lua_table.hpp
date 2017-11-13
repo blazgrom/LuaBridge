@@ -9,12 +9,10 @@
 #include <initializer_list>
 #include <type_traits>
 #include "various.hpp"
+#include "core/lua_type.hpp"
 namespace LuaBz
 {
-	enum class LuaType : uint8_t
-	{
-		Nil, Boolean, Integer, Number, String, Table
-	};
+	
 	class lua_table
 	{
 	public:
@@ -97,13 +95,13 @@ namespace LuaBz
 		lua_value& operator=(const lua_table& rhs);
 		~lua_value();
 		const std::string& name() const;
-		LuaType type() const;
+		lua_types type() const;
 		template <typename T>
 		T value() const;
 		template <typename T>
 		const T& value();
 	private:
-		LuaType m_type;
+		lua_types m_type;
 		std::string m_name;
 		union
 		{

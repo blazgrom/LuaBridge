@@ -6,7 +6,7 @@
 #include <string>
 #include <functional>
 #include "lua.hpp"
-#include "lua_table.hpp"
+#include "lua_type.hpp"
 #include "lua_error.hpp"
 #include "can_represent_value.hpp"
 namespace LuaBz

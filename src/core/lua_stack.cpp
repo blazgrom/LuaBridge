@@ -21,22 +21,22 @@ namespace LuaBz
 			push(element.name());
 			switch (element.type())
 			{
-			case LuaType::Boolean:
+			case lua_types::Boolean:
 				push(element.value<bool>());
 				break;
-			case LuaType::Number:
+			case lua_types::Number:
 				push(element.value<double>());
 				break;
-			case LuaType::Integer:
+			case lua_types::Integer:
 				push(element.value<int>());
 				break;
-			case LuaType::Nil:
+			case lua_types::Nil:
 				push(element.value<std::nullptr_t>());
 				break;
-			case LuaType::String:
+			case lua_types::String:
 				push(element.value<std::string>());
 				break;
-			case LuaType::Table:
+			case lua_types::Table:
 				push(element.value<lua_table>());
 				break;
 			}
