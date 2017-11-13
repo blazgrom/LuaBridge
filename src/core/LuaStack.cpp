@@ -127,7 +127,7 @@ namespace LuaBz
 		if (lua_pcall(m_state, inputCount, outputCount, 0) != 0)
 		{
 			bool popTopElement = true;
-			throw LuaError(top_element<std::string>(popTopElement));
+			throw lua_error(top_element<std::string>(popTopElement));
 		}
 	}
 	bool LuaStack::is_function(int index ) const
@@ -142,7 +142,7 @@ namespace LuaBz
 	{
 		if (luaL_dostring(m_state, code.c_str()))
 		{
-			throw LuaError(lua_tostring(m_state, topElement));
+			throw lua_error(lua_tostring(m_state, topElement));
 		}
 	}
 	void LuaStack::destroy()
@@ -164,7 +164,7 @@ namespace LuaBz
 	{
 		if (luaL_dofile(m_state, name.c_str()))
 		{
-			throw LuaError(lua_tostring(m_state, topElement));
+			throw lua_error(lua_tostring(m_state, topElement));
 		}
 	}
 	void LuaStack::get_global_variable(const std::string& name) const
@@ -172,7 +172,7 @@ namespace LuaBz
 		lua_getglobal(m_state, name.c_str());
 		if (lua_isnoneornil(m_state, topElement))
 		{
-			throw LuaError("A variable with the name:" + name + " could not be found");
+			throw lua_error("A variable with the name:" + name + " could not be found");
 		}
 	}
 	void LuaStack::get_table_element(const std::string& name) const
@@ -200,7 +200,7 @@ namespace LuaBz
 	{
 		if (!lua_istable(m_state, topElement))
 		{
-			throw LuaError("The field " + name + " could not be loaded");
+			throw lua_error("The field " + name + " could not be loaded");
 		}
 		lua_getfield(m_state, topElement, name.c_str());
 	}

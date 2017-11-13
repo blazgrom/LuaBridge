@@ -1,5 +1,5 @@
 #include "core/LuaScript.hpp"
-#include "core/LuaError.hpp"
+#include "core/lua_error.hpp"
 #include <algorithm>
 namespace LuaBz
 {
@@ -83,7 +83,7 @@ namespace LuaBz
 		const int topElement = -1;
 		if (!m_stack.is_function(topElement))
 		{
-			throw LuaError(name + "is not a function");
+			throw lua_error(name + "is not a function");
 		}
 	}
 	void LuaScript::register_function_impl(const std::string& name)

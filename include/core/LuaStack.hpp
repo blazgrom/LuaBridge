@@ -7,7 +7,7 @@
 #include <functional>
 #include "lua.hpp"
 #include "LuaTable.hpp"
-#include "LuaError.hpp"
+#include "lua_error.hpp"
 #include "can_represent_value.hpp"
 namespace LuaBz
 {
@@ -163,7 +163,7 @@ namespace LuaBz
 	{
 		if (!lua_istable(m_state, index))
 		{
-			throw LuaError("The type you are trying to retrieve cannot be constructed with a LuaTable");
+			throw lua_error("The type you are trying to retrieve cannot be constructed with a LuaTable");
 		}
 		return  create_lua_table();
 	}
