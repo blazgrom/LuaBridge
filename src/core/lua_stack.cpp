@@ -1,19 +1,19 @@
-#include "core/LuaStack.hpp"
+#include "core/lua_stack.hpp"
 namespace LuaBz
 {
 	using Utils::can_represent_v;
-	void LuaStack::pop(int count) const
+	void lua_stack::pop(int count) const
 	{
 		lua_pop(m_state, count);
 	}
-	void LuaStack::set_top_element(const std::string& name) const
+	void lua_stack::set_top_element(const std::string& name) const
 	{
 		if (name.find('.') == std::string::npos)
 			get_global_variable(name);
 		else
 			get_table_element(name);
 	}
-	void LuaStack::push(const LuaTable& val) const
+	void lua_stack::push(const LuaTable& val) const
 	{
 		lua_newtable(m_state);
 		for (const auto& element : val)
@@ -43,7 +43,7 @@ namespace LuaBz
 			lua_settable(m_state, -3); //Note: automatically pops the pair [key,value] 
 		}
 	}
-	void LuaStack::push(lua_CFunction function) const
+	void lua_stack::push(lua_CFunction function) const
 	{
 		//Note:
 		//All C++ function are inserted as closures with one upvalue, this upvalue contains the index in the static element containing all the 
@@ -51,78 +51,78 @@ namespace LuaBz
 		const int upvalue_count = 1;
 		lua_pushcclosure(m_state, function, upvalue_count);
 	}
-	void LuaStack::push(std::nullptr_t) const
+	void lua_stack::push(std::nullptr_t) const
 	{
 		lua_pushnil(m_state);
 	}
-	void LuaStack::push(std::string val) const
+	void lua_stack::push(std::string val) const
 	{
 		lua_pushlstring(m_state, val.c_str(), val.size());
 	}
-	void LuaStack::push(char val) const
+	void lua_stack::push(char val) const
 	{
 		std::string s{ val };
 		push(s);
 	}
-	void LuaStack::push(bool val) const
+	void lua_stack::push(bool val) const
 	{
 		lua_pushboolean(m_state, val);
 	}
-	void LuaStack::push(short val) const
+	void lua_stack::push(short val) const
 	{
 		auto pre_cond=can_represent_v<short,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(int val) const
+	void lua_stack::push(int val) const
 	{
 		auto pre_cond=can_represent_v<int,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(unsigned int val) const
+	void lua_stack::push(unsigned int val) const
 	{
 		auto pre_cond=can_represent_v<unsigned int,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(long val) const
+	void lua_stack::push(long val) const
 	{
 		auto pre_cond=can_represent_v<long,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(unsigned long val) const
+	void lua_stack::push(unsigned long val) const
 	{
 		auto pre_cond=can_represent_v<unsigned long,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(long long val) const
+	void lua_stack::push(long long val) const
 	{
 		auto pre_cond=can_represent_v<long long,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(unsigned long long val) const
+	void lua_stack::push(unsigned long long val) const
 	{
 		auto pre_cond=can_represent_v<unsigned long long,lua_Integer>;
 		assert(pre_cond);
 		lua_pushinteger(m_state, val);
 	}
-	void LuaStack::push(float val) const
+	void lua_stack::push(float val) const
 	{
 		auto pre_cond=can_represent_v<float,lua_Number>;
 		assert(pre_cond);
 		lua_pushnumber(m_state, val);
 	}
-	void LuaStack::push(double val) const
+	void lua_stack::push(double val) const
 	{
 		auto pre_cond=can_represent_v<double,lua_Number>;
 		assert(pre_cond);
 		lua_pushnumber(m_state, val);
 	}
-	void LuaStack::call_function(int inputCount, int outputCount) const
+	void lua_stack::call_function(int inputCount, int outputCount) const
 	{
 		if (lua_pcall(m_state, inputCount, outputCount, 0) != 0)
 		{
@@ -130,26 +130,26 @@ namespace LuaBz
 			throw lua_error(top_element<std::string>(popTopElement));
 		}
 	}
-	bool LuaStack::is_function(int index ) const
+	bool lua_stack::is_function(int index ) const
 	{
 		return lua_isfunction(m_state, index);
 	}
-	int LuaStack::size() const
+	int lua_stack::size() const
 	{
 		return lua_gettop(m_state);
 	}
-	void LuaStack::execute(const std::string& code) const
+	void lua_stack::execute(const std::string& code) const
 	{
 		if (luaL_dostring(m_state, code.c_str()))
 		{
 			throw lua_error(lua_tostring(m_state, topElement));
 		}
 	}
-	void LuaStack::destroy()
+	void lua_stack::destroy()
 	{
 		lua_close(m_state);
 	}
-	void LuaStack::create(const std::string& file,const std::vector<std::string> & dependencies,bool loadStandardLib)
+	void lua_stack::create(const std::string& file,const std::vector<std::string> & dependencies,bool loadStandardLib)
 	{
 		m_state = luaL_newstate();
 		if (loadStandardLib)
@@ -160,14 +160,14 @@ namespace LuaBz
 		}
 		run_file(file);
 	}
-	void LuaStack::run_file(const std::string& name) const
+	void lua_stack::run_file(const std::string& name) const
 	{
 		if (luaL_dofile(m_state, name.c_str()))
 		{
 			throw lua_error(lua_tostring(m_state, topElement));
 		}
 	}
-	void LuaStack::get_global_variable(const std::string& name) const
+	void lua_stack::get_global_variable(const std::string& name) const
 	{
 		lua_getglobal(m_state, name.c_str());
 		if (lua_isnoneornil(m_state, topElement))
@@ -175,7 +175,7 @@ namespace LuaBz
 			throw lua_error("A variable with the name:" + name + " could not be found");
 		}
 	}
-	void LuaStack::get_table_element(const std::string& name) const
+	void lua_stack::get_table_element(const std::string& name) const
 	{
 		std::string tableName = name.substr(0, name.find_first_of('.')), tablefield = name.substr(name.find_first_of('.') + 1);
 		get_global_variable(tableName);
@@ -196,7 +196,7 @@ namespace LuaBz
 			}
 		}
 	}
-	void LuaStack::load_table_field(const std::string& name) const
+	void lua_stack::load_table_field(const std::string& name) const
 	{
 		if (!lua_istable(m_state, topElement))
 		{
@@ -204,7 +204,7 @@ namespace LuaBz
 		}
 		lua_getfield(m_state, topElement, name.c_str());
 	}
-	LuaTable LuaStack::create_lua_table() const
+	LuaTable lua_stack::create_lua_table() const
 	{
 		LuaTable table;
 		auto callback = [&table, this](const std::string &key)
@@ -241,7 +241,7 @@ namespace LuaBz
 		iterate_table(callback);
 		return table;
 	}
-	void LuaStack::iterate_table(std::function<void(const std::string&)> callback) const
+	void lua_stack::iterate_table(std::function<void(const std::string&)> callback) const
 	{
 		lua_pushnil(m_state);//Initial key
 		const int keyIndex = -2;

@@ -8,7 +8,7 @@
 #include <functional>
 #include <unordered_map>
 #include "lua.hpp"
-#include "LuaStack.hpp"
+#include "lua_stack.hpp"
 #include "lua_function.hpp"
 #include "variadic_index.hpp"
 #include "callable_traits.hpp"
@@ -20,7 +20,7 @@ namespace LuaBz
 	{
 	private:
 		using LuaCF_Intermediary = std::function<int(lua_State*)>;
-		LuaStack m_stack;
+		lua_stack m_stack;
 		std::string m_fileName;
 		bool m_open;
 		static std::vector<LuaCF_Intermediary> m_registeredFunctions;
