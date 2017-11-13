@@ -24,12 +24,7 @@ namespace LuaBz
 		lua_table(typename std::vector<lua_value>::size_type count, const lua_value& value);
 		explicit lua_table(typename std::vector<lua_value>::size_type count);
 		template <class Iter>
-		lua_table(Iter first, Iter last)
-			:
-			m_values(first, last)
-		{
-	
-		}
+		lua_table(Iter first, Iter last);
 		lua_table(const std::initializer_list<lua_value>& init);
 		lua_table(const lua_table& rhs) = default;
 		lua_table(lua_table&& rhs) = default;
@@ -64,10 +59,7 @@ namespace LuaBz
 		void push_back(lua_value&& val);
 		void pop_back();
 		template <class...Args>
-		void emplace_back(Args&&... args)
-		{
-			m_values.emplace_back(std::forward<Args>(args)...);
-		}
+		void emplace_back(Args&&... args);
 		void swap(lua_table& other);
 		friend bool operator==(const lua_table& lhs, const lua_table& rhs);
 		friend bool operator!=(const lua_table& lhs, const lua_table& rhs);
@@ -78,6 +70,7 @@ namespace LuaBz
 	private:
 		std::vector<lua_value> m_values;
 	};
+
 	class lua_table::lua_value
 	{
 	public:
@@ -105,18 +98,10 @@ namespace LuaBz
 		~lua_value();
 		const std::string& name() const;
 		LuaType type() const;
-		//Get
 		template <typename T>
-		T value() const
-		{
-			static_assert(Utils::always_false<T>::value, "Use of a type not supported by lua_value");
-		}
-		//Set
+		T value() const;
 		template <typename T>
-		const T& value()
-		{
-			static_assert(Utils::always_false<T>::value, "Use of a type not supported by lua_value");
-		}
+		const T& value();
 	private:
 		LuaType m_type;
 		std::string m_name;

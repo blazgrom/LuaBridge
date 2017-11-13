@@ -5,6 +5,7 @@
 using namespace ::testing;
 using namespace LuaBz;
 using namespace std;
+
 class lua_scriptF:public Test
 {
 public:
