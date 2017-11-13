@@ -71,13 +71,13 @@ end
 ```
 * C++
 ```cpp
-script.call(LuaFunction<void>("helloWorld"));
+script.call(lua_function<void>("helloWorld"));
 
-auto result=script.call(LuaFunction<int,int,double>("multipleReturnValues"));
+auto result=script.call(lua_function<int,int,double>("multipleReturnValues"));
 
-script.call(LuaFunction<void>("multipleInputNoResult"), 1, 2, 3);
+script.call(lua_function<void>("multipleInputNoResult"), 1, 2, 3);
 
-auto secondresult = script.call(LuaFunction<int, int, int> test("multipleInputMultipleResultValues"), 1, 2, 3); 
+auto secondresult = script.call(lua_function<int, int, int> test("multipleInputMultipleResultValues"), 1, 2, 3); 
 ```
 #### User defined class support
  In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a LuaTable and a conversion from your type to a LuaTable.

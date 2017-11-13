@@ -37,7 +37,7 @@ namespace LuaBz
 	}
 	
 	//Public
-	void LuaScript::call(const LuaFunction<void>& f) const
+	void LuaScript::call(const lua_function<void>& f) const
 	{
 		load_function(f.name());
 		m_stack.call_function(0, f.result_count());
