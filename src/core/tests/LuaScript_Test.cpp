@@ -75,3 +75,14 @@ TEST_F(LuaScriptF,SetLuaNumber)
     script.set("double_var",10.132265);
     ASSERT_DOUBLE_EQ(10.132265,script.get<double>("double_var"));
 }
+TEST_F(LuaScriptF,ExecuteLuaCode)
+{
+    string code=R"(variable=1;)"
+                R"(function increment(input) )"
+                R"(    input=input+1;)"
+                R"(    return input;)"
+                R"(end )"
+                R"(variable=increment(variable) )";
+    script.run(code);
+    ASSERT_EQ(2,script.get<long>("variable"));
+}
