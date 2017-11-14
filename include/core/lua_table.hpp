@@ -125,6 +125,10 @@ namespace LuaBz
 	bool operator < (const lua_table::lua_value& lhs, const lua_table::lua_value& rhs);
 	bool operator ==(const lua_table::lua_value& lhs, const lua_table::lua_value& rhs);
 	using lua_value = lua_table::lua_value;
-	#include "lua_table.tpp"
+	#ifndef LUA_TABLE_TEMPLATE_IMPL
+	#define LUA_TABLE_TEMPLATE_IMPL
+		#include "lua_table.tpp"
+	#undef LUA_TABLE_TEMPLATE_IMPL
+	#endif
 }
 #endif // ! LUABZ_LUA_TABLE_HPP

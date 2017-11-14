@@ -1,3 +1,6 @@
+#ifndef LUA_FUNCTION_TEMPLATE_IMPL
+    #error This file should only be included from lua_function.hpp
+#endif
 template<typename... T>
 lua_function<T...>::lua_function(const std::string& name)
     :

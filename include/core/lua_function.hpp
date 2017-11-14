@@ -16,6 +16,10 @@ namespace LuaBz
 		std::string m_name;
 		const unsigned int m_resultCount;
 	};
-	#include "lua_function.tpp"
+	#ifndef LUA_FUNCTION_TEMPLATE_IMPL
+	#define LUA_FUNCTION_TEMPLATE_IMPL
+		#include "lua_function.tpp"
+	#undef LUA_FUNCTION_TEMPLATE_IMPL
+	#endif
 }
 #endif // !LUABZ_LUA_FUNCTION_HPP

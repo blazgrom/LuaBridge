@@ -1,3 +1,6 @@
+#ifndef LUA_STACK_TEMPLATE_IMPL
+    #error This file should be included only from lua_stack.hpp
+#endif
 //Explicit specializations
 template<>
 inline lua_table lua_stack::get<lua_table>(int index) const

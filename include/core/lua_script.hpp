@@ -79,6 +79,11 @@ namespace LuaBz
 		template <class T, class... Args>
 		int call_registered_function(T& user_f, Utils::type_container<void> , std::tuple<Args...>&);
 	};
-	#include "lua_script.tpp"
+	#ifndef LUA_SCRIPT_TEMPLATE_IMPL
+	#define LUA_SCRIPT_TEMPLATE_IMPL
+		#include "lua_script.tpp"
+	#undef LUA_SCRIPT_TEMPLATE_IMPL
+	#endif
+
 }
 #endif // !LUABZ_LUA_SCRIPT_HPP

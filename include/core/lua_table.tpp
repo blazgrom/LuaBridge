@@ -1,3 +1,6 @@
+#ifndef LUA_TABLE_TEMPLATE_IMPL
+    #error This file should be included only from lua_table.hpp
+#endif
 //LuaTable
 template <class Iter>
 lua_table::lua_table(Iter first, Iter last)

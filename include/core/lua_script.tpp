@@ -1,3 +1,6 @@
+#ifndef LUA_SCRIPT_TEMPLATE_IMPL
+    #error This file should be include only from lua_script.hpp
+#endif
 template <class T>
 T lua_script::get(const std::string& name) const
 {

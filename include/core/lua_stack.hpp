@@ -21,7 +21,6 @@ namespace LuaBz
 		{
 
 		}
-		//TODO:
 		lua_stack(bool loadStandardLib, const std::string& file, std::vector<std::string> dependencies = {})
 			:
 			m_state{ nullptr }
@@ -157,6 +156,11 @@ namespace LuaBz
 		lua_table create_lua_table() const;
 		void iterate_table(std::function<void(const std::string&)> callback) const;
 	};
-	#include "lua_stack.tpp"
+	#ifndef LUA_STACK_TEMPLATE_IMPL
+	#define LUA_STACK_TEMPLATE_IMPL
+		#include "lua_stack.tpp"
+	#undef LUA_STACK_TEMPLATE_IMPL
+	#endif
+
 }
 #endif // !LUABZ_LUA_STACK_HPP
