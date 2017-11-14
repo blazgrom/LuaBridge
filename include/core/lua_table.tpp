@@ -16,73 +16,73 @@ void lua_table::emplace_back(Args&&... args)
 }
 //LuaValue
 template <typename T>
-T lua_table::lua_value::value() const
+T lua_table::lua_value::get() const
 {
     static_assert(Utils::always_false<T>::value, "Use of a type not supported by lua_value");
 }
 template <typename T>
-const T& lua_table::lua_value::value()
+const T& lua_table::lua_value::get()
 {
     static_assert(Utils::always_false<T>::value, "Use of a type not supported by lua_value");
 }
 //Explicit specializations
 template <>
-inline int lua_table::lua_value::value<int>() const
+inline lua_t::integer lua_table::lua_value::get<lua_t::integer>() const
 {
-    return integer();
+    return get_integer();
 }
 template <>
-inline double lua_table::lua_value::value<double>() const
+inline lua_t::number lua_table::lua_value::get<lua_t::number>() const
 {
-    return number();
+    return get_number();
 }
 template <>
-inline bool lua_table::lua_value::value<bool>() const
+inline lua_t::boolean lua_table::lua_value::get<lua_t::boolean>() const
 {
-    return boolean();
+    return get_boolean();
 }
 template <>
-inline std::string lua_table::lua_value::value<std::string>() const
+inline lua_t::string lua_table::lua_value::get<lua_t::string>() const
 {
-    return string();
+    return get_string();
 }
 template <>
-inline std::nullptr_t lua_table::lua_value::value<std::nullptr_t>() const
+inline lua_t::nil lua_table::lua_value::get<lua_t::nil>() const
 {
-    return nil();
+    return get_nil();
 }
 template<>
-inline lua_table lua_table::lua_value::value<lua_table>() const
+inline lua_table lua_table::lua_value::get<lua_table>() const
 {
-    return table();
+    return get_table();
 }
 template <>
-inline const int& lua_table::lua_value::value<int>()
+inline const lua_t::integer& lua_table::lua_value::get<lua_t::integer>()
 {
-    return m_integer;
+    return get_integer();
 }
 template <>
-inline const double& lua_table::lua_value::value<double>()
+inline const lua_t::number& lua_table::lua_value::get<lua_t::number>()
 {
-    return m_number;
+    return get_number();
 }
 template <>
-inline const bool& lua_table::lua_value::value<bool>()
+inline const lua_t::boolean& lua_table::lua_value::get<lua_t::boolean>()
 {
-    return m_bool;
+    return get_boolean();
 }
 template <>
-inline const std::string& lua_table::lua_value::value<std::string>()
+inline const lua_t::string& lua_table::lua_value::get<lua_t::string>()
 {
-    return string();
+    return get_string();
 }
 template <>
-inline const std::nullptr_t& lua_table::lua_value::value<std::nullptr_t>()
+inline const lua_t::nil& lua_table::lua_value::get<lua_t::nil>()
 {
-    return m_nil;
+    return get_nil();
 }
 template<>
-inline const lua_table& lua_table::lua_value::value<lua_table>()
+inline const lua_table& lua_table::lua_value::get<lua_table>()
 {
-    return table();
+    return get_table();
 }

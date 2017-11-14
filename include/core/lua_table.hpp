@@ -1,6 +1,5 @@
 #ifndef LUABZ_LUA_TABLE_HPP
 #define	LUABZ_LUA_TABLE_HPP
-
 #include <cassert>
 #include <vector>
 #include <stdexcept>
@@ -73,51 +72,51 @@ namespace LuaBz
 	{
 	public:
 		lua_value();
-		lua_value(const std::string& name, std::nullptr_t data);
-		lua_value(const std::string& name, int data);
-		lua_value(const std::string& name, double data);
+		lua_value(const std::string& name, lua_t::nil data);
+		lua_value(const std::string& name, lua_t::integer data);
+		lua_value(const std::string& name, lua_t::number data);
 		lua_value(const std::string& name, float data);
-		lua_value(const std::string& name, bool data);
+		lua_value(const std::string& name, lua_t::boolean data);
 		lua_value(const std::string& name, const char* data);
-		lua_value(const std::string& name, const std::string& data);
+		lua_value(const std::string& name, const lua_t::string& data);
 		lua_value(const std::string& name, const lua_table& data);
 		lua_value(const lua_value& rhs);
 		lua_value(lua_value&& rhs);
 		lua_value& operator=(const lua_value& rhs);
 		lua_value& operator=(lua_value&& rhs);
-		lua_value& operator=(int rhs);
-		lua_value& operator=(double rhs);
+		lua_value& operator=(lua_t::integer rhs);
+		lua_value& operator=(lua_t::number rhs);
 		lua_value& operator=(float rhs);
-		lua_value& operator=(bool rhs);
-		lua_value& operator=(std::nullptr_t rhs);
-		lua_value& operator=(const std::string& rhs);
+		lua_value& operator=(lua_t::boolean rhs);
+		lua_value& operator=(lua_t::nil rhs);
+		lua_value& operator=(const lua_t::string& rhs);
 		lua_value& operator=(const char* rhs);
 		lua_value& operator=(const lua_table& rhs);
 		~lua_value();
 		const std::string& name() const;
 		lua_types type() const;
 		template <typename T>
-		T value() const;
+		T get() const;
 		template <typename T>
-		const T& value();
+		const T& get();
 	private:
 		lua_types m_type;
 		std::string m_name;
 		union
 		{
-			std::nullptr_t m_nil;
-			int m_integer;
-			double m_number;
-			bool m_bool;
-			std::string m_string;
+			lua_t::nil m_nil;
+			lua_t::integer m_integer;
+			lua_t::number m_number;
+			lua_t::boolean m_bool;
+			lua_t::string m_string;
 			lua_table m_table;
 		};
-		double number() const;
-		int integer() const;
-		bool boolean() const;
-		std::nullptr_t nil() const;
-		const std::string& string() const;
-		const lua_table& table() const;
+		const lua_t::number& get_number() const;
+		const lua_t::integer& get_integer() const;
+		const lua_t::boolean& get_boolean() const;
+		const std::nullptr_t& get_nil() const;
+		const std::string& get_string() const;
+		const lua_table& get_table() const;
 		void init(const lua_value& rhs);
 		void copy(const lua_value& rhs);
 		void destroy_complex();

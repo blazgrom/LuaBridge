@@ -184,29 +184,29 @@ namespace LuaBz
 			{
 				if (rhs.type() == lua_types::Integer)
 				{
-					return lhs.value<int>() < rhs.value<int>();
+					return lhs.get<lua_t::integer>() < rhs.get<lua_t::integer>();
 				}
 				else if (rhs.type() == lua_types::Number)
 				{
-					return lhs.value<int>() < rhs.value<double>();
+					return lhs.get<lua_t::number>() < rhs.get<lua_t::number>();
 				}
 			}
 			else if (lhs.type() == lua_types::Number)
 			{
 				if (rhs.type() == lua_types::Integer)
 				{
-					return lhs.value<double>() < rhs.value<int>();
+					return lhs.get<lua_t::number>() < rhs.get<lua_t::integer>();
 				}
 				else if (rhs.type() == lua_types::Number)
 				{
-					return lhs.value<double>() < rhs.value<double>();
+					return lhs.get<lua_t::number>() < rhs.get<lua_t::number>();
 				}
 			}
 			else if (lhs.type() == lua_types::String)
 			{
 				if (rhs.type() == lua_types::String)
 				{
-					return lhs.value<std::string>() < rhs.value<std::string>();
+					return lhs.get<lua_t::string>() < rhs.get<lua_t::string>();
 				}
 			}
 		}
@@ -222,33 +222,33 @@ namespace LuaBz
 			switch (lhs.type())
 			{
 			case lua_types::Integer:
-				return lhs.value<int>() == rhs.value<int>();
+				return lhs.get<lua_t::integer>() == rhs.get<lua_t::integer>();
 				break;
 			case lua_types::Nil:
-				return lhs.value<std::nullptr_t>() == rhs.value<std::nullptr_t>();
+				return lhs.get<lua_t::nil>() == rhs.get<lua_t::nil>();
 				break;
 			case lua_types::Boolean:
-				return lhs.value<bool>() && rhs.value<bool>();
+				return lhs.get<lua_t::boolean>() && rhs.get<lua_t::boolean>();
 				break;
 			case lua_types::Number:
 			{
 				double threshold = (0.1) / 10000000000;
-				auto absoluteDifference = std::fabs(lhs.value<double>() - rhs.value<double>());
+				auto absoluteDifference = std::fabs(lhs.get<lua_t::number>() - rhs.get<lua_t::number>());
 				return absoluteDifference <= threshold;
 			}
 			break;
 			case lua_types::String:
-				return lhs.value<std::string>() == rhs.value<std::string>();
+				return lhs.get<lua_t::string>() == rhs.get<lua_t::string>();
 				break;
 			case lua_types::Table:
 			{
-				if (lhs.value<lua_table>().size() != rhs.value<lua_table>().size())
+				if (lhs.get<lua_table>().size() != rhs.get<lua_table>().size())
 				{
 					return false;
 				}
-				for (const auto& lhsValue : lhs.value<lua_table>())
+				for (const auto& lhsValue : lhs.get<lua_table>())
 				{
-					for (const auto& rhsValue : rhs.value<lua_table>())
+					for (const auto& rhsValue : rhs.get<lua_table>())
 					{
 						if (!(lhsValue == rhsValue))
 						{
@@ -270,25 +270,25 @@ namespace LuaBz
 		:
 		m_type{ lua_types::Nil },
 		m_name{ "" },
-		m_nil{ std::nullptr_t{} }
+		m_nil{ lua_t::nil{} }
 	{
 
 	}
-	lua_value::lua_value(const std::string& name, std::nullptr_t data)
+	lua_value::lua_value(const std::string& name, lua_t::nil data)
 		:
 		m_type{ lua_types::Nil },
 		m_name{ name },
 		m_nil{ data }
 	{
 	}
-	lua_value::lua_value(const std::string& name, int data)
+	lua_value::lua_value(const std::string& name, lua_t::integer data)
 		:
 		m_type{ lua_types::Integer },
 		m_name{ name },
 		m_integer{ data }
 	{
 	}
-	lua_value::lua_value(const std::string& name, double data)
+	lua_value::lua_value(const std::string& name, lua_t::number data)
 		:
 		m_type{ lua_types::Number },
 		m_name{ name },
@@ -297,12 +297,10 @@ namespace LuaBz
 	}
 	lua_value::lua_value(const std::string& name, float data)
 		:
-		m_type{ lua_types::Number },
-		m_name{ name },
-		m_number{ static_cast<double>(data) }
+		lua_value(name,lua_t::number(data))
 	{
 	}
-	lua_value::lua_value(const std::string& name, bool data)
+	lua_value::lua_value(const std::string& name, lua_t::boolean data)
 		:
 		m_type{ lua_types::Boolean },
 		m_name{ name },
@@ -311,10 +309,10 @@ namespace LuaBz
 	}
 	lua_value::lua_value(const std::string& name, const char* data)
 		:
-		lua_value(name, std::string(data))
+		lua_value(name, lua_t::string(data))
 	{
 	}
-	lua_value::lua_value(const std::string& name, const std::string& data)
+	lua_value::lua_value(const std::string& name, const lua_t::string& data)
 		:
 		m_type{ lua_types::String },
 		m_name{ name },
@@ -356,14 +354,14 @@ namespace LuaBz
 		copy(rhs);
 		return *this;
 	}
-	lua_value& lua_value::operator=(int rhs)
+	lua_value& lua_value::operator=(lua_t::integer rhs)
 	{
 		destroy_complex();
 		m_integer = rhs;
 		m_type = lua_types::Integer;
 		return *this;
 	}
-	lua_value& lua_value::operator=(double rhs)
+	lua_value& lua_value::operator=(lua_t::number rhs)
 	{
 		destroy_complex();
 		m_number = rhs;
@@ -372,32 +370,32 @@ namespace LuaBz
 	}
 	lua_value& lua_value::operator=(float rhs)
 	{
-		return operator=(static_cast<double>(rhs));
+		return operator=(static_cast<lua_t::number>(rhs));
 	}
-	lua_value& lua_value::operator=(bool rhs)
+	lua_value& lua_value::operator=(lua_t::boolean rhs)
 	{
 		destroy_complex();
 		m_bool = rhs;
 		m_type = lua_types::Boolean;
 		return *this;
 	}
-	lua_value& lua_value::operator=(std::nullptr_t rhs)
+	lua_value& lua_value::operator=(lua_t::nil rhs)
 	{
 		destroy_complex();
 		m_nil = rhs;
 		m_type = lua_types::Nil;
 		return *this;
 	}
-	lua_value& lua_value::operator=(const std::string& rhs)
+	lua_value& lua_value::operator=(const lua_t::string& rhs)
 	{
 		destroy_complex();
-		new (&m_string)std::string(rhs);
+		new (&m_string)lua_t::string(rhs);
 		m_type = lua_types::String;
 		return *this;
 	}
 	lua_value& lua_value::operator=(const char* rhs)
 	{
-		return operator=(std::string(rhs));
+		return operator=(lua_t::string(rhs));
 	}
 	lua_value& lua_value::operator=(const lua_table& rhs)
 	{
@@ -418,41 +416,35 @@ namespace LuaBz
 	{
 		return m_type;
 	}
-	double lua_value::number() const
+	const lua_t::number& lua_value::get_number() const
 	{
-		if (m_type == lua_types::Number)
-			return m_number;
-		throw std::logic_error{ "Number is not initialized" };
+		assert(m_type == lua_types::Number);
+		return m_number;
 	}
-	int lua_value::integer() const
+	const lua_t::integer& lua_value::get_integer() const
 	{
-		if (m_type == lua_types::Integer)
-			return m_integer;
-		throw std::logic_error{ "Integer is not initialized" };
+		assert(m_type == lua_types::Integer);
+		return m_integer;
 	}
-	bool lua_value::boolean() const
+	const lua_t::boolean& lua_value::get_boolean() const
 	{
-		if (m_type == lua_types::Boolean)
-			return m_bool;
-		throw std::logic_error{ "Boolean is not initialized" };
+		assert(m_type == lua_types::Boolean);
+		return m_bool;
 	}
-	std::nullptr_t lua_value::nil() const
+	const lua_t::nil& lua_value::get_nil() const
 	{
-		if (m_type == lua_types::Nil)
-			return m_nil;
-		throw std::logic_error{ "Nil is not initialized" };
+		assert(m_type == lua_types::Nil);
+		return m_nil;
 	}
-	const std::string& lua_value::string() const
+	const lua_t::string& lua_value::get_string() const
 	{
-		if (m_type == lua_types::String)
-			return m_string;
-		throw std::logic_error{ "String is not initialized" };
+		assert(m_type == lua_types::String);
+		return m_string;
 	}
-	const lua_table& lua_value::table() const
+	const lua_table& lua_value::get_table() const
 	{
-		if (m_type == lua_types::Table)
-			return m_table;
-		throw std::logic_error{ "Table is not initialized" };
+		assert(m_type == lua_types::Table);
+		return m_table;
 	}
 	void lua_value::init(const lua_value& rhs)
 	{

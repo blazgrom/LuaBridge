@@ -23,22 +23,22 @@ namespace LuaBz
 			switch (element.type())
 			{
 			case lua_types::Boolean:
-				push(element.value<bool>());
+				push(element.get<lua_t::boolean>());
 				break;
 			case lua_types::Number:
-				push(element.value<double>());
+				push(element.get<lua_t::number>());
 				break;
 			case lua_types::Integer:
-				push(element.value<int>());
+				push(element.get<lua_t::integer>());
 				break;
 			case lua_types::Nil:
-				push(element.value<std::nullptr_t>());
+				push(element.get<lua_t::nil>());
 				break;
 			case lua_types::String:
-				push(element.value<std::string>());
+				push(element.get<lua_t::string>());
 				break;
 			case lua_types::Table:
-				push(element.value<lua_table>());
+				push(element.get<lua_table>());
 				break;
 			}
 			lua_settable(m_state, -3); //Note: automatically pops the pair [key,value] 
@@ -216,19 +216,23 @@ namespace LuaBz
 				table.push_back(lua_value(key, nullptr));
 				break;
 			case LUA_TBOOLEAN:
-				table.push_back(lua_value(key, top_element<bool>()));
+				table.push_back(lua_value(key, top_element<lua_t::boolean>()));
 				break;
 			case LUA_TNUMBER:
 			{
 				double number = lua_tonumber(m_state, topElement);
-				if (number == static_cast<int>(number))
-					table.push_back(lua_value(key, top_element<int>()));
+				if (number == static_cast<lua_t::integer>(number))
+				{
+					table.push_back(lua_value(key, top_element<lua_t::integer>()));
+				}
 				else
-					table.push_back(lua_value(key, top_element<double>()));
+				{
+					table.push_back(lua_value(key, top_element<lua_t::number>()));
+				}
 			}
 			break;
 			case LUA_TSTRING:
-				table.push_back(lua_value(key, top_element<std::string>()));
+				table.push_back(lua_value(key, top_element<lua_t::string>()));
 			break;
 			case LUA_TTABLE:
 				table.push_back(lua_value(key, top_element<lua_table>()));
