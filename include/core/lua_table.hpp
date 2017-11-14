@@ -9,7 +9,7 @@
 #include <initializer_list>
 #include <type_traits>
 #include "various.hpp"
-#include "core/lua_type.hpp"
+#include "lua_type.hpp"
 namespace LuaBz
 {
 	

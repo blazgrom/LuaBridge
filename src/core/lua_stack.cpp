@@ -1,4 +1,5 @@
 #include "core/lua_stack.hpp"
+#include "core/lua_type.hpp"
 namespace LuaBz
 {
 	using Utils::can_represent_v;
