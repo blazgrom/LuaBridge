@@ -17,5 +17,13 @@ namespace LuaBz
         using string=std::string;
         using nil=std::nullptr_t;
     };
+	namespace detail
+	{
+		//Used for tag dispatching the lua_stack::get
+		//Represent the macro group of lua types
+        struct ClassType{};
+		struct IntegralType{};
+		struct FloatingPointType{};
+	}
 }
 #endif

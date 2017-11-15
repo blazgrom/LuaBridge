@@ -3,6 +3,22 @@
 namespace LuaBz
 {
 	using Utils::can_represent_v;
+	lua_stack::lua_stack()
+		:
+		m_state{nullptr}
+	{
+
+	}
+	lua_stack::lua_stack(bool loadStandardLib, const std::string& file, std::vector<std::string> dependencies)
+		:
+		m_state{ nullptr }
+	{
+		create(file,dependencies,loadStandardLib);
+	}
+	lua_stack::~lua_stack()
+	{
+		lua_close(m_state);
+	}
 	void lua_stack::pop(int count) const
 	{
 		lua_pop(m_state, count);
@@ -260,7 +276,7 @@ namespace LuaBz
 			}
 			else if (lua_isnumber(m_state, keyIndex))
 			{
-				tableKey = std::to_string(get<int>(keyIndex));
+				tableKey = std::to_string(get<lua_t::integer>(keyIndex));
 			}
 			callback(tableKey);
 			pop();
