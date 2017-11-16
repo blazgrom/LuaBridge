@@ -33,6 +33,9 @@ namespace LuaBz
 		typename std::vector<lua_value>::const_reference at(typename std::vector<lua_value>::size_type pos) const;
 		typename std::vector<lua_value>::reference operator[](typename std::vector<lua_value>::size_type pos);
 		typename std::vector<lua_value>::const_reference operator[](typename std::vector<lua_value>::size_type pos) const;
+
+		typename std::vector<lua_value>::reference operator[](const std::string& name);
+		typename std::vector<lua_value>::const_reference operator[](const std::string& name) const;
 		typename std::vector<lua_value>::reference front();
 		typename std::vector<lua_value>::const_reference front() const;
 		typename std::vector<lua_value>::reference back();
@@ -75,7 +78,6 @@ namespace LuaBz
 		lua_value(const std::string& name, lua_t::nil data);
 		lua_value(const std::string& name, lua_t::integer data);
 		lua_value(const std::string& name, lua_t::number data);
-		lua_value(const std::string& name, float data);
 		lua_value(const std::string& name, lua_t::boolean data);
 		lua_value(const std::string& name, const char* data);
 		lua_value(const std::string& name, const lua_t::string& data);
@@ -86,19 +88,24 @@ namespace LuaBz
 		lua_value& operator=(lua_value&& rhs);
 		lua_value& operator=(lua_t::integer rhs);
 		lua_value& operator=(lua_t::number rhs);
-		lua_value& operator=(float rhs);
 		lua_value& operator=(lua_t::boolean rhs);
 		lua_value& operator=(lua_t::nil rhs);
 		lua_value& operator=(const lua_t::string& rhs);
 		lua_value& operator=(const char* rhs);
 		lua_value& operator=(const lua_table& rhs);
+		operator lua_t::integer() const;
+		operator lua_t::number() const;
+		explicit operator lua_t::boolean() const;//This is explicit because it hijacks the conversion to integer
+		operator lua_t::nil() const;
+		operator lua_t::string() const;
+		operator lua_table() const;
 		~lua_value();
 		const std::string& name() const;
 		lua_types type() const;
 		template <typename T>
-		T get() const;
+		const T& get() const;
 		template <typename T>
-		const T& get();
+		T& get();
 	private:
 		lua_types m_type;
 		std::string m_name;
@@ -111,12 +118,6 @@ namespace LuaBz
 			lua_t::string m_string;
 			lua_table m_table;
 		};
-		const lua_t::number& get_number() const;
-		const lua_t::integer& get_integer() const;
-		const lua_t::boolean& get_boolean() const;
-		const std::nullptr_t& get_nil() const;
-		const std::string& get_string() const;
-		const lua_table& get_table() const;
 		void init(const lua_value& rhs);
 		void copy(const lua_value& rhs);
 		void destroy_complex();

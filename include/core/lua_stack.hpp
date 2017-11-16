@@ -63,14 +63,6 @@ namespace LuaBz
 		void get_global_variable(const std::string& name) const;
 		void get_table_element(const std::string& name) const;
 		void load_table_field(const std::string& name) const;
-		template<class T>
-		T get_lua_number(int index, std::true_type) const;
-		template <class T>
-		T get_lua_number(int , std::false_type) const;
-		template <class T>
-		T get_lua_integer(int index, std::true_type) const;
-		template <class T>
-		T get_lua_integer(int , std::false_type) const;
 		template <class T>
 		T get(int index) const;
 		template <typename T>

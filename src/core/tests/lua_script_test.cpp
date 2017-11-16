@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
-#include "can_represent_value.hpp"
 #include "core/lua_script.hpp"
 #include <string>
+#include <iostream>
 using namespace ::testing;
 using namespace LuaBz;
 using namespace std;
@@ -69,12 +69,12 @@ TEST_F(lua_scriptF,SetLuaString)
 TEST_F(lua_scriptF,SetLuaInteger)
 {
     script.set("integer_var",666);
-    ASSERT_EQ(666,script.get<long>("integer_var"));
+    ASSERT_EQ(666,script.get<int>("integer_var"));
 }
 TEST_F(lua_scriptF,SetLuaNumber)
 {
     script.set("double_var",10.132265);
-    ASSERT_DOUBLE_EQ(10.132265,script.get<double>("double_var"));
+    ASSERT_DOUBLE_EQ(10.132265f,script.get<float>("double_var"));
 }
 TEST_F(lua_scriptF,ExecuteLuaCode)
 {
@@ -86,4 +86,12 @@ TEST_F(lua_scriptF,ExecuteLuaCode)
                 R"(variable=increment(variable) )";
     script.run(code);
     ASSERT_EQ(2,script.get<long>("variable"));
+}
+
+TEST_F(lua_scriptF,GetLuaTable)
+{
+    lua_table position=script.get<lua_table>("Position");
+    int expected=1;
+    int actual=position["x"];
+    ASSERT_EQ(expected,actual);
 }

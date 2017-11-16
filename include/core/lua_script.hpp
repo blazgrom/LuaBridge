@@ -12,7 +12,6 @@
 #include "lua_function.hpp"
 #include "variadic_index.hpp"
 #include "callable_traits.hpp"
-#include "can_represent_value.hpp"
 #include "various.hpp"
 namespace LuaBz
 {

@@ -11,8 +11,8 @@ namespace LuaBz
 	};
     struct lua_t
     {
-        using number=LUA_NUMBER;
-        using integer=LUA_INTEGER;
+        using number=float;
+        using integer=int;
         using boolean=bool;
         using string=std::string;
         using nil=std::nullptr_t;

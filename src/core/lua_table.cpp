@@ -1,4 +1,3 @@
-#include <cassert>
 #include <cmath>
 #include "core/lua_table.hpp"
 #include "core/lua_type.hpp"
@@ -40,11 +39,37 @@ namespace LuaBz
 	}
 	typename std::vector<lua_value>::reference lua_table::operator[](typename std::vector<lua_value>::size_type pos)
 	{
-		return m_values.at(pos);
+		return m_values[pos];
 	}
 	typename std::vector<lua_value>::const_reference lua_table::operator[](typename std::vector<lua_value>::size_type pos) const
 	{
-		return m_values.at(pos);
+		return m_values[pos];
+	}
+
+	typename std::vector<lua_value>::reference lua_table::operator[](const std::string& name)
+	{
+		for(auto& val : m_values)
+		{
+			if(val.name()==name)
+			{
+				return val;
+			}
+		}
+		//TODO:Decide what to do here
+		assert(false);
+	}
+	typename std::vector<lua_value>::const_reference lua_table::operator[](const std::string& name) const
+	{
+		
+		for(auto& val : m_values)
+		{
+			if(val.name()==name)
+			{
+				return val;
+			}
+		}
+		//TODO:Decide what to do here
+		assert(false);
 	}
 	typename std::vector<lua_value>::reference lua_table::front()
 	{
@@ -295,11 +320,6 @@ namespace LuaBz
 		m_number{ data }
 	{
 	}
-	lua_value::lua_value(const std::string& name, float data)
-		:
-		lua_value(name,lua_t::number(data))
-	{
-	}
 	lua_value::lua_value(const std::string& name, lua_t::boolean data)
 		:
 		m_type{ lua_types::Boolean },
@@ -368,10 +388,6 @@ namespace LuaBz
 		m_type = lua_types::Number;
 		return *this;
 	}
-	lua_value& lua_value::operator=(float rhs)
-	{
-		return operator=(static_cast<lua_t::number>(rhs));
-	}
 	lua_value& lua_value::operator=(lua_t::boolean rhs)
 	{
 		destroy_complex();
@@ -404,6 +420,30 @@ namespace LuaBz
 		m_type = lua_types::Table;
 		return *this;
 	}
+	lua_value::operator lua_t::integer() const
+	{
+		return get<lua_t::integer>();
+	}
+	lua_value::operator lua_t::number() const
+	{
+		return get<lua_t::number>();
+	}
+	lua_value::operator lua_t::boolean() const
+	{
+		return get<lua_t::boolean>();
+	}
+	lua_value::operator lua_t::nil() const
+	{
+		return get<lua_t::nil>();
+	}
+	lua_value::operator lua_t::string() const
+	{
+		return get<lua_t::string>();
+	}
+	lua_value::operator lua_table() const
+	{
+		return get<lua_table>();
+	}
 	lua_value::~lua_value()
 	{
 		destroy_complex();
@@ -415,36 +455,6 @@ namespace LuaBz
 	lua_types lua_value::type() const
 	{
 		return m_type;
-	}
-	const lua_t::number& lua_value::get_number() const
-	{
-		assert(m_type == lua_types::Number);
-		return m_number;
-	}
-	const lua_t::integer& lua_value::get_integer() const
-	{
-		assert(m_type == lua_types::Integer);
-		return m_integer;
-	}
-	const lua_t::boolean& lua_value::get_boolean() const
-	{
-		assert(m_type == lua_types::Boolean);
-		return m_bool;
-	}
-	const lua_t::nil& lua_value::get_nil() const
-	{
-		assert(m_type == lua_types::Nil);
-		return m_nil;
-	}
-	const lua_t::string& lua_value::get_string() const
-	{
-		assert(m_type == lua_types::String);
-		return m_string;
-	}
-	const lua_table& lua_value::get_table() const
-	{
-		assert(m_type == lua_types::Table);
-		return m_table;
 	}
 	void lua_value::init(const lua_value& rhs)
 	{

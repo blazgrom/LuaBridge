@@ -65,30 +65,6 @@ void lua_stack::set_table_element(const std::string& name, const T& val) const
         }
     }
 }
-template<class T>
-T lua_stack::get_lua_number(int index, std::true_type) const
-{
-    T result = static_cast<T>(lua_tonumber(m_state, index));
-    return result;
-}
-template <class T>
-T lua_stack::get_lua_number(int , std::false_type) const
-{
-    static_assert(Utils::always_false<T>::value,"The type you are trying to use cannot represent fully the type lua_Number");
-    return T{};
-}
-template <class T>
-T lua_stack::get_lua_integer(int index, std::true_type) const
-{
-    T result = static_cast<T>(lua_tointeger(m_state, index));
-    return result;
-}
-template <class T>
-T lua_stack::get_lua_integer(int , std::false_type) const
-{
-    static_assert(Utils::always_false<T>::value,"The type you are trying to use cannot represent fully the type lua_Integer");
-    return T{};
-}
 template <class T>
 T lua_stack::get(int index) const
 {
@@ -133,11 +109,11 @@ T lua_stack::get_impl(int index,detail::ClassType) const
 template<typename T>
 T lua_stack::get_impl(int index,detail::IntegralType) const
 {
-    return get_lua_integer<T>(index, Utils::Can_represent_value<lua_t::integer, T>{});
+    return static_cast<T>(lua_tointeger(m_state, index));
 }
 template<typename T>
 T lua_stack::get_impl(int index,detail::FloatingPointType) const
 {
-    return get_lua_number<T>(index, Utils::Can_represent_value<lua_t::number, T>{});
+   return static_cast<T>(lua_tonumber(m_state, index));
 }
 //get specializations
