@@ -26,9 +26,13 @@ namespace LuaBz
 	void lua_stack::set_top_element(const std::string& name) const
 	{
 		if (name.find('.') == std::string::npos)
+		{
 			get_global_variable(name);
+		}
 		else
+		{
 			get_table_element(name);
+		}
 	}
 	void lua_stack::push(const lua_table& val) const
 	{

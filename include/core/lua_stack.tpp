@@ -7,6 +7,40 @@ T lua_stack::top_element(bool popTopElement) const
 {
     if (popTopElement)
     {
+        //Experiment 1
+        //Open new state on the same file with the same configuration
+        // lua_State* d=luaL_newstate();
+        // luaL_openlibs(d);
+        // luaL_dofile(d,"src/core/tests/luascript_test.lua");
+        // //Access the same variable to see if they have the same value
+        // auto top=-1;
+        // auto s=lua_tointeger(m_state,top);
+        // lua_getglobal(d, "integer_var");
+        // auto s1=lua_tointeger(d,top);
+        // //Change the value from m_state to see if the value off d state changes
+        // push(s+1);
+        // lua_setglobal(m_state, "integer_var");
+        // lua_getglobal(d, "integer_var");
+        // s1=lua_tointeger(d,top);
+        // lua_getglobal(m_state, "integer_var");
+        // s=lua_tointeger(m_state,top);
+        // //Transfer the updated value
+        // lua_xmove(m_state,d,1);
+        // lua_setglobal(d,"integer_var");
+        // lua_getglobal(d, "integer_var");
+        // s1=lua_tointeger(d,top);
+        
+        //Experiment 2
+        lua_State* d=m_state;
+       auto top=-1;
+        push(100+1);
+        lua_setglobal(m_state, "integer_var");
+        lua_getglobal(d, "integer_var");
+        auto s1=lua_tointeger(d,top);
+        lua_getglobal(m_state, "integer_var");
+        auto s=lua_tointeger(m_state,top);
+        
+       
         T result = get<T>(topElement);
         pop();
         return result;

@@ -62,6 +62,7 @@ namespace LuaBz
 		void register_function(const std::string& name, R(*user_f)(Args...));
 		template<class T>
 		void register_function(const std::string& name, T& user_f);
+		void operator[](const std::string& name) const;
 	private:
 		void load_function(const std::string& name) const;
 		template <class... Args>

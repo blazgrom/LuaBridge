@@ -1,4 +1,5 @@
 #include "core/lua_script.hpp"
+#include "core/lua_table.hpp"
 #include "core/lua_error.hpp"
 #include <algorithm>
 namespace LuaBz
@@ -99,5 +100,11 @@ namespace LuaBz
 			return function(functionState);
 		};
 		m_stack.set_element(name, lua_F);
+	}
+	void lua_script::operator[](const std::string& name) const
+	{
+		m_stack.set_top_element(name);
+		auto variable=m_stack.top_element<int>(true);
+		int a=1;
 	}
 }
