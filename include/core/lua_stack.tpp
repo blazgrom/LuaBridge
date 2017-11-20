@@ -32,15 +32,27 @@ T lua_stack::top_element(bool popTopElement) const
         
         //Experiment 2
         lua_State* d=m_state;
-       auto top=-1;
-        push(100+1);
+        auto top=-1;
+        push(100+25);
         lua_setglobal(m_state, "integer_var");
         lua_getglobal(d, "integer_var");
         auto s1=lua_tointeger(d,top);
         lua_getglobal(m_state, "integer_var");
         auto s=lua_tointeger(m_state,top);
+        //Experiment 3
         
-       
+        //Resize stack to current size+4k
+        auto can_contain=lua_checkstack(m_state,4000);
+        lua_Debug* debug_info=nullptr;
+        lua_getstack(m_state,0,debug_info);
+        //Try pushing element to the stack,segmentation fault if cannot insert more elements
+        for(int i=0;i!=12000;++i)
+        {
+            lua_pushinteger(m_state, i);
+        }
+        lua_State* thr=lua_newthread(m_state);
+        lua_getglobal(thr,"integer_var");
+        auto thr1=lua_tointeger(thr,top);
         T result = get<T>(topElement);
         pop();
         return result;
