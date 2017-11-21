@@ -31,28 +31,91 @@ T lua_stack::top_element(bool popTopElement) const
         // s1=lua_tointeger(d,top);
         
         //Experiment 2
-        lua_State* d=m_state;
-        auto top=-1;
-        push(100+25);
-        lua_setglobal(m_state, "integer_var");
-        lua_getglobal(d, "integer_var");
-        auto s1=lua_tointeger(d,top);
-        lua_getglobal(m_state, "integer_var");
-        auto s=lua_tointeger(m_state,top);
-        //Experiment 3
+    //     lua_State* d=m_state;
+    //     auto top=-1;
+    //     push(100+25);
+    //     lua_setglobal(m_state, "integer_var");
+    //     lua_getglobal(d, "integer_var");
+    //     auto s1=lua_tointeger(d,top);
+    //     lua_getglobal(m_state, "integer_var");
+    //     auto s=lua_tointeger(m_state,top);
+    //     //Experiment 3
         
-        //Resize stack to current size+4k
-        auto can_contain=lua_checkstack(m_state,4000);
-        lua_Debug* debug_info=nullptr;
-        lua_getstack(m_state,0,debug_info);
-        //Try pushing element to the stack,segmentation fault if cannot insert more elements
-        for(int i=0;i!=12000;++i)
-        {
-            lua_pushinteger(m_state, i);
-        }
-        lua_State* thr=lua_newthread(m_state);
-        lua_getglobal(thr,"integer_var");
-        auto thr1=lua_tointeger(thr,top);
+    //     //Resize stack to current size+4k
+    //     auto can_contain=lua_checkstack(m_state,4000);
+    //     lua_Debug* debug_info=nullptr;
+    //     lua_getstack(m_state,0,debug_info);
+    //     //Try pushing element to the stack,segmentation fault if cannot insert more elements
+    //     for(int i=0;i!=12000;++i)
+    //     {
+    //         lua_pushinteger(m_state, i);
+    //     }
+    //     lua_State* thr=lua_newthread(m_state);
+    //     lua_getglobal(thr,"integer_var");
+    //     auto thr1=lua_tointeger(thr,top);
+    //     //Experimenting 4
+    //  //   lua_pop(m_state,5);
+    //   //  lua_gc(m_state,LUA_GCCOLLECT,1);
+    //     lua_getglobal(thr,"integer_var");
+    //     thr1=lua_tointeger(thr,top);
+
+      auto top=-1;
+        lua_State* secondMainState=luaL_newstate();
+        lua_State* thread1=lua_newthread(m_state);
+        //Insert the new global table
+        lua_newtable(thread1);
+        //Create the new metatable
+        //The __index of this table points to the old LUA_GLOBALSINDEX,
+        //in order to be able to retrieve value already defined.
+        //New values should be inserted in the new global table
+        lua_newtable(thread1);
+        lua_pushliteral(thread1,"__index");
+        lua_pushvalue(thread1,LUA_GLOBALSINDEX);
+        static const int new_metable_index=-3;
+        lua_settable(thread1,new_metable_index);
+        //Set the metable of the new global table
+        static const int new_globaltable_index=-2;
+        lua_setmetatable(thread1,new_globaltable_index);
+        //Set the new global table
+        lua_replace(thread1,LUA_GLOBALSINDEX);
+        luaL_dofile(thread1,"src/core/tests/luascript_test.lua");
+
+        lua_State* thread2=lua_newthread(m_state);
+        //Set new __index metatable
+        // lua_newtable(thread2);
+        // lua_pushliteral(thread2,"__index");//Key
+        // lua_pushvalue(thread2,LUA_GLOBALSINDEX);
+        // lua_settable(thread,-3);
+
+       lua_newtable(thread2); //new globals table
+        lua_newtable(thread2); //metatable
+
+        lua_pushliteral(thread2, "__index");
+        lua_pushvalue(thread2, LUA_GLOBALSINDEX); //original globals 
+        lua_settable(thread2, -3);
+        lua_setmetatable(thread2, -2);
+        //lua_replace(thread2, LUA_GLOBALSINDEX); //replace newState's globals
+        luaL_dofile(thread2,"src/core/tests/luascript_test.lua");
+
+        lua_pushinteger(thread2, 2222);
+        lua_setglobal(thread2,"Somedummyvalue");
+        lua_getglobal(m_state,"Somedummyvalue");
+        auto s=LUA_GLOBALSINDEX;//This is deprecated from Lua5.2 onwards
+        auto dummyMainState=lua_tointeger(m_state,top);
+        
+        lua_getglobal(thread1,"Somedummyvalue");
+        auto dummyThreadState=lua_tointeger(thread1,top);
+
+        lua_getglobal(thread2,"integer_var");
+        auto dummyThread2State=lua_tointeger(thread2,top);
+
+
+
+       lua_getglobal(secondMainState,"Somedummyvalue");
+        auto dummysecondMainState=lua_tointeger(secondMainState,top);
+
+ 
+
         T result = get<T>(topElement);
         pop();
         return result;
