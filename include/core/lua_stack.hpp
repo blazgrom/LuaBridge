@@ -6,12 +6,13 @@
 #include <string>
 #include <functional>
 #include <tuple>
-#include "lua.hpp"
+#include <lua.hpp>
 #include "lua_table.hpp"
 #include "lua_error.hpp"
 #include "can_represent_value.hpp"
 #include "static_type_if.hpp"
 #include "lua_type.hpp"
+#include "detail/lua_state_factory.hpp"
 namespace LuaBz
 {
 	class lua_stack

@@ -18,7 +18,7 @@ public:
     LuaBz::lua_script script;
     void SetUp() override
     {
-        script_folder_path="src/core/tests/";
+        script_folder_path="tests/core/";
         main_script_dep=script_folder_path+"luascript_dep.lua";
         main_script_dep2=script_folder_path+"luascript_dep2.lua";
         main_script=script_folder_path+"luascript_test.lua";
