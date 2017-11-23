@@ -1,5 +1,5 @@
 ﻿BasedOnStyle: Chromium
-AccessModifierOffset: '0'
+AccessModifierOffset: '-2'
 AlignAfterOpenBracket: Align
 AlwaysBreakBeforeMultilineStrings: 'false'
 AlwaysBreakTemplateDeclarations: 'true'
@@ -12,3 +12,4 @@ MaxEmptyLinesToKeep: '1'
 PointerAlignment: Right
 SortIncludes: 'true'
 Standard: Cpp11
+IndentWidth: 4

@@ -4,12 +4,13 @@
 #include <string>
 namespace LuaBz
 {
-	class lua_error : public std::runtime_error
-	{
-	public:
-		explicit lua_error(const std::string& msg);
-		explicit lua_error(const char* msg);
-	private:
-	};
+class lua_error : public std::runtime_error
+{
+  public:
+    explicit lua_error(const std::string &msg);
+    explicit lua_error(const char *msg);
+
+  private:
+};
 }
-#endif // !LUABZ_LUA_ERROR_HPP
+#endif  // !LUABZ_LUA_ERROR_HPP
