@@ -14,6 +14,7 @@ option(ALWAYS_BUILD_DOC "Build the documentation on every make" OFF)
 option(ENABLE_CPPCHECK "Create cppcheck target" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analizer" OFF) 
 option(ENABLE_CODE_COVERAGE "Enable code coverage with lcov" OFF)
+option(ENABLE_CLANG_FORMAT "Enable clang-format code formatting" OFF)
 
 
 #--------------------------
@@ -25,7 +26,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 #--------------------------
 #       Include folder
 #--------------------------
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 #------------------------------------------
 #       Google Test - Google Mock setup
@@ -58,14 +59,21 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 #----------------------
-#       Clang tidy
+#       Code coverage
 #----------------------
 if(ENABLE_CODE_COVERAGE)
-        ##TODO : Add script for test coverage
+        include(codecoverage)
 endif()
 
+#-----------------------
+#       Clang format
+#-----------------------
+if(ENABLE_CLANG_FORMAT)
+        include(clang-format)
+endif(ENABLE_CLANG_FORMAT)
+
 #----------------------
-#       Submodules
+#       Git Submodules
 #----------------------
 include_directories(Utils)
 

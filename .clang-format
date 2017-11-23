@@ -1,0 +1,14 @@
+﻿BasedOnStyle: Chromium
+AccessModifierOffset: '0'
+AlignAfterOpenBracket: Align
+AlwaysBreakBeforeMultilineStrings: 'false'
+AlwaysBreakTemplateDeclarations: 'true'
+BreakBeforeBraces: Linux
+ColumnLimit: '80'
+ConstructorInitializerIndentWidth: '2'
+Cpp11BracedListStyle: 'true'
+Language: Cpp
+MaxEmptyLinesToKeep: '1'
+PointerAlignment: Right
+SortIncludes: 'true'
+Standard: Cpp11
