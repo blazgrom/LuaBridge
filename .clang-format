@@ -4,7 +4,7 @@ AlignAfterOpenBracket: Align
 AlwaysBreakBeforeMultilineStrings: 'false'
 AlwaysBreakTemplateDeclarations: 'true'
 BreakBeforeBraces: Linux
-ColumnLimit: '80'
+ColumnLimit: '85'
 ConstructorInitializerIndentWidth: '2'
 Cpp11BracedListStyle: 'true'
 Language: Cpp
