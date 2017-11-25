@@ -27,6 +27,19 @@ class lua_value
     operator bool() const;
     operator char() const;
     operator std::string() const;
+    lua_value &operator=(long long new_value);
+    lua_value &operator=(unsigned long long new_value);
+    lua_value &operator=(long new_value);
+    lua_value &operator=(unsigned long new_value);
+    lua_value &operator=(int new_value);
+    lua_value &operator=(unsigned int new_value);
+    lua_value &operator=(short new_value);
+    lua_value &operator=(unsigned short new_value);
+    lua_value &operator=(float new_value);
+    lua_value &operator=(double new_value);
+    lua_value &operator=(bool new_value);
+    lua_value &operator=(char new_value);
+    lua_value &operator=(const std::string &new_value);
 
   private:
     lua_value(lua_State *state, const std::string &name);
@@ -50,23 +63,19 @@ class lua_value
     }
     /**
      * \brief Retrieves the value of the lua variable
-     *
-     * Retrieves the value of the lua variable identified by m_name, thus
-     * pushing it on top of the stack identified by m_state
      */
     void get_lua_var() const;
     /**
      * \brief Sets the lua variable to a new value
-     *
-     * Sets the value of the variable identified by m_name.
-     * \pre The new value is already be on top of the lua stack 
+     * \pre The new value is already be on top of the lua stack
      * (m_state in this case).
      */
     void set_lua_var();
     lua_State *m_state;  ///< A lua state which represents the file with which
                          ///< the script was opened
-    const std::string m_name;  ///< The name of the lua variable which this
-                               ///< lua_value object represents
+    const std::string
+        m_name;            ///< The name of the lua variable which the object
+                           ///< represents
     static const int top;  ///< A simple identifier for the top element of the
                            ///< stack
 };

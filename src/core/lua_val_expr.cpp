@@ -105,10 +105,93 @@ lua_value::operator char() const
     get_lua_var();
     return (lua_tostring(m_state, top))[0];
 }
+
+lua_value &lua_value::operator=(long long new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(unsigned long long new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(long new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(unsigned long new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(int new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(unsigned int new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(short new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(unsigned short new_value)
+{
+    lua_pushinteger(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(float new_value)
+{
+    lua_pushnumber(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(double new_value)
+{
+    lua_pushnumber(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(bool new_value)
+{
+    lua_pushboolean(m_state, new_value);
+    set_lua_var();
+    return *this;
+}
+lua_value &lua_value::operator=(char new_value)
+{
+    return this->operator=(std::string{new_value});
+}
+lua_value &lua_value::operator=(const std::string &new_value)
+{
+    lua_pushlstring(m_state, new_value.c_str(), new_value.size());
+    return *this;
+}
+/**
+ * \details Retrieves the value of the lua variable identified by m_name, thus
+ * pushing it on top of the stack identified by m_state
+ */
 void lua_value::get_lua_var() const
 {
     lua_getglobal(m_state, m_name.c_str());
 }
+/**
+ * \details Sets the value of the variable identified by m_name.
+ */
 void lua_value::set_lua_var()
 {
     lua_setglobal(m_state, m_name.c_str());
