@@ -86,3 +86,7 @@ auto secondresult = script.call(lua_function<int, int, int> test("multipleInputM
 #### Dependencies
 * Lua 5.1.5
 * [Utils](https://github.com/blazgrom/Utils)
+
+
+#### Notes
+For dependencies inside Lua files use [lua modules] (http://lua-users.org/wiki/ModulesTutorial)
