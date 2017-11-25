@@ -29,11 +29,6 @@ lua_State *lua_state_factory::create_state(const std::string &file_name)
 }
 void lua_state_factory::set_state_globaltable(lua_State *state)
 {
-#if LUA_VERSION_NUM <= 501
-    auto old_globaltable_index = LUA_GLOBALSINDEX;
-#else
-    auto old_global_TABLE_INDEX = LUA_RIDX_GLOBALS;
-#endif
     // Insert the new global table
     lua_newtable(state);
     // Set the new global table
