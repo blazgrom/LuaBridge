@@ -9,7 +9,7 @@ namespace experimental
 {
 class lua_value
 {
-    friend class lua_script;
+    friend class LuaBz::lua_script;
 
   public:
     ~lua_value() = default;
