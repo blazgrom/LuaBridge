@@ -11,6 +11,7 @@
 #include "lua.hpp"
 #include "lua_function.hpp"
 #include "lua_stack.hpp"
+#include "lua_val_expr.hpp"
 #include "variadic_index.hpp"
 #include "various.hpp"
 namespace LuaBz
@@ -64,6 +65,7 @@ class lua_script
     std::pair<First, Second> call(const lua_function<First, Second> &f) const;
     void call(const lua_function<void> &f) const;
     void run(std::string luaCode);
+    void operator()(const std::string& lua_code) const;
     template <class R, class... Args>
     void register_function(const std::string &name,
                            std::function<R(Args...)> &user_f);
@@ -71,8 +73,7 @@ class lua_script
     void register_function(const std::string &name, R (*user_f)(Args...));
     template <class T>
     void register_function(const std::string &name, T &user_f);
-    void operator[](const std::string &name) const;
-
+    experimental::lua_value operator[](const std::string &name) const;
   private:
     void load_function(const std::string &name) const;
     template <class... Args>

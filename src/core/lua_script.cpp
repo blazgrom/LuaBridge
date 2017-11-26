@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "core/lua_error.hpp"
 #include "core/lua_table.hpp"
+#include "detail/lua_state_factory.hpp"
 namespace LuaBz
 {
 // Static
@@ -64,6 +65,18 @@ void lua_script::run(std::string luaCode)
 {
     m_stack.execute(luaCode);
 }
+/**
+ * \todo topElement should not be defined here \n
+ * Fine a better way  to communicate that a lua error has occured
+*/
+void lua_script::operator()(const std::string& lua_code) const
+{
+    static const int top=-1;
+    lua_State* state=detail::lua_state_factory::create_state(m_fileName);
+    if (luaL_dostring(state, lua_code.c_str())) {
+        throw lua_error(lua_tostring(state, top));
+    }
+}
 void lua_script::load_function(const std::string &name) const
 {
     m_stack.set_top_element(name);
@@ -87,10 +100,9 @@ void lua_script::register_function_impl(const std::string &name)
     };
     m_stack.set_element(name, lua_F);
 }
-void lua_script::operator[](const std::string &name) const
+experimental::lua_value lua_script::operator[](const std::string &name) const
 {
-    m_stack.set_top_element(name);
-    auto variable = m_stack.top_element<int>(true);
-    int a = 1;
+    lua_State* state=detail::lua_state_factory::create_state(m_fileName);
+    return experimental::lua_value{state,name};
 }
 }
