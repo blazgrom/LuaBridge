@@ -179,6 +179,7 @@ lua_value &lua_value::operator=(char new_value)
 lua_value &lua_value::operator=(const std::string &new_value)
 {
     lua_pushlstring(m_state, new_value.c_str(), new_value.size());
+    set_lua_var();
     return *this;
 }
 /**
