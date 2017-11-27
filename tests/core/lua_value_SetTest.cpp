@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <gtest/gtest.h>
 #include "core/lua_script.hpp"
@@ -9,7 +8,7 @@ class lua_value_Set : public ::testing::Test
     LuaBz::lua_script script;
     void SetUp() override
     {
-        std::string lua_script_file = "../tests/core/luascript_test.lua";
+        std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";
         script.open(lua_script_file);
     }
 };
