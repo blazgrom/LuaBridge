@@ -19,9 +19,9 @@ Feature list:
 ```
 * C++
 ```cpp
-  double width = script.get<double>("width");
+  double width = script["width"];
   int pos_x = script.get<int>("Position.x");
-  bool successWidth = script.set("width",newWidthValue);
+  script["width"]=newWidthValue;
   bool successPositionX = script.set("Position.x",newAxisXValue);
 ```
 #### Registering C++ functions
