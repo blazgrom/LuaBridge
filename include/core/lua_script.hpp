@@ -65,7 +65,7 @@ class lua_script
     std::pair<First, Second> call(const lua_function<First, Second> &f) const;
     void call(const lua_function<void> &f) const;
     void run(std::string luaCode);
-    void operator()(const std::string& lua_code) const;
+    void operator()(const std::string &lua_code) const;
     template <class R, class... Args>
     void register_function(const std::string &name,
                            std::function<R(Args...)> &user_f);
@@ -74,6 +74,7 @@ class lua_script
     template <class T>
     void register_function(const std::string &name, T &user_f);
     experimental::lua_value operator[](const std::string &name) const;
+
   private:
     void load_function(const std::string &name) const;
     template <class... Args>

@@ -1,6 +1,6 @@
-#include <string>
-#include <gtest/gtest.h>
 #include "core/lua_script.hpp"
+#include <gtest/gtest.h>
+#include <string>
 class lua_scriptF : public ::testing::Test
 {
   public:
@@ -14,12 +14,12 @@ class lua_scriptF : public ::testing::Test
 TEST_F(lua_scriptF, ExecuteLuaCodeFromCppString)
 {
     std::string code = R"(variable=1;)"
-                  R"(function increment(input) )"
-                  R"(    input=input+1;)"
-                  R"(    return input;)"
-                  R"(end )"
-                  R"(variable=increment(variable) )";
+                       R"(function increment(input) )"
+                       R"(    input=input+1;)"
+                       R"(    return input;)"
+                       R"(end )"
+                       R"(variable=increment(variable) )";
     script(code);
-    int variable=script["variable"];
+    int variable = script["variable"];
     ASSERT_EQ(2, variable);
 }

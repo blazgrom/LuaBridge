@@ -17,8 +17,9 @@ class lua_state_factory
      *
      * \note Every new lua_thread is pushed onto the registry in order \n
      * to not allow GC from Lua
-     * \todo maybe rename this function because create_state may be ambiguos seen that the function doesn't create \n
-     * a state when we are calling it two times with the same name
+     * \todo maybe rename this function because create_state may be ambiguos
+     * seen that the function doesn't create \n a state when we are calling it
+     * two times with the same name
      */
     static lua_State *create_state(const std::string &file_name);
 

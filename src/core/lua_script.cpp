@@ -68,11 +68,11 @@ void lua_script::run(std::string luaCode)
 /**
  * \todo topElement should not be defined here \n
  * Fine a better way  to communicate that a lua error has occured
-*/
-void lua_script::operator()(const std::string& lua_code) const
+ */
+void lua_script::operator()(const std::string &lua_code) const
 {
-    static const int top=-1;
-    lua_State* state=detail::lua_state_factory::create_state(m_fileName);
+    static const int top = -1;
+    lua_State *state = detail::lua_state_factory::create_state(m_fileName);
     if (luaL_dostring(state, lua_code.c_str())) {
         throw lua_error(lua_tostring(state, top));
     }
@@ -102,7 +102,7 @@ void lua_script::register_function_impl(const std::string &name)
 }
 experimental::lua_value lua_script::operator[](const std::string &name) const
 {
-    lua_State* state=detail::lua_state_factory::create_state(m_fileName);
-    return experimental::lua_value{state,name};
+    lua_State *state = detail::lua_state_factory::create_state(m_fileName);
+    return experimental::lua_value{state, name};
 }
 }
