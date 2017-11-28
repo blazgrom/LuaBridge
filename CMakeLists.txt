@@ -11,6 +11,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
 option(ENABLE_TEST "Build all tests." ON) 
 option(ENABLE_DOC "Build documentation with doxygen" ON)
 option(ENABLE_CLANG_FORMAT "Enable clang-format code formatting" ON)
+option(USE_CPP_EXCEPTIONS "Use cpp exceptions in case of error, if set to OFF uses asserts in debug and logs the error to a file in release mode" OFF)
 option(ALWAYS_BUILD_DOC "Build the documentation on every make" OFF)
 option(ENABLE_CPPCHECK "Create cppcheck target" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analizer" OFF) 
@@ -83,5 +84,12 @@ include_directories(Utils)
 find_package(Lua51 REQUIRED) 
 include_directories(${LUA_INCLUDE_DIR})
 
+
+#----------------------
+# Others
+#----------------------
+if(USE_CPP_EXCEPTIONS)
+        add_definitions(-DLUABZ_USE_CPP_EXCEPTIONS)
+endif()
 add_subdirectory(src)
 add_subdirectory(tests)
