@@ -10,12 +10,11 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
 #--------------------
 option(ENABLE_TEST "Build all tests." ON) 
 option(ENABLE_DOC "Build documentation with doxygen" ON)
+option(ENABLE_CLANG_FORMAT "Enable clang-format code formatting" ON)
 option(ALWAYS_BUILD_DOC "Build the documentation on every make" OFF)
 option(ENABLE_CPPCHECK "Create cppcheck target" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analizer" OFF) 
 option(ENABLE_CODE_COVERAGE "Enable code coverage with lcov" OFF)
-option(ENABLE_CLANG_FORMAT "Enable clang-format code formatting" OFF)
-
 
 #--------------------------
 #       Output locations
@@ -70,7 +69,7 @@ endif()
 #-----------------------
 if(ENABLE_CLANG_FORMAT)
         include(clang-format)
-endif(ENABLE_CLANG_FORMAT)
+endif()
 
 #----------------------
 #       Git Submodules
