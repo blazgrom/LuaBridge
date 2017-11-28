@@ -1,6 +1,6 @@
 #include "core/lua_script.hpp"
 #include <algorithm>
-#include "core/lua_error.hpp"
+#include "core/lua_exception.hpp"
 #include "core/lua_table.hpp"
 #include "detail/lua_state_factory.hpp"
 namespace LuaBz
@@ -74,7 +74,7 @@ void lua_script::operator()(const std::string &lua_code) const
     static const int top = -1;
     lua_State *state = detail::lua_state_factory::create_state(m_fileName);
     if (luaL_dostring(state, lua_code.c_str())) {
-        throw lua_error(lua_tostring(state, top));
+        throw lua_exception(lua_tostring(state, top));
     }
 }
 void lua_script::load_function(const std::string &name) const
@@ -82,7 +82,7 @@ void lua_script::load_function(const std::string &name) const
     m_stack.set_top_element(name);
     const int topElement = -1;
     if (!m_stack.is_function(topElement)) {
-        throw lua_error(name + "is not a function");
+        throw lua_exception(name + "is not a function");
     }
 }
 void lua_script::register_function_impl(const std::string &name)

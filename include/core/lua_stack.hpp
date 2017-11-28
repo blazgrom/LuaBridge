@@ -8,10 +8,10 @@
 #include <tuple>
 #include <vector>
 #include "can_represent_value.hpp"
+#include "core/lua_exception.hpp"
+#include "core/lua_table.hpp"
+#include "core/lua_type.hpp"
 #include "detail/lua_state_factory.hpp"
-#include "lua_error.hpp"
-#include "lua_table.hpp"
-#include "lua_type.hpp"
 #include "static_type_if.hpp"
 namespace LuaBz
 {

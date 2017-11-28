@@ -140,7 +140,7 @@ void lua_stack::call_function(int inputCount, int outputCount) const
 {
     if (lua_pcall(m_state, inputCount, outputCount, 0) != 0) {
         bool popTopElement = true;
-        throw lua_error(top_element<std::string>(popTopElement));
+        throw lua_exception(top_element<std::string>(popTopElement));
     }
 }
 bool lua_stack::is_function(int index) const
@@ -154,7 +154,7 @@ int lua_stack::size() const
 void lua_stack::execute(const std::string &code) const
 {
     if (luaL_dostring(m_state, code.c_str())) {
-        throw lua_error(lua_tostring(m_state, topElement));
+        throw lua_exception(lua_tostring(m_state, topElement));
     }
 }
 void lua_stack::destroy()
@@ -176,15 +176,15 @@ void lua_stack::create(const std::string &file,
 void lua_stack::run_file(const std::string &name) const
 {
     if (luaL_dofile(m_state, name.c_str())) {
-        throw lua_error(lua_tostring(m_state, topElement));
+        throw lua_exception(lua_tostring(m_state, topElement));
     }
 }
 void lua_stack::get_global_variable(const std::string &name) const
 {
     lua_getglobal(m_state, name.c_str());
     if (lua_isnoneornil(m_state, topElement)) {
-        throw lua_error("A variable with the name:" + name +
-                        " could not be found");
+        throw lua_exception("A variable with the name:" + name +
+                            " could not be found");
     }
 }
 void lua_stack::get_table_element(const std::string &name) const
@@ -208,7 +208,7 @@ void lua_stack::get_table_element(const std::string &name) const
 void lua_stack::load_table_field(const std::string &name) const
 {
     if (!lua_istable(m_state, topElement)) {
-        throw lua_error("The field " + name + " could not be loaded");
+        throw lua_exception("The field " + name + " could not be loaded");
     }
     lua_getfield(m_state, topElement, name.c_str());
 }

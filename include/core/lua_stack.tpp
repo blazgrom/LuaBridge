@@ -202,7 +202,7 @@ template <>
 inline lua_table lua_stack::get<lua_table>(int index) const
 {
     if (!lua_istable(m_state, index)) {
-        throw lua_error(
+        throw lua_exception(
             "The type you are trying to retrieve cannot be constructed "
             "with a lua_table");
     }
