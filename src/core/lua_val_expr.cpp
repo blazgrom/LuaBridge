@@ -182,6 +182,18 @@ lua_value &lua_value::operator=(const std::string &new_value)
     set_lua_var();
     return *this;
 }
+lua_value &lua_value::operator=(std::nullptr_t)
+{
+    lua_pushnil(m_state);
+    set_lua_var();
+    return *this;
+}
+
+bool lua_value::is_nil() const
+{
+    get_lua_var();
+    return static_cast<bool>(lua_isnil(m_state, top));
+}
 /**
  * \details Retrieves the value of the lua variable identified by m_name, thus
  * pushing it on top of the stack identified by m_state
@@ -191,7 +203,8 @@ void lua_value::get_lua_var() const
     lua_getglobal(m_state, m_name.c_str());
 }
 /**
- * \details Sets the value of the variable identified by m_name.
+ * \details Pops the top element from the state and sets the value of the
+ * variable identified by m_name to the popped value
  */
 void lua_value::set_lua_var()
 {

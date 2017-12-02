@@ -1,5 +1,6 @@
 #ifndef LUABZ_LUA_VAL_EXPR_HPP
 #define LUABZ_LUA_VAL_EXPR_HPP
+#include <cstddef>
 #include <lua.hpp>
 #include <string>
 namespace LuaBz
@@ -40,6 +41,12 @@ class lua_value
     lua_value &operator=(bool new_value);
     lua_value &operator=(char new_value);
     lua_value &operator=(const std::string &new_value);
+    lua_value &operator=(std::nullptr_t);
+    /**
+     * Checks if the value identified by the name of lua_value is equal to lua's
+     * nil
+     */
+    bool is_nil() const;
 
   private:
     lua_value(lua_State *state, const std::string &name);
@@ -58,7 +65,7 @@ class lua_value
     template <typename T, typename OriginalType>
     T value_as(OriginalType (*get_value)(lua_State *state, int index)) const
     {
-        lua_getglobal(m_state, m_name.c_str());
+        get_lua_var();
         return static_cast<T>(get_value(m_state, top));
     }
     /**
