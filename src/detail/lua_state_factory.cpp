@@ -1,4 +1,5 @@
 #include "detail/lua_state_factory.hpp"
+#include "detail/lua_error.hpp"
 namespace LuaBz
 {
 namespace detail
@@ -24,7 +25,9 @@ lua_State *lua_state_factory::create_state(const std::string &file_name)
     auto lua_ref = luaL_ref(master_state, LUA_REGISTRYINDEX);
     active_lua_states[registry_key] = lua_ref;
     set_state_globaltable(state);
-    luaL_dofile(state, file_name.c_str());
+    if (luaL_dofile(state, file_name.c_str())) {
+        lua_error(lua_tostring(state, -1));
+    }
     return state;
 }
 void lua_state_factory::set_state_globaltable(lua_State *state)
