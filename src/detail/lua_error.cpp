@@ -6,7 +6,7 @@ namespace LuaBz
 {
 namespace detail
 {
-void lua_error(const std::string &message)
+void lua_error(const std::string &error_message)
 {
 #ifdef USE_CPP_EXCEPTIONS
     throw lua_exception(message);
