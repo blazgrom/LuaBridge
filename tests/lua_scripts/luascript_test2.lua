@@ -1,1 +1,4 @@
-test2="Somestring"
+my_function=1;
+function test() 
+
+end

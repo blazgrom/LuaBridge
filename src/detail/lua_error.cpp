@@ -1,7 +1,7 @@
+#include "detail/lua_error.hpp"
 #include <cassert>
 #include <fstream>
 #include "core/lua_exception.hpp"
-#include "detail/lua_error.hpp"
 namespace LuaBz
 {
 namespace detail

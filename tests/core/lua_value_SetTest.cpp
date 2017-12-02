@@ -104,11 +104,15 @@ TEST_F(lua_value_Set, LuaVarFromCppDouble)
     double double_var = script["double_var"];
     ASSERT_DOUBLE_EQ(10.132265, double_var);
 }
-
 TEST_F(lua_value_Set, LuaVarFromCppFloat)
 {
     float expected = 10.132265f;
     script["double_var"] = expected;
     float actual = script["double_var"];
     ASSERT_FLOAT_EQ(expected, actual);
+}
+TEST_F(lua_value_Set, AssignNilToLuaVariable)
+{
+    script["double_var"] = nullptr;
+    ASSERT_TRUE(script["double_var"].is_nil());
 }

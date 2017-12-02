@@ -23,3 +23,11 @@ TEST_F(lua_value_Test,
     std::string second_script_value = second_script["string_var"];
     ASSERT_TRUE(first_script_value == second_script_value);
 }
+TEST_F(lua_value_Test, CheckIfNotNilVarIsNil)
+{
+    ASSERT_FALSE(script["string_var"].is_nil());
+}
+TEST_F(lua_value_Test, CheckIfNilVarIsNil)
+{
+    ASSERT_TRUE(script["nil_var"].is_nil());
+}
