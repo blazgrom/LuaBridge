@@ -1,4 +1,5 @@
 #include "core/lua_val_expr.hpp"
+
 namespace LuaBz
 {
 namespace experimental
@@ -27,6 +28,8 @@ lua_value &lua_value::operator=(const lua_value &rhs)
     if (m_state == rhs.m_state) {
         set_lua_var();
     } else {
+        //TODO:
+        //here we should transfer data from one stack to the other
         switch (lua_type(rhs.m_state, top)) {
             case LUA_TNIL:
                 lua_pushnil(m_state);
