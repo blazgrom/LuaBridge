@@ -12,4 +12,4 @@ implement operator ==
 implement all other operators in terms of the previous two
 handle registation of dependencies
 review the design
-remove the core folder, place file directly in src or include, these should be the files that users can see
+remove the core folder, place file directly in src or include, these should be the files that users can see$
