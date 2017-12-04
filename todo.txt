@@ -1,6 +1,5 @@
 TODO:
 Rename LuaBz to luabz
-Backup the code and remove everything unnecessary
 Extract the method for getting and setting lua variable from lua_value_expr to a new structure/method (call it lua_value)
 Rename lua_value_expr to lua_value_ref
 Find a way of deleting old opened lua_States

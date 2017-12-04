@@ -39,9 +39,10 @@ class lua_state_factory
      * seen that the function doesn't create \n a state when we are calling it
      * two times with the same name
      * \param file_name The name of the lua file on which the new lua state
+     * \param load_std Whether or not to load lua's std
      * operates
      */
-    static lua_State *create_state(const std::string &file_name);
+    static lua_State *create_state(const std::string &file_name,bool load_std=false);
 
   private:
     /// Sets the global table of the new state
