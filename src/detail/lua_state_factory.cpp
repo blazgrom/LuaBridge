@@ -1,5 +1,7 @@
 #include "detail/lua_state_factory.hpp"
 #include "detail/lua_error.hpp"
+#include <unordered_map>
+#include <iostream>
 namespace luabz
 {
 namespace detail
@@ -14,19 +16,18 @@ namespace detail
 lua_State* lua_state_factory::create_state(const std::string& file_name,
                                            bool load_std)
 {
-    static std::unordered_map<std::string, int> active_lua_states;
+    static   std::unordered_map<std::string, int> active_lua_states;
     static lua_State* master_state = luaL_newstate();
-    const std::string registry_key = "luabz_" + file_name;
-    bool already_opened =
-        active_lua_states.find(registry_key) != active_lua_states.end();
-    if (already_opened) {
+    std::string registry_key = "luabz_" + file_name;
+    if (active_lua_states.count(registry_key)) {
+        auto lua_ref=active_lua_states[registry_key];
         lua_rawgeti(master_state, LUA_REGISTRYINDEX,
-                    active_lua_states[registry_key]);
+                    lua_ref);
         return lua_tothread(master_state, -1);
     }
     lua_State* state = lua_newthread(master_state);
     auto lua_ref = luaL_ref(master_state, LUA_REGISTRYINDEX);
-    active_lua_states[registry_key] = lua_ref;
+    active_lua_states.emplace(registry_key,lua_ref);
     set_state_globaltable(state);
     if (luaL_dofile(state, file_name.c_str())) {
         lua_error(lua_tostring(state, -1));
