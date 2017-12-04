@@ -1,6 +1,6 @@
 #include "detail/lua_state_factory.hpp"
 #include "detail/lua_error.hpp"
-namespace LuaBz
+namespace luabz
 {
 namespace detail
 {

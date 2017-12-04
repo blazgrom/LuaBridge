@@ -1,6 +1,6 @@
 #include "core/lua_val_expr.hpp"
 
-namespace LuaBz
+namespace luabz
 {
 namespace experimental
 {

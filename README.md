@@ -1,4 +1,4 @@
-## LuaBz - Binding between C++ and Lua
+## luabz - Binding between C++ and Lua
 
 Feature list:
  * Getting/Setting variable's value
@@ -8,7 +8,7 @@ Feature list:
 
 
 ```cpp
-  LuaBz script("test.lua");
+  luabz script("test.lua");
 ```
 #### Getting/Setting variable's value
 

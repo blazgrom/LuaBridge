@@ -1,5 +1,5 @@
-#ifndef LUABZ_LUA_SCRIPT_HPP
-#define LUABZ_LUA_SCRIPT_HPP
+#ifndef luabz_LUA_SCRIPT_HPP
+#define luabz_LUA_SCRIPT_HPP
 #include <cassert>
 #include <functional>
 #include <string>
@@ -9,7 +9,7 @@
 #include <vector>
 #include "lua.hpp"
 #include "lua_val_expr.hpp"
-namespace LuaBz
+namespace luabz
 {
 class lua_script
 {
@@ -40,4 +40,4 @@ class lua_script
     experimental::lua_value operator[](const std::string &name) const;
 };
 }
-#endif  // !LUABZ_LUA_SCRIPT_HPP
+#endif  // !luabz_LUA_SCRIPT_HPP

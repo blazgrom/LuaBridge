@@ -1,11 +1,11 @@
-#ifndef LUABZ_LUA_STATE_FACTORY_HPP
-#define LUABZ_LUA_STATE_FACTORY_HPP
+#ifndef luabz_LUA_STATE_FACTORY_HPP
+#define luabz_LUA_STATE_FACTORY_HPP
 
 #include <lua.hpp>
 #include <string>
 #include <unordered_map>
 
-namespace LuaBz
+namespace luabz
 {
 namespace detail
 {

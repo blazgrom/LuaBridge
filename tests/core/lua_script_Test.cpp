@@ -4,7 +4,7 @@
 class lua_scriptF : public ::testing::Test
 {
   public:
-    LuaBz::lua_script script;
+    luabz::lua_script script;
     void SetUp() override
     {
         std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";

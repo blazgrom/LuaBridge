@@ -1,16 +1,16 @@
-#ifndef LUABZ_LUA_VAL_EXPR_HPP
-#define LUABZ_LUA_VAL_EXPR_HPP
+#ifndef luabz_LUA_VAL_EXPR_HPP
+#define luabz_LUA_VAL_EXPR_HPP
 #include <cstddef>
 #include <lua.hpp>
 #include <string>
-namespace LuaBz
+namespace luabz
 {
 class lua_script;
 namespace experimental
 {
 class lua_value
 {
-    friend class LuaBz::lua_script;
+    friend class luabz::lua_script;
 
   public:
     ~lua_value() = default;

@@ -1,8 +1,8 @@
-#ifndef LUABZ_LUA_EXCEPTION_HPP
-#define LUABZ_LUA_EXCEPTION_HPP
+#ifndef luabz_LUA_EXCEPTION_HPP
+#define luabz_LUA_EXCEPTION_HPP
 #include <stdexcept>
 #include <string>
-namespace LuaBz
+namespace luabz
 {
 /**
  * \brief A class used to report any kind of error that lua can generate
@@ -21,4 +21,4 @@ class lua_exception : public std::runtime_error
   private:
 };
 }
-#endif  // !LUABZ_LUA_EXCEPTION_HPP
+#endif  // !luabz_LUA_EXCEPTION_HPP

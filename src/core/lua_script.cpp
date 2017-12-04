@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "core/lua_exception.hpp"
 #include "detail/lua_state_factory.hpp"
-namespace LuaBz
+namespace luabz
 {
 // C-tors
 // TODO :

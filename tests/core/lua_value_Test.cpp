@@ -4,7 +4,7 @@
 class lua_value_Test : public ::testing::Test
 {
   public:
-    LuaBz::lua_script script;
+    luabz::lua_script script;
     void SetUp() override
     {
         std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";
@@ -17,7 +17,7 @@ TEST_F(lua_value_Test,
 {
     std::string new_value = "This is the new value for the lua string";
     std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";
-    LuaBz::lua_script second_script(lua_script_file);
+    luabz::lua_script second_script(lua_script_file);
     script["string_var"] = new_value;
     std::string first_script_value = script["string_var"];
     std::string second_script_value = second_script["string_var"];

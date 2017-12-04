@@ -2,7 +2,7 @@
 #include <cassert>
 #include <fstream>
 #include "core/lua_exception.hpp"
-namespace LuaBz
+namespace luabz
 {
 namespace detail
 {
