@@ -1,6 +1,6 @@
-#include "core/lua_script.hpp"
+#include "lua_script.hpp"
 #include <algorithm>
-#include "core/lua_exception.hpp"
+#include "lua_exception.hpp"
 #include "detail/lua_state_factory.hpp"
 namespace luabz
 {

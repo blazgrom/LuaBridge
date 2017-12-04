@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "core/lua_script.hpp"
+#include "lua_script.hpp"
 class lua_value_Test : public ::testing::Test
 {
   public:

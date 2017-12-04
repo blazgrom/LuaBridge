@@ -1,4 +1,4 @@
-#include "core/lua_script.hpp"
+#include "lua_script.hpp"
 #include <gtest/gtest.h>
 #include <string>
 class lua_scriptF : public ::testing::Test

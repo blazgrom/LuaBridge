@@ -1,4 +1,4 @@
-#include "core/lua_value_ref.hpp"
+#include "lua_value_ref.hpp"
 
 namespace luabz
 {

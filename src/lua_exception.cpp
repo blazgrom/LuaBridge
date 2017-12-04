@@ -1,4 +1,4 @@
-#include "core/lua_exception.hpp"
+#include "lua_exception.hpp"
 luabz::lua_exception::lua_exception(const std::string &msg)
   : std::runtime_error(msg)
 {
