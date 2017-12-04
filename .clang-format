@@ -10,7 +10,7 @@ ConstructorInitializerIndentWidth: '2'
 Cpp11BracedListStyle: 'true'
 Language: Cpp
 MaxEmptyLinesToKeep: '1'
-PointerAlignment: Right
+PointerAlignment: Left
 SortIncludes: 'true'
 Standard: Cpp11
 IndentWidth: 4

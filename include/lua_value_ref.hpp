@@ -14,18 +14,19 @@ class lua_value_ref
 
   public:
     ~lua_value_ref() = default;
-    lua_value_ref &operator=(const lua_value_ref &rhs);
+    lua_value_ref& operator=(const lua_value_ref& rhs);
     template <typename T>
     operator T() const
     {
         return detail::lua_value<T>::get(m_state, m_name);
     }
     template <typename T>
-    lua_value_ref &operator=(const T &new_value)
+    lua_value_ref& operator=(const T& new_value)
     {
         detail::lua_value<T>::set(m_state, m_name, new_value);
         return *this;
     }
+
     /**
      * Checks if the value identified by the name of lua_value_ref is equal to
      * lua's nil
@@ -33,8 +34,8 @@ class lua_value_ref
     bool is_nil() const;
 
   private:
-    lua_value_ref(lua_State *state, const std::string &name);
-    lua_value_ref(const lua_value_ref &rhs);
+    lua_value_ref(lua_State* state, const std::string& name);
+    lua_value_ref(const lua_value_ref& rhs);
     /**
      * \brief Retrieves the value of the lua variable
      */
@@ -45,7 +46,7 @@ class lua_value_ref
      * (m_state in this case).
      */
     void set_lua_var();
-    lua_State *m_state;  ///< A lua state which represents the file with which
+    lua_State* m_state;  ///< A lua state which represents the file with which
                          ///< the script was opened
     const std::string
         m_name;            ///< The name of the lua variable which the object

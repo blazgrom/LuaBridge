@@ -8,14 +8,14 @@ namespace luabz
 // TODO :
 // Implement all empty functions
 lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}
-lua_script::lua_script(const std::string &file, bool loadStandardLib)
+lua_script::lua_script(const std::string& file, bool loadStandardLib)
   : m_state{detail::lua_state_factory::create_state(file, loadStandardLib)},
     m_fileName{file},
     m_open{true}
 {
 }
-lua_script::lua_script(const std::string &file,
-                       const std::vector<std::string> &dependencies,
+lua_script::lua_script(const std::string& file,
+                       const std::vector<std::string>& dependencies,
                        bool loadStandardLib)
   : m_state{detail::lua_state_factory::create_state(file, loadStandardLib)},
     m_fileName{file},
@@ -23,8 +23,8 @@ lua_script::lua_script(const std::string &file,
 
 {
 }
-lua_script::lua_script(const std::string &file,
-                       const std::string &dependency,
+lua_script::lua_script(const std::string& file,
+                       const std::string& dependency,
                        bool loadStandardLib)
   : m_state{detail::lua_state_factory::create_state(file, loadStandardLib)},
     m_fileName{file},
@@ -33,7 +33,7 @@ lua_script::lua_script(const std::string &file,
 {
 }
 
-void lua_script::open(const std::string &file,
+void lua_script::open(const std::string& file,
                       std::vector<std::string> dependencies,
                       bool loadStandardLib)
 {
@@ -49,7 +49,7 @@ void lua_script::close() noexcept
     // m_stack.destroy();
     // m_open = false;
 }
-bool lua_script::change(const std::string &newFile) noexcept
+bool lua_script::change(const std::string& newFile) noexcept
 {
     bool result = true;
     // try {
@@ -69,14 +69,14 @@ bool lua_script::change(const std::string &newFile) noexcept
  *
  * \todo Use lua_error here
  */
-void lua_script::operator()(const std::string &lua_code) const
+void lua_script::operator()(const std::string& lua_code) const
 {
     static const int top = -1;
     if (luaL_dostring(m_state, lua_code.c_str())) {
         throw lua_exception(lua_tostring(m_state, top));
     }
 }
-lua_value_ref lua_script::operator[](const std::string &name) const
+lua_value_ref lua_script::operator[](const std::string& name) const
 {
     return lua_value_ref{m_state, name};
 }

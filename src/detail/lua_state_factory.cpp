@@ -11,11 +11,11 @@ namespace detail
  *
  * \todo Implement load of lua std
  */
-lua_State *lua_state_factory::create_state(const std::string &file_name,
+lua_State* lua_state_factory::create_state(const std::string& file_name,
                                            bool load_std)
 {
     static std::unordered_map<std::string, int> active_lua_states;
-    static lua_State *master_state = luaL_newstate();
+    static lua_State* master_state = luaL_newstate();
     const std::string registry_key = "luabz_" + file_name;
     bool already_opened =
         active_lua_states.find(registry_key) != active_lua_states.end();
@@ -24,7 +24,7 @@ lua_State *lua_state_factory::create_state(const std::string &file_name,
                     active_lua_states[registry_key]);
         return lua_tothread(master_state, -1);
     }
-    lua_State *state = lua_newthread(master_state);
+    lua_State* state = lua_newthread(master_state);
     auto lua_ref = luaL_ref(master_state, LUA_REGISTRYINDEX);
     active_lua_states[registry_key] = lua_ref;
     set_state_globaltable(state);
@@ -33,7 +33,7 @@ lua_State *lua_state_factory::create_state(const std::string &file_name,
     }
     return state;
 }
-void lua_state_factory::set_state_globaltable(lua_State *state)
+void lua_state_factory::set_state_globaltable(lua_State* state)
 {
     // Insert the new global table
     lua_newtable(state);

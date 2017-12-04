@@ -3,12 +3,12 @@
 namespace luabz
 {
 const int lua_value_ref::top = -1;
-lua_value_ref::lua_value_ref(lua_State *state, const std::string &name)
+lua_value_ref::lua_value_ref(lua_State* state, const std::string& name)
   : m_state{state}, m_name{name}
 {
 }
 
-lua_value_ref::lua_value_ref(const lua_value_ref &rhs)
+lua_value_ref::lua_value_ref(const lua_value_ref& rhs)
   : m_state{rhs.m_state}, m_name{rhs.m_name}
 {
 }
@@ -20,7 +20,7 @@ lua_value_ref::lua_value_ref(const lua_value_ref &rhs)
  * all while retaining the type of the value from rhs. \todo Handle the case
  * when rhs element is a table
  */
-lua_value_ref &lua_value_ref::operator=(const lua_value_ref &rhs)
+lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
 {
     rhs.get_lua_var();
     if (m_state == rhs.m_state) {

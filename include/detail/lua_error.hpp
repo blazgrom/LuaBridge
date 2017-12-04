@@ -14,7 +14,7 @@ namespace detail
  * USE_CPP_EXCEPTIONS is set off (default), it logs the error in a txt file
  * called lua_error and executes an always false assert
  */
-void lua_error(const std::string &message);
+void lua_error(const std::string& message);
 }
 }
 #endif

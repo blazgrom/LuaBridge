@@ -42,7 +42,7 @@ class lua_state_factory
      * \param load_std Whether or not to load lua's std
      * operates
      */
-    static lua_State *create_state(const std::string &file_name,
+    static lua_State* create_state(const std::string& file_name,
                                    bool load_std = false);
 
   private:
@@ -54,7 +54,7 @@ class lua_state_factory
      * 1 ) Insert the new global table and the metatable of the former
      * 2 ) Replace the current global table with the new global table
      */
-    static void set_state_globaltable(lua_State *state);
+    static void set_state_globaltable(lua_State* state);
 };
 }
 }
