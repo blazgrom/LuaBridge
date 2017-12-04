@@ -1,6 +1,5 @@
 TODO:
 Extract the method for getting and setting lua variable from lua_value_expr to a new structure/method (call it lua_value)
-Rename lua_value_expr to lua_value_ref
 Find a way of deleting old opened lua_States
 function support for lua_value_ref
 table support for lua_value_ref
@@ -12,3 +11,4 @@ handle registation of dependencies
 review the design
 remove the core folder, place file directly in src or include, these should be the files that users can see
 all the todo's in files
+Add documentation

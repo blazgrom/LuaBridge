@@ -6,15 +6,14 @@
 namespace luabz
 {
 class lua_script;
-namespace experimental
-{
-class lua_value
+
+class lua_value_ref
 {
     friend class luabz::lua_script;
 
   public:
-    ~lua_value() = default;
-    lua_value &operator=(const lua_value &rhs);
+    ~lua_value_ref() = default;
+    lua_value_ref &operator=(const lua_value_ref &rhs);
     operator long long() const;
     operator unsigned long long() const;
     operator long() const;
@@ -28,29 +27,29 @@ class lua_value
     operator bool() const;
     operator char() const;
     operator std::string() const;
-    lua_value &operator=(long long new_value);
-    lua_value &operator=(unsigned long long new_value);
-    lua_value &operator=(long new_value);
-    lua_value &operator=(unsigned long new_value);
-    lua_value &operator=(int new_value);
-    lua_value &operator=(unsigned int new_value);
-    lua_value &operator=(short new_value);
-    lua_value &operator=(unsigned short new_value);
-    lua_value &operator=(float new_value);
-    lua_value &operator=(double new_value);
-    lua_value &operator=(bool new_value);
-    lua_value &operator=(char new_value);
-    lua_value &operator=(const std::string &new_value);
-    lua_value &operator=(std::nullptr_t);
+    lua_value_ref &operator=(long long new_value);
+    lua_value_ref &operator=(unsigned long long new_value);
+    lua_value_ref &operator=(long new_value);
+    lua_value_ref &operator=(unsigned long new_value);
+    lua_value_ref &operator=(int new_value);
+    lua_value_ref &operator=(unsigned int new_value);
+    lua_value_ref &operator=(short new_value);
+    lua_value_ref &operator=(unsigned short new_value);
+    lua_value_ref &operator=(float new_value);
+    lua_value_ref &operator=(double new_value);
+    lua_value_ref &operator=(bool new_value);
+    lua_value_ref &operator=(char new_value);
+    lua_value_ref &operator=(const std::string &new_value);
+    lua_value_ref &operator=(std::nullptr_t);
     /**
-     * Checks if the value identified by the name of lua_value is equal to lua's
+     * Checks if the value identified by the name of lua_value_ref is equal to lua's
      * nil
      */
     bool is_nil() const;
 
   private:
-    lua_value(lua_State *state, const std::string &name);
-    lua_value(const lua_value &rhs);
+    lua_value_ref(lua_State *state, const std::string &name);
+    lua_value_ref(const lua_value_ref &rhs);
     /**
      * \brief Retrieves value from the stack
      *
@@ -86,6 +85,5 @@ class lua_value
     static const int top;  ///< A simple identifier for the top element of the
                            ///< stack
 };
-}
 }
 #endif

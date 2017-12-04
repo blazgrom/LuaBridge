@@ -67,6 +67,8 @@ bool lua_script::change(const std::string &newFile) noexcept
 /**
  * \todo topElement should not be defined here \n
  * Fine a better way  to communicate that a lua error has occured
+ * 
+ * \todo Use lua_error here
  */
 void lua_script::operator()(const std::string &lua_code) const
 {
@@ -75,8 +77,8 @@ void lua_script::operator()(const std::string &lua_code) const
         throw lua_exception(lua_tostring(m_state, top));
     }
 }
-experimental::lua_value lua_script::operator[](const std::string &name) const
+lua_value_ref lua_script::operator[](const std::string &name) const
 {
-    return experimental::lua_value{m_state, name};
+    return lua_value_ref{m_state, name};
 }
 }

@@ -1,16 +1,14 @@
-#include "core/lua_val_expr.hpp"
+#include "core/lua_value_ref.hpp"
 
 namespace luabz
 {
-namespace experimental
-{
-const int lua_value::top = -1;
-lua_value::lua_value(lua_State *state, const std::string &name)
+const int lua_value_ref::top = -1;
+lua_value_ref::lua_value_ref(lua_State *state, const std::string &name)
   : m_state{state}, m_name{name}
 {
 }
 
-lua_value::lua_value(const lua_value &rhs)
+lua_value_ref::lua_value_ref(const lua_value_ref &rhs)
   : m_state{rhs.m_state}, m_name{rhs.m_name}
 {
 }
@@ -22,7 +20,7 @@ lua_value::lua_value(const lua_value &rhs)
  * all while retaining the type of the value from rhs. \todo Handle the case
  * when rhs element is a table
  */
-lua_value &lua_value::operator=(const lua_value &rhs)
+lua_value_ref &lua_value_ref::operator=(const lua_value_ref &rhs)
 {
     rhs.get_lua_var();
     if (m_state == rhs.m_state) {
@@ -53,146 +51,146 @@ lua_value &lua_value::operator=(const lua_value &rhs)
     }
     return *this;
 }
-lua_value::operator long long() const
+lua_value_ref::operator long long() const
 {
     return value_as<long long>(lua_tointeger);
 }
-lua_value::operator unsigned long long() const
+lua_value_ref::operator unsigned long long() const
 {
     return value_as<unsigned long long>(lua_tointeger);
 }
-lua_value::operator long() const
+lua_value_ref::operator long() const
 {
     return value_as<long>(lua_tointeger);
 }
-lua_value::operator unsigned long() const
+lua_value_ref::operator unsigned long() const
 {
     return value_as<unsigned long>(lua_tointeger);
 }
-lua_value::operator int() const
+lua_value_ref::operator int() const
 {
     return value_as<int>(lua_tointeger);
 }
-lua_value::operator unsigned int() const
+lua_value_ref::operator unsigned int() const
 {
     return value_as<unsigned int>(lua_tointeger);
 }
-lua_value::operator short() const
+lua_value_ref::operator short() const
 {
     return value_as<short>(lua_tointeger);
 }
-lua_value::operator unsigned short() const
+lua_value_ref::operator unsigned short() const
 {
     return value_as<unsigned short>(lua_tointeger);
 }
-lua_value::operator float() const
+lua_value_ref::operator float() const
 {
     return value_as<float>(lua_tonumber);
 }
-lua_value::operator double() const
+lua_value_ref::operator double() const
 {
     return value_as<double>(lua_tonumber);
 }
-lua_value::operator bool() const
+lua_value_ref::operator bool() const
 {
     get_lua_var();
     return lua_toboolean(m_state, top);
 }
-lua_value::operator std::string() const
+lua_value_ref::operator std::string() const
 {
     get_lua_var();
     return lua_tostring(m_state, top);
 }
-lua_value::operator char() const
+lua_value_ref::operator char() const
 {
     get_lua_var();
     return (lua_tostring(m_state, top))[0];
 }
 
-lua_value &lua_value::operator=(long long new_value)
+lua_value_ref &lua_value_ref::operator=(long long new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(unsigned long long new_value)
+lua_value_ref &lua_value_ref::operator=(unsigned long long new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(long new_value)
+lua_value_ref &lua_value_ref::operator=(long new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(unsigned long new_value)
+lua_value_ref &lua_value_ref::operator=(unsigned long new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(int new_value)
+lua_value_ref &lua_value_ref::operator=(int new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(unsigned int new_value)
+lua_value_ref &lua_value_ref::operator=(unsigned int new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(short new_value)
+lua_value_ref &lua_value_ref::operator=(short new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(unsigned short new_value)
+lua_value_ref &lua_value_ref::operator=(unsigned short new_value)
 {
     lua_pushinteger(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(float new_value)
+lua_value_ref &lua_value_ref::operator=(float new_value)
 {
     lua_pushnumber(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(double new_value)
+lua_value_ref &lua_value_ref::operator=(double new_value)
 {
     lua_pushnumber(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(bool new_value)
+lua_value_ref &lua_value_ref::operator=(bool new_value)
 {
     lua_pushboolean(m_state, new_value);
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(char new_value)
+lua_value_ref &lua_value_ref::operator=(char new_value)
 {
     return this->operator=(std::string{new_value});
 }
-lua_value &lua_value::operator=(const std::string &new_value)
+lua_value_ref &lua_value_ref::operator=(const std::string &new_value)
 {
     lua_pushlstring(m_state, new_value.c_str(), new_value.size());
     set_lua_var();
     return *this;
 }
-lua_value &lua_value::operator=(std::nullptr_t)
+lua_value_ref &lua_value_ref::operator=(std::nullptr_t)
 {
     lua_pushnil(m_state);
     set_lua_var();
     return *this;
 }
 
-bool lua_value::is_nil() const
+bool lua_value_ref::is_nil() const
 {
     get_lua_var();
     return static_cast<bool>(lua_isnil(m_state, top));
@@ -201,7 +199,7 @@ bool lua_value::is_nil() const
  * \details Retrieves the value of the lua variable identified by m_name, thus
  * pushing it on top of the stack identified by m_state
  */
-void lua_value::get_lua_var() const
+void lua_value_ref::get_lua_var() const
 {
     lua_getglobal(m_state, m_name.c_str());
 }
@@ -209,9 +207,8 @@ void lua_value::get_lua_var() const
  * \details Pops the top element from the state and sets the value of the
  * variable identified by m_name to the popped value
  */
-void lua_value::set_lua_var()
+void lua_value_ref::set_lua_var()
 {
     lua_setglobal(m_state, m_name.c_str());
-}
 }
 }

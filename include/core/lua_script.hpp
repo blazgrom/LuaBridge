@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 #include "lua.hpp"
-#include "lua_val_expr.hpp"
+#include "lua_value_ref.hpp"
 namespace luabz
 {
 class lua_script
@@ -37,7 +37,7 @@ class lua_script
     void close() noexcept;
     bool change(const std::string &newFile) noexcept;
     void operator()(const std::string &lua_code) const;
-    experimental::lua_value operator[](const std::string &name) const;
+    lua_value_ref operator[](const std::string &name) const;
 };
 }
 #endif  // !luabz_LUA_SCRIPT_HPP
