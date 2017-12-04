@@ -1,13 +1,13 @@
 TODO:
-Extract the method for getting and setting lua variable from lua_value_expr to a new structure/method (call it lua_value)
+implement operator<
+implement operator ==
 Find a way of deleting old opened lua_States
 function support for lua_value_ref
 table support for lua_value_ref
 custom type support for lua_value_ref
-implement operator<
-implement operator ==
 implement all other operators in terms of the previous two
 handle registation of dependencies
 review the design
 all the todo's in files
 Add documentation
+Fix up the header guards for all the files

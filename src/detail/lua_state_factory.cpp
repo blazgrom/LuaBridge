@@ -8,10 +8,11 @@ namespace detail
  * \todo \n
  * 1-When the file has already been loaded into a lua thread we should \n
  * retrieve this lua thread from master state's registry, see line 17
- * 
+ *
  * \todo Implement load of lua std
  */
-lua_State *lua_state_factory::create_state(const std::string &file_name,bool load_std)
+lua_State *lua_state_factory::create_state(const std::string &file_name,
+                                           bool load_std)
 {
     static std::unordered_map<std::string, int> active_lua_states;
     static lua_State *master_state = luaL_newstate();

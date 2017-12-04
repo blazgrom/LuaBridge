@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <lua.hpp>
 #include <string>
+#include "detail/lua_value.hpp"
 namespace luabz
 {
 class lua_script;
@@ -14,59 +15,26 @@ class lua_value_ref
   public:
     ~lua_value_ref() = default;
     lua_value_ref &operator=(const lua_value_ref &rhs);
-    operator long long() const;
-    operator unsigned long long() const;
-    operator long() const;
-    operator unsigned long() const;
-    operator int() const;
-    operator unsigned int() const;
-    operator short() const;
-    operator unsigned short() const;
-    operator float() const;
-    operator double() const;
-    operator bool() const;
-    operator char() const;
-    operator std::string() const;
-    lua_value_ref &operator=(long long new_value);
-    lua_value_ref &operator=(unsigned long long new_value);
-    lua_value_ref &operator=(long new_value);
-    lua_value_ref &operator=(unsigned long new_value);
-    lua_value_ref &operator=(int new_value);
-    lua_value_ref &operator=(unsigned int new_value);
-    lua_value_ref &operator=(short new_value);
-    lua_value_ref &operator=(unsigned short new_value);
-    lua_value_ref &operator=(float new_value);
-    lua_value_ref &operator=(double new_value);
-    lua_value_ref &operator=(bool new_value);
-    lua_value_ref &operator=(char new_value);
-    lua_value_ref &operator=(const std::string &new_value);
-    lua_value_ref &operator=(std::nullptr_t);
+    template <typename T>
+    operator T() const
+    {
+        return detail::lua_value<T>::get(m_state, m_name);
+    }
+    template <typename T>
+    lua_value_ref &operator=(const T &new_value)
+    {
+        detail::lua_value<T>::set(m_state, m_name, new_value);
+        return *this;
+    }
     /**
-     * Checks if the value identified by the name of lua_value_ref is equal to lua's
-     * nil
+     * Checks if the value identified by the name of lua_value_ref is equal to
+     * lua's nil
      */
     bool is_nil() const;
 
   private:
     lua_value_ref(lua_State *state, const std::string &name);
     lua_value_ref(const lua_value_ref &rhs);
-    /**
-     * \brief Retrieves value from the stack
-     *
-     * Retrieves value from the stack identified by m_state using the function
-     * ptr passed as input parameter. After the value is retrived the element is
-     * converted to type T which is passed as template parameter \param
-     * get_value The function that will be used to retrieve the value from the
-     * stack \returns The lua variables identified by m_name transformed into
-     * type T
-     * \todo Decide if it makes sense to be const
-     */
-    template <typename T, typename OriginalType>
-    T value_as(OriginalType (*get_value)(lua_State *state, int index)) const
-    {
-        get_lua_var();
-        return static_cast<T>(get_value(m_state, top));
-    }
     /**
      * \brief Retrieves the value of the lua variable
      */

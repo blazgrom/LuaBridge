@@ -14,8 +14,10 @@ class lua_value_Get : public ::testing::Test
 };
 TEST_F(lua_value_Get, LuaBoolAsCppBool)
 {
-    ASSERT_TRUE(script["boolt_var"]);
-    ASSERT_FALSE(script["boolf_var"]);
+    bool t = script["boolt_var"];
+    bool f = script["boolf_var"];
+    ASSERT_TRUE(t);
+    ASSERT_FALSE(f);
 }
 TEST_F(lua_value_Get, LuaStringAsCppString)
 {

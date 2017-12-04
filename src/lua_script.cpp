@@ -1,36 +1,34 @@
 #include "lua_script.hpp"
 #include <algorithm>
-#include "lua_exception.hpp"
 #include "detail/lua_state_factory.hpp"
+#include "lua_exception.hpp"
 namespace luabz
 {
 // C-tors
 // TODO :
 // Implement all empty functions
-lua_script::lua_script()  :
-m_state{nullptr},
-m_fileName{""},
-m_open{false}
+lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}
+lua_script::lua_script(const std::string &file, bool loadStandardLib)
+  : m_state{detail::lua_state_factory::create_state(file, loadStandardLib)},
+    m_fileName{file},
+    m_open{true}
 {
 }
-lua_script::lua_script(const std::string &file, bool loadStandardLib) : m_state{detail::lua_state_factory::create_state(file,loadStandardLib)},
-m_fileName{file},
-m_open{true} {}
 lua_script::lua_script(const std::string &file,
                        const std::vector<std::string> &dependencies,
                        bool loadStandardLib)
-                       : m_state{detail::lua_state_factory::create_state(file,loadStandardLib)},
-m_fileName{file},
-m_open{true} 
+  : m_state{detail::lua_state_factory::create_state(file, loadStandardLib)},
+    m_fileName{file},
+    m_open{true}
 
 {
 }
 lua_script::lua_script(const std::string &file,
                        const std::string &dependency,
                        bool loadStandardLib)
-                       : m_state{detail::lua_state_factory::create_state(file,loadStandardLib)},
-m_fileName{file},
-m_open{true} 
+  : m_state{detail::lua_state_factory::create_state(file, loadStandardLib)},
+    m_fileName{file},
+    m_open{true}
 
 {
 }
@@ -40,7 +38,8 @@ void lua_script::open(const std::string &file,
                       bool loadStandardLib)
 {
     if (!m_open) {
-        m_state=detail::lua_state_factory::create_state(file,loadStandardLib);
+        m_state =
+            detail::lua_state_factory::create_state(file, loadStandardLib);
         m_open = true;
         m_fileName = file;
     }
@@ -67,7 +66,7 @@ bool lua_script::change(const std::string &newFile) noexcept
 /**
  * \todo topElement should not be defined here \n
  * Fine a better way  to communicate that a lua error has occured
- * 
+ *
  * \todo Use lua_error here
  */
 void lua_script::operator()(const std::string &lua_code) const

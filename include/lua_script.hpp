@@ -14,9 +14,10 @@ namespace luabz
 class lua_script
 {
   private:
-    lua_State* m_state;
+    lua_State *m_state;
     std::string m_fileName;
     bool m_open;
+
   public:
     lua_script();
     explicit lua_script(const std::string &file, bool loadStandardLib = false);

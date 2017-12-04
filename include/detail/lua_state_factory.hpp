@@ -42,7 +42,8 @@ class lua_state_factory
      * \param load_std Whether or not to load lua's std
      * operates
      */
-    static lua_State *create_state(const std::string &file_name,bool load_std=false);
+    static lua_State *create_state(const std::string &file_name,
+                                   bool load_std = false);
 
   private:
     /// Sets the global table of the new state
