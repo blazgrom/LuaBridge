@@ -26,7 +26,13 @@ class lua_value_ref
         detail::lua_value<T>::set(m_state, m_name, new_value);
         return *this;
     }
-
+    template <typename T>
+    bool operator==(const T& rhs)
+    {
+        T lhs = *this;  // Implicit cast to type T
+        return lhs == rhs;
+    }
+    bool operator==(const lua_value_ref& rhs);
     /**
      * Checks if the value identified by the name of lua_value_ref is equal to
      * lua's nil

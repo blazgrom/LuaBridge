@@ -51,7 +51,19 @@ lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
     }
     return *this;
 }
-
+/**
+ * \todo Comment this function
+ */
+bool lua_value_ref::operator==(const lua_value_ref& rhs)
+{
+    int lhs_index = -2, rhs_index = -1;
+    get_lua_var();
+    rhs.get_lua_var();
+    if (m_state != rhs.m_state) {
+        lua_xmove(rhs.m_state, m_state, 1);
+    }
+    return lua_equal(m_state, lhs_index, rhs_index);
+}
 bool lua_value_ref::is_nil() const
 {
     get_lua_var();
