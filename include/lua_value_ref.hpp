@@ -33,11 +33,11 @@ class lua_value_ref
         return lhs == rhs;
     }
     bool operator==(const lua_value_ref& rhs);
-    template<typename T>
+    template <typename T>
     bool operator<(const T& rhs)
     {
-        T lhs=*this;//Implicit cast to type T
-        return lhs<rhs;
+        T lhs = *this;  // Implicit cast to type T
+        return lhs < rhs;
     }
     bool operator<(const lua_value_ref& rhs);
     /**

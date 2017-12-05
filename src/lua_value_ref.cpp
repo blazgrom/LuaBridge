@@ -66,7 +66,7 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs)
 }
 /**
  * \todo Comment this function
-*/
+ */
 bool lua_value_ref::operator<(const lua_value_ref& rhs)
 {
     int lhs_index = -2, rhs_index = -1;
