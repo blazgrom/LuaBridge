@@ -13,6 +13,7 @@ class lua_value_ref
     friend class luabz::lua_script;
 
   public:
+    lua_value_ref(const lua_value_ref& rhs);
     ~lua_value_ref() = default;
     lua_value_ref& operator=(const lua_value_ref& rhs);
     template <typename T>
@@ -27,19 +28,124 @@ class lua_value_ref
         return *this;
     }
     template <typename T>
-    bool operator==(const T& rhs)
+    bool operator==(const T& rhs) const
     {
         T lhs = *this;  // Implicit cast to type T
         return lhs == rhs;
     }
-    bool operator==(const lua_value_ref& rhs);
+    bool operator==(const lua_value_ref& rhs) const;
+    /**
+     * \note this is converted to type T
+     * \todo Decide if the conversion to type T is correct in all cases
+    */
     template <typename T>
-    bool operator<(const T& rhs)
+    bool operator<(const T& rhs) const
     {
         T lhs = *this;  // Implicit cast to type T
         return lhs < rhs;
     }
-    bool operator<(const lua_value_ref& rhs);
+    bool operator<(const lua_value_ref& rhs) const;
+
+    template <typename T>
+    bool operator!=(const T& rhs) const
+    {
+        return !(*this == rhs);
+    }
+    /**
+     * \note this is converted to type T
+     * \todo Decide if the conversion to type T is correct in all cases
+    */
+    template <typename T>
+    bool operator>(const T& rhs) const
+    {
+        T lhs = *this;  // Implicit cast to type T
+        return rhs < lhs;
+    }
+    template <typename T>
+    bool operator<=(const T& rhs) const
+    {
+        return !(this->operator>(rhs));
+    }
+    template <typename T>
+    bool operator>=(const T& rhs) const
+    {
+        return !(this->operator<(rhs));
+    }
+    /**
+     * \note this is converted to type T
+     * \todo Decide if the conversion to type T is correct in all cases
+    */
+    template <typename T>
+    auto operator+(const T& rhs) const -> decltype(rhs + rhs)
+    {
+        T lhs = *this;
+        return lhs + rhs;
+    }
+    template <typename T>
+    lua_value_ref& operator+=(const T& rhs)
+    {
+        this->operator=(static_cast<T>(this->operator+(rhs)));
+        return *this;
+    }
+    /**
+     * \note this is converted to type T
+     * \todo Decide if the conversion to type T is correct in all cases
+    */
+    template <typename T>
+    auto operator-(const T& rhs) const -> decltype(rhs - rhs)
+    {
+        T lhs = *this;
+        return lhs - rhs;
+    }
+
+    template <typename T>
+    lua_value_ref& operator-=(const T& rhs)
+    {
+        this->operator=(static_cast<T>(this->operator-(rhs)));
+        return *this;
+    }
+    /**
+     * \note this is converted to type T
+     * \todo Decide if the conversion to type T is correct in all cases
+    */
+    template <typename T>
+    auto operator/(const T& rhs) const -> decltype(rhs / rhs)
+    {
+        T lhs = *this;
+        return lhs / rhs;
+    }
+
+    template <typename T>
+    lua_value_ref& operator/=(const T& rhs)
+    {
+        this->operator=(static_cast<T>(this->operator/(rhs)));
+        return *this;
+    }
+    /**
+     * \note this is converted to type T
+     * \todo Decide if the conversion to type T is correct in all cases
+    */
+    template <typename T>
+    auto operator*(const T& rhs) const -> decltype(rhs * rhs)
+    {
+        T lhs = *this;
+        return lhs * rhs;
+    }
+
+    template <typename T>
+    lua_value_ref& operator*=(const T& rhs)
+    {
+        this->operator=(static_cast<T>(this->operator*(rhs)));
+        return *this;
+    }
+    void operator+(const lua_value_ref& rhs) = delete;
+    void operator+=(const lua_value_ref& rhs) = delete;
+    void operator/(const lua_value_ref& rhs) = delete;
+    void operator/=(const lua_value_ref& rhs) = delete;
+    void operator-(const lua_value_ref& rhs) = delete;
+    void operator-=(const lua_value_ref& rhs) = delete;
+    void operator*(const lua_value_ref& rhs) = delete;
+    void operator*=(const lua_value_ref& rhs) = delete;
     /**
      * Checks if the value identified by the name of lua_value_ref is equal to
      * lua's nil
@@ -48,7 +154,6 @@ class lua_value_ref
 
   private:
     lua_value_ref(lua_State* state, const std::string& name);
-    lua_value_ref(const lua_value_ref& rhs);
     /**
      * \brief Retrieves the value of the lua variable
      */

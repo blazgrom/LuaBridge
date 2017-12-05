@@ -164,7 +164,6 @@ TEST_F(lua_value_Operator, OperatorLessThanBetweenTwoLuaValuesFromSameFile)
 {
     ASSERT_TRUE(script["double_var"] < script["double_var2"]);
 }
-// This method invalidates the key inside active_lua_states
 TEST_F(lua_value_Operator, OperatorLessThanBetweenTwoLuaValuesFromDifferentFile)
 {
     luabz::lua_script script2;

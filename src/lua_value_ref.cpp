@@ -54,7 +54,7 @@ lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
 /**
  * \todo Comment this function
  */
-bool lua_value_ref::operator==(const lua_value_ref& rhs)
+bool lua_value_ref::operator==(const lua_value_ref& rhs) const
 {
     int lhs_index = -2, rhs_index = -1;
     get_lua_var();
@@ -67,7 +67,7 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs)
 /**
  * \todo Comment this function
  */
-bool lua_value_ref::operator<(const lua_value_ref& rhs)
+bool lua_value_ref::operator<(const lua_value_ref& rhs) const
 {
     int lhs_index = -2, rhs_index = -1;
     get_lua_var();

@@ -18,14 +18,14 @@ static lua_State* master_state = luaL_newstate();
 lua_State* lua_state_factory::create_state(const std::string& file_name,
                                            bool load_std)
 {
-    bool already_inserted=active_lua_states.find(file_name) != active_lua_states.end();
+    bool already_inserted =
+        active_lua_states.find(file_name) != active_lua_states.end();
     if (already_inserted) {
         auto lua_ref = active_lua_states[file_name];
         lua_rawgeti(master_state, LUA_REGISTRYINDEX, lua_ref);
-        if(lua_isthread(master_state,-1))
-        {
-            lua_State* state =lua_tothread(master_state,-1);
-            lua_pop(master_state,-1);
+        if (lua_isthread(master_state, -1)) {
+            lua_State* state = lua_tothread(master_state, -1);
+            lua_pop(master_state, -1);
             return state;
         }
         lua_error("Lua slave state not found");

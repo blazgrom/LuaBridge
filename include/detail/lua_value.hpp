@@ -302,7 +302,7 @@ struct lua_value<const short> {
     static short get(lua_State* state, const std::string& name)
     {
         lua_getglobal(state, name.c_str());
-        auto result=static_cast<short>(luaL_checkint(state, -1));
+        auto result = static_cast<short>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
     }
