@@ -1,5 +1,5 @@
-#ifndef luabz_LUA_VAL_EXPR_HPP
-#define luabz_LUA_VAL_EXPR_HPP
+#ifndef LUABZ_LUA_VAL_EXPR_HPP
+#define LUABZ_LUA_VAL_EXPR_HPP
 #include <cstddef>
 #include <lua.hpp>
 #include <string>

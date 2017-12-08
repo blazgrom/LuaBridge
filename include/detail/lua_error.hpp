@@ -1,5 +1,5 @@
-#ifndef luabz_LUA_ERROR_HPP
-#define luabz_LUA_ERROR_HPP
+#ifndef LUABZ_LUA_ERROR_HPP
+#define LUABZ_LUA_ERROR_HPP
 #include <string>
 namespace luabz
 {

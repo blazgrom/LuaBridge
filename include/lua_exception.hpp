@@ -1,5 +1,5 @@
-#ifndef luabz_LUA_EXCEPTION_HPP
-#define luabz_LUA_EXCEPTION_HPP
+#ifndef LUABZ_LUA_EXCEPTION_HPP
+#define LUABZ_LUA_EXCEPTION_HPP
 #include <stdexcept>
 #include <string>
 namespace luabz
@@ -21,4 +21,4 @@ class lua_exception : public std::runtime_error
   private:
 };
 }
-#endif  // !luabz_LUA_EXCEPTION_HPP
+#endif

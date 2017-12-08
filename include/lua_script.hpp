@@ -1,5 +1,5 @@
-#ifndef luabz_LUA_SCRIPT_HPP
-#define luabz_LUA_SCRIPT_HPP
+#ifndef LUABZ_LUA_SCRIPT_HPP
+#define LUABZ_LUA_SCRIPT_HPP
 #include <cassert>
 #include <functional>
 #include <string>
@@ -41,4 +41,4 @@ class lua_script
     lua_value_ref operator[](const std::string& name) const;
 };
 }
-#endif  // !luabz_LUA_SCRIPT_HPP
+#endif

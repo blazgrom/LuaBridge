@@ -1,5 +1,5 @@
-#ifndef luabz_LUA_STATE_FACTORY_HPP
-#define luabz_LUA_STATE_FACTORY_HPP
+#ifndef LUABZ_LUA_STATE_FACTORY_HPP
+#define LUABZ_LUA_STATE_FACTORY_HPP
 
 #include <lua.hpp>
 #include <string>
