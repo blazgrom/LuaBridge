@@ -26,9 +26,8 @@ struct lua_value<const bool> {
         lua_pushboolean(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static bool get(lua_State* state, const std::string& name)
+    static bool get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<bool>(lua_toboolean(state, -1));
         lua_pop(state, 1);
         return result;
@@ -44,10 +43,8 @@ struct lua_value<bool> {
         lua_pushboolean(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static bool get(lua_State* state, const std::string& name)
+    static bool get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<bool>(lua_toboolean(state, -1));
         lua_pop(state, 1);
         return result;
@@ -65,9 +62,8 @@ struct lua_value<const long long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static long long get(lua_State* state, const std::string& name)
+    static long long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<long long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
         return result;
@@ -83,9 +79,8 @@ struct lua_value<long long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static long long get(lua_State* state, const std::string& name)
+    static long long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<long long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
         return result;
@@ -103,9 +98,8 @@ struct lua_value<const unsigned long long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned long long get(lua_State* state, const std::string& name)
+    static unsigned long long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result =
             static_cast<unsigned long long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
@@ -124,9 +118,8 @@ struct lua_value<unsigned long long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned long long get(lua_State* state, const std::string& name)
+    static unsigned long long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result =
             static_cast<unsigned long long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
@@ -145,9 +138,8 @@ struct lua_value<const long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static long get(lua_State* state, const std::string& name)
+    static long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
         return result;
@@ -163,9 +155,8 @@ struct lua_value<long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static long get(lua_State* state, const std::string& name)
+    static long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
         return result;
@@ -183,9 +174,8 @@ struct lua_value<const unsigned long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned long get(lua_State* state, const std::string& name)
+    static unsigned long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<unsigned long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
         return result;
@@ -203,9 +193,8 @@ struct lua_value<unsigned long> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned long get(lua_State* state, const std::string& name)
+    static unsigned long get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<unsigned long>(luaL_checklong(state, -1));
         lua_pop(state, 1);
         return result;
@@ -221,9 +210,8 @@ struct lua_value<const int> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static int get(lua_State* state, const std::string& name)
+    static int get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<int>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -239,9 +227,8 @@ struct lua_value<int> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static int get(lua_State* state, const std::string& name)
+    static int get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<int>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -259,9 +246,8 @@ struct lua_value<const unsigned int> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned int get(lua_State* state, const std::string& name)
+    static unsigned int get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<unsigned int>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -279,9 +265,8 @@ struct lua_value<unsigned int> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned int get(lua_State* state, const std::string& name)
+    static unsigned int get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<unsigned int>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -299,9 +284,8 @@ struct lua_value<const short> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static short get(lua_State* state, const std::string& name)
+    static short get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<short>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -317,9 +301,8 @@ struct lua_value<short> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static short get(lua_State* state, const std::string& name)
+    static short get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<short>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -337,9 +320,8 @@ struct lua_value<const unsigned short> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned short get(lua_State* state, const std::string& name)
+    static unsigned short get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<unsigned short>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -357,9 +339,8 @@ struct lua_value<unsigned short> {
         lua_pushinteger(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static unsigned short get(lua_State* state, const std::string& name)
+    static unsigned short get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<unsigned short>(luaL_checkint(state, -1));
         lua_pop(state, 1);
         return result;
@@ -377,9 +358,8 @@ struct lua_value<const float> {
         lua_pushnumber(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static float get(lua_State* state, const std::string& name)
+    static float get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<float>(lua_tonumber(state, -1));
         lua_pop(state, 1);
         return result;
@@ -395,9 +375,8 @@ struct lua_value<float> {
         lua_pushnumber(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static float get(lua_State* state, const std::string& name)
+    static float get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<float>(lua_tonumber(state, -1));
         lua_pop(state, 1);
         return result;
@@ -415,9 +394,8 @@ struct lua_value<const double> {
         lua_pushnumber(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static double get(lua_State* state, const std::string& name)
+    static double get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<double>(lua_tonumber(state, -1));
         lua_pop(state, 1);
         return result;
@@ -433,9 +411,8 @@ struct lua_value<double> {
         lua_pushnumber(state, value);
         lua_setglobal(state, name.c_str());
     }
-    static double get(lua_State* state, const std::string& name)
+    static double get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<double>(lua_tonumber(state, -1));
         lua_pop(state, 1);
         return result;
@@ -465,9 +442,8 @@ struct lua_value<const std::string> {
         lua_pushlstring(state, value.c_str(), value.size());
         lua_setglobal(state, name.c_str());
     }
-    static std::string get(lua_State* state, const std::string& name)
+    static std::string get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<std::string>(lua_tostring(state, -1));
         lua_pop(state, 1);
         return result;
@@ -485,9 +461,8 @@ struct lua_value<std::string> {
         lua_pushlstring(state, value.c_str(), value.size());
         lua_setglobal(state, name.c_str());
     }
-    static std::string get(lua_State* state, const std::string& name)
+    static std::string get(lua_State* state)
     {
-        lua_getglobal(state, name.c_str());
         auto result = static_cast<std::string>(lua_tostring(state, -1));
         lua_pop(state, 1);
         return result;
@@ -504,9 +479,9 @@ struct lua_value<const char> {
     {
         lua_value<const std::string>::set(state, name, std::string{value});
     }
-    static char get(lua_State* state, const std::string& name)
+    static char get(lua_State* state)
     {
-        return lua_value<const std::string>::get(state, name)[0];
+        return lua_value<const std::string>::get(state)[0];
     }
 };
 /**
@@ -518,9 +493,9 @@ struct lua_value<char> {
     {
         lua_value<std::string>::set(state, name, std::string{value});
     }
-    static char get(lua_State* state, const std::string& name)
+    static char get(lua_State* state)
     {
-        return lua_value<std::string>::get(state, name)[0];
+        return lua_value<std::string>::get(state)[0];
     }
 };
 }

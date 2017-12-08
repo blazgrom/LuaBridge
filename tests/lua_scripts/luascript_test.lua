@@ -11,3 +11,34 @@ Position={
     y=2,
     z=3
 };
+
+TableLevelOne={
+    x=false,
+    TableLevelTwo={
+        x=true,    
+        TableLevelThree={
+            x=false,
+            TableLevelFour={
+                x=true,    
+                TableLevelFive={
+                    x=false,
+                    TableLevelSix={
+                        x=true,    
+                        TableLevelSeven={
+                            x=false,
+                            TableLevelEight={
+                                x=true,    
+                                TableLevelNine={
+                                    x=false,
+                                    TableLevelTen={
+                                        x=true,    
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

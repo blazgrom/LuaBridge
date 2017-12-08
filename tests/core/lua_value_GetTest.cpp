@@ -9,7 +9,8 @@ class lua_value_Get : public ::testing::Test
     luabz::lua_script script;
     void SetUp() override
     {
-        std::string lua_script_file = construct_script_path("luascript_test.lua");
+        std::string lua_script_file =
+            construct_script_path("luascript_test.lua");
         script.open(lua_script_file);
     }
 };
