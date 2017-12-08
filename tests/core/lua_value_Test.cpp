@@ -1,13 +1,15 @@
 #include <gtest/gtest.h>
 #include <string>
 #include "lua_script.hpp"
+#include "lua_test_helpers.hpp"
+
 class lua_value_Test : public ::testing::Test
 {
   public:
     luabz::lua_script script;
     void SetUp() override
     {
-        std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";
+        std::string lua_script_file = construct_script_path("luascript_test.lua");
         script.open(lua_script_file);
     }
 };
@@ -16,7 +18,7 @@ TEST_F(lua_value_Test,
        TheSameVariableIsVisibleFromTwoDifferentLuaScriptsOnTheSameFile)
 {
     std::string new_value = "This is the new value for the lua string";
-    std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";
+    std::string lua_script_file = construct_script_path("luascript_test.lua");
     luabz::lua_script second_script(lua_script_file);
     script["string_var"] = new_value;
     std::string first_script_value = script["string_var"];

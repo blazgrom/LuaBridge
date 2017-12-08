@@ -1,13 +1,15 @@
 #include <gtest/gtest.h>
 #include <string>
 #include "lua_script.hpp"
+#include "lua_test_helpers.hpp"
+
 class lua_value_Operator : public ::testing::Test
 {
   public:
     luabz::lua_script script;
     void SetUp() override
     {
-        std::string lua_script_file = "../tests/lua_scripts/luascript_test.lua";
+        std::string lua_script_file = construct_script_path("luascript_test.lua");
         script.open(lua_script_file);
     }
 };
@@ -18,7 +20,7 @@ TEST_F(lua_value_Operator, OperatorEqualsBetweenTwoLuaValuesFromSameFile)
 TEST_F(lua_value_Operator, OperatorEqualsBetweenTwoLuaValuesFromDifferentFile)
 {
     luabz::lua_script script2;
-    script2.open("../tests/lua_scripts/luascript_test2.lua");
+    script2.open(construct_script_path("luascript_test2.lua"));
     ASSERT_FALSE(script["double_var"] == script2["double_var"]);
 }
 TEST_F(lua_value_Operator, OperatorEqualsBetweenLuaValueAndBool)
@@ -167,7 +169,7 @@ TEST_F(lua_value_Operator, OperatorLessThanBetweenTwoLuaValuesFromSameFile)
 TEST_F(lua_value_Operator, OperatorLessThanBetweenTwoLuaValuesFromDifferentFile)
 {
     luabz::lua_script script2;
-    script2.open("../tests/lua_scripts/luascript_test2.lua");
+    script2.open(construct_script_path("luascript_test2.lua"));
     ASSERT_FALSE(script["double_var"] < script2["double_var"]);
 }
 TEST_F(lua_value_Operator, OperatorLessThanBetweenLuaValueAndBool)
