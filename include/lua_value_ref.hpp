@@ -21,6 +21,7 @@ class lua_value_ref
     {
         load_lua_var();
         T result = detail::lua_value<T>::get(m_state);
+        clear_used_stack_spaces();
         return result;
     }
     template <typename T>

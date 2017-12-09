@@ -65,7 +65,7 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs) const
         lua_xmove(rhs.m_state, m_state, 1);
     }
     bool result = lua_equal(m_state, lhs_index, rhs_index);
- 
+
     return result;
 }
 /**
@@ -91,8 +91,9 @@ bool lua_value_ref::is_nil() const
     return result;
 }
 /**
- * \todo Clear up how a variable is put on the stack see lines 100->101, 107->108
-*/
+ * \todo Clear up how a variable is put on the stack see lines 100->101,
+ * 107->108
+ */
 void lua_value_ref::load_lua_var() const
 {
     if (is_table_field()) {
@@ -101,7 +102,7 @@ void lua_value_ref::load_lua_var() const
         std::string table_name = m_name.substr(0, delimeter_position);
         std::string field_name = m_name.substr(delimeter_position + 1);
         lua_getglobal(m_state, table_name.c_str());
-        ++used_stack_spaces;        
+        ++used_stack_spaces;
         while (true) {
             delimeter_position =
                 field_name.find_first_of(lua_table_field_delimeter);

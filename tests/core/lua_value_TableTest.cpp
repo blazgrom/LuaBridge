@@ -59,11 +59,13 @@ TEST_F(lua_value_TableTest, GettingSevenLevelDepthTableField)
 }
 TEST_F(lua_value_TableTest, GettingEightLevelDepthTableField)
 {
-    auto first_Table=script["TableLevelOne"];
-    auto table2=first_Table["TableLevelTwo"]["TableLevelThree"]["TableLevelFour"];
-    bool value = first_Table["TableLevelTwo"]["TableLevelThree"]
-                       ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
-                       ["TableLevelSeven"]["TableLevelEight"]["x"];
+    auto first_Table = script["TableLevelOne"];
+    auto table2 =
+        first_Table["TableLevelTwo"]["TableLevelThree"]["TableLevelFour"];
+    bool value =
+        first_Table["TableLevelTwo"]["TableLevelThree"]["TableLevelFour"]
+                   ["TableLevelFive"]["TableLevelSix"]["TableLevelSeven"]
+                   ["TableLevelEight"]["x"];
     ASSERT_TRUE(value);
 }
 TEST_F(lua_value_TableTest, GettingNineLevelDepthTableField)
