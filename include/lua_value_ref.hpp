@@ -27,7 +27,8 @@ class lua_value_ref
     template <typename T>
     lua_value_ref& operator=(const T& new_value)
     {
-        detail::lua_value<T>::set(m_state, m_name, new_value);
+        detail::lua_value<T>::insert(m_state, new_value);
+        set_lua_var();
         return *this;
     }
     template <typename T>

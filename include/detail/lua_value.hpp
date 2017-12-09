@@ -9,7 +9,8 @@ namespace detail
 /**
  * Struct containing all the logic for extracting value from lua and inserting
  * value in lua
- *
+ * \todo Rename insert to something like insert or something
+ * Decide if get has to be renamed also
  */
 template <class T>
 struct lua_value;
@@ -19,12 +20,10 @@ struct lua_value;
  */
 template <>
 struct lua_value<const bool> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const bool& value)
     {
         lua_pushboolean(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static bool get(lua_State* state)
     {
@@ -36,10 +35,9 @@ struct lua_value<const bool> {
  */
 template <>
 struct lua_value<bool> {
-    static void set(lua_State* state, const std::string& name, bool value)
+    static void insert(lua_State* state, bool value)
     {
         lua_pushboolean(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static bool get(lua_State* state)
     {
@@ -51,12 +49,10 @@ struct lua_value<bool> {
  */
 template <>
 struct lua_value<const long long> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const long long& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static long long get(lua_State* state)
     {
@@ -68,10 +64,9 @@ struct lua_value<const long long> {
  */
 template <>
 struct lua_value<long long> {
-    static void set(lua_State* state, const std::string& name, long long value)
+    static void insert(lua_State* state, long long value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static long long get(lua_State* state)
     {
@@ -83,12 +78,10 @@ struct lua_value<long long> {
  */
 template <>
 struct lua_value<const unsigned long long> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const unsigned long long& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned long long get(lua_State* state)
     {
@@ -100,12 +93,10 @@ struct lua_value<const unsigned long long> {
  */
 template <>
 struct lua_value<unsigned long long> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     unsigned long long value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned long long get(lua_State* state)
     {
@@ -117,12 +108,10 @@ struct lua_value<unsigned long long> {
  */
 template <>
 struct lua_value<const long> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const long& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static long get(lua_State* state)
     {
@@ -134,10 +123,9 @@ struct lua_value<const long> {
  */
 template <>
 struct lua_value<long> {
-    static void set(lua_State* state, const std::string& name, long value)
+    static void insert(lua_State* state, long value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static long get(lua_State* state)
     {
@@ -149,12 +137,10 @@ struct lua_value<long> {
  */
 template <>
 struct lua_value<const unsigned long> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const unsigned long& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned long get(lua_State* state)
     {
@@ -166,12 +152,10 @@ struct lua_value<const unsigned long> {
  */
 template <>
 struct lua_value<unsigned long> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     unsigned long value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned long get(lua_State* state)
     {
@@ -183,10 +167,9 @@ struct lua_value<unsigned long> {
  */
 template <>
 struct lua_value<const int> {
-    static void set(lua_State* state, const std::string& name, const int& value)
+    static void insert(lua_State* state, const int& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static int get(lua_State* state)
     {
@@ -198,10 +181,9 @@ struct lua_value<const int> {
  */
 template <>
 struct lua_value<int> {
-    static void set(lua_State* state, const std::string& name, int value)
+    static void insert(lua_State* state, int value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static int get(lua_State* state)
     {
@@ -213,12 +195,10 @@ struct lua_value<int> {
  */
 template <>
 struct lua_value<const unsigned int> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const unsigned int& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned int get(lua_State* state)
     {
@@ -230,12 +210,10 @@ struct lua_value<const unsigned int> {
  */
 template <>
 struct lua_value<unsigned int> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     unsigned int value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned int get(lua_State* state)
     {
@@ -247,12 +225,10 @@ struct lua_value<unsigned int> {
  */
 template <>
 struct lua_value<const short> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const short& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static short get(lua_State* state)
     {
@@ -264,10 +240,9 @@ struct lua_value<const short> {
  */
 template <>
 struct lua_value<short> {
-    static void set(lua_State* state, const std::string& name, short value)
+    static void insert(lua_State* state,  short value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static short get(lua_State* state)
     {
@@ -279,12 +254,10 @@ struct lua_value<short> {
  */
 template <>
 struct lua_value<const unsigned short> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const unsigned short& value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned short get(lua_State* state)
     {
@@ -296,12 +269,10 @@ struct lua_value<const unsigned short> {
  */
 template <>
 struct lua_value<unsigned short> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     unsigned short value)
     {
         lua_pushinteger(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static unsigned short get(lua_State* state)
     {
@@ -313,12 +284,10 @@ struct lua_value<unsigned short> {
  */
 template <>
 struct lua_value<const float> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const float& value)
     {
         lua_pushnumber(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static float get(lua_State* state)
     {
@@ -330,10 +299,9 @@ struct lua_value<const float> {
  */
 template <>
 struct lua_value<float> {
-    static void set(lua_State* state, const std::string& name, float value)
+    static void insert(lua_State* state, float value)
     {
         lua_pushnumber(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static float get(lua_State* state)
     {
@@ -345,12 +313,10 @@ struct lua_value<float> {
  */
 template <>
 struct lua_value<const double> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const double& value)
     {
         lua_pushnumber(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static double get(lua_State* state)
     {
@@ -362,10 +328,9 @@ struct lua_value<const double> {
  */
 template <>
 struct lua_value<double> {
-    static void set(lua_State* state, const std::string& name, double value)
+    static void insert(lua_State* state, double value)
     {
         lua_pushnumber(state, value);
-        lua_setglobal(state, name.c_str());
     }
     static double get(lua_State* state)
     {
@@ -373,15 +338,14 @@ struct lua_value<double> {
     }
 };
 /**
- * Specialization for std::nullptr_t, contains only set and sets the value to
+ * Specialization for std::nullptr_t, contains only insert and inserts the value to
  * nil
  */
 template <>
 struct lua_value<std::nullptr_t> {
-    static void set(lua_State* state, const std::string& name, std::nullptr_t)
+    static void insert(lua_State* state, std::nullptr_t)
     {
         lua_pushnil(state);
-        lua_setglobal(state, name.c_str());
     }
 };
 /**
@@ -389,12 +353,10 @@ struct lua_value<std::nullptr_t> {
  */
 template <>
 struct lua_value<const std::string> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const std::string& value)
     {
         lua_pushlstring(state, value.c_str(), value.size());
-        lua_setglobal(state, name.c_str());
     }
     static std::string get(lua_State* state)
     {
@@ -406,12 +368,10 @@ struct lua_value<const std::string> {
  */
 template <>
 struct lua_value<std::string> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     std::string value)
     {
         lua_pushlstring(state, value.c_str(), value.size());
-        lua_setglobal(state, name.c_str());
     }
     static std::string get(lua_State* state)
     {
@@ -423,11 +383,10 @@ struct lua_value<std::string> {
  */
 template <>
 struct lua_value<const char> {
-    static void set(lua_State* state,
-                    const std::string& name,
+    static void insert(lua_State* state,
                     const char& value)
     {
-        lua_value<const std::string>::set(state, name, std::string{value});
+        lua_value<const std::string>::insert(state,  std::string{value});
     }
     static char get(lua_State* state)
     {
@@ -439,9 +398,9 @@ struct lua_value<const char> {
  */
 template <>
 struct lua_value<char> {
-    static void set(lua_State* state, const std::string& name, char value)
+    static void insert(lua_State* state,  char value)
     {
-        lua_value<std::string>::set(state, name, std::string{value});
+        lua_value<std::string>::insert(state, std::string{value});
     }
     static char get(lua_State* state)
     {
