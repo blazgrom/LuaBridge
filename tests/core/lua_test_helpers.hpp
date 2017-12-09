@@ -9,7 +9,7 @@ inline std::string construct_script_path(std::string script_name)
     if (has_no_extension) {
         script_name += lua_extension;
     }
-    const std::string script_folder = "tests/lua_scripts/";
+    const std::string script_folder = "../tests/lua_scripts/";
     return script_folder + script_name;
 }
 #endif

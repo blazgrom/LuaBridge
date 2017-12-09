@@ -21,7 +21,6 @@ class lua_value_ref
     {
         load_lua_var();
         T result = detail::lua_value<T>::get(m_state);
-        // clear_used_stack_spaces();
         return result;
     }
     template <typename T>
@@ -159,7 +158,7 @@ class lua_value_ref
      * Access a the field identified by name inside the table identified by this
      * lua_value_ref
      */
-    lua_value_ref operator[](const std::string& name) const;
+    lua_value_ref operator[](const std::string& field_name) const;
 
   private:
     lua_value_ref(lua_State* state, const std::string& name);
