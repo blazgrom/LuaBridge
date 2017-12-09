@@ -59,13 +59,9 @@ TEST_F(lua_value_TableTest, GettingSevenLevelDepthTableField)
 }
 TEST_F(lua_value_TableTest, GettingEightLevelDepthTableField)
 {
-    auto first_Table = script["TableLevelOne"];
-    auto table2 =
-        first_Table["TableLevelTwo"]["TableLevelThree"]["TableLevelFour"];
-    bool value =
-        first_Table["TableLevelTwo"]["TableLevelThree"]["TableLevelFour"]
-                   ["TableLevelFive"]["TableLevelSix"]["TableLevelSeven"]
-                   ["TableLevelEight"]["x"];
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+                       ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+                       ["TableLevelSeven"]["TableLevelEight"]["x"];
     ASSERT_TRUE(value);
 }
 TEST_F(lua_value_TableTest, GettingNineLevelDepthTableField)
@@ -83,4 +79,92 @@ TEST_F(lua_value_TableTest, GettingTenLevelDepthTableField)
                        ["TableLevelSeven"]["TableLevelEight"]["TableLevelNine"]
                        ["TableLevelTen"]["x"];
     ASSERT_TRUE(value);
+}
+TEST_F(lua_value_TableTest, SettingOneLevelDepthTableField)
+{
+    script["TableLevelOne"]["x"] = true;
+    bool value = script["TableLevelOne"]["x"];
+    ASSERT_TRUE(value);
+}
+TEST_F(lua_value_TableTest, SettingTwoLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["x"] = false;
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["x"];
+    ASSERT_FALSE(value);
+}
+TEST_F(lua_value_TableTest, SettingThreeLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]["x"] = true;
+    bool value =
+        script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]["x"];
+    ASSERT_TRUE(value);
+}
+
+TEST_F(lua_value_TableTest, SettingFourLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["x"] = false;
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+                       ["TableLevelFour"]["x"];
+    ASSERT_FALSE(value);
+}
+TEST_F(lua_value_TableTest, SettingFiveLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["TableLevelFive"]["x"] = true;
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+                       ["TableLevelFour"]["TableLevelFive"]["x"];
+    ASSERT_TRUE(value);
+}
+TEST_F(lua_value_TableTest, SettingSixLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]["x"] = false;
+    bool value =
+        script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+              ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]["x"];
+    ASSERT_FALSE(value);
+}
+TEST_F(lua_value_TableTest, SettingSevenLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+          ["TableLevelSeven"]["x"] = true;
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+                       ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+                       ["TableLevelSeven"]["x"];
+    ASSERT_TRUE(value);
+}
+TEST_F(lua_value_TableTest, SettingEightLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+          ["TableLevelSeven"]["TableLevelEight"]["x"] = false;
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+                       ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+                       ["TableLevelSeven"]["TableLevelEight"]["x"];
+    ASSERT_FALSE(value);
+}
+TEST_F(lua_value_TableTest, SettingNineLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+          ["TableLevelSeven"]["TableLevelEight"]["TableLevelNine"]["x"] = true;
+    bool value =
+        script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+              ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+              ["TableLevelSeven"]["TableLevelEight"]["TableLevelNine"]["x"];
+    ASSERT_TRUE(value);
+}
+TEST_F(lua_value_TableTest, SettingTenLevelDepthTableField)
+{
+    script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+          ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+          ["TableLevelSeven"]["TableLevelEight"]["TableLevelNine"]
+          ["TableLevelTen"]["x"] = false;
+    bool value = script["TableLevelOne"]["TableLevelTwo"]["TableLevelThree"]
+                       ["TableLevelFour"]["TableLevelFive"]["TableLevelSix"]
+                       ["TableLevelSeven"]["TableLevelEight"]["TableLevelNine"]
+                       ["TableLevelTen"]["x"];
+    ASSERT_FALSE(value);
 }

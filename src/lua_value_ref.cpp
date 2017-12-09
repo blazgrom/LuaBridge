@@ -136,10 +136,16 @@ void lua_value_ref::load_lua_var() const
 /**
  * \details Pops the top element from the state and sets the value of the
  * variable identified by m_name to the popped value
+ * \todo Find a way not to use -3 here, we have to use -3 here because when we
+ * are setting a table field we load the complete path of the field thus the
+ * fields is at index -2 and the table is at index -3
  */
 void lua_value_ref::set_lua_var()
 {
-    lua_setglobal(m_state, m_name.c_str());
+    int lua_table_index = (is_table_field()) ? -3 : LUA_GLOBALSINDEX;
+    std::string lua_variable_name =
+        (is_table_field()) ? get_field_name() : m_name;
+    lua_setfield(m_state, lua_table_index, lua_variable_name.c_str());
 }
 lua_value_ref lua_value_ref::operator[](const std::string& field_name) const
 {
@@ -156,6 +162,11 @@ lua_value_ref lua_value_ref::operator[](const std::string& field_name) const
 bool lua_value_ref::is_table_field() const
 {
     return m_name.find(lua_table_field_delimeter) != std::string::npos;
+}
+std::string lua_value_ref::get_field_name() const
+{
+    auto delimeter_position = m_name.find_last_of(lua_table_field_delimeter);
+    return m_name.substr(delimeter_position + 1);
 }
 /**
  * \details Pops from the stack N spaces where N is determine by the member

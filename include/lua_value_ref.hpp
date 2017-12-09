@@ -24,11 +24,23 @@ class lua_value_ref
         clear_used_stack_spaces();
         return result;
     }
+    /**
+     *
+     * \todo Find a better way of doing the set of a variable, right now we have
+     * to load the variable even if the variable is global. Another thing that
+     * should be corrected is the case of when we are setting the value of
+     * field, seen that we use load_lua_var it pushed all the element on the
+     * path to the variable, onto the lua stack, however the last push is not
+     * necessary because we are pushing the field while the field is not needed
+     * in order to perform set put only to perform get
+     */
     template <typename T>
     lua_value_ref& operator=(const T& new_value)
     {
+        load_lua_var();
         detail::lua_value<T>::insert(m_state, new_value);
         set_lua_var();
+        clear_used_stack_spaces();
         return *this;
     }
     template <typename T>
@@ -185,11 +197,17 @@ class lua_value_ref
      * used_stack_spaces;
      */
     void clear_used_stack_spaces() const;
+    /**
+     * Extracts the name of the field if m_name contains the name of the table
+     * field
+     * */
+    std::string get_field_name() const;
     lua_State* m_state;  ///< A lua state which represents the file with which
                          ///< the script was opened
-    const std::string
-        m_name;            ///< The name of the lua variable which the object
-                           ///< represents
+    const std::string m_name;  ///< The name of the lua variable which the
+                               ///< object represents, if the name is that of a
+                               ///< table's field it contains it's full name e.g
+                               ///< TableA.TableB.TableC.fieldName
     static const int top;  ///< A simple identifier for the top element of the
                            ///< stack
     static const char

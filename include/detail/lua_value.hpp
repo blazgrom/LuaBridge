@@ -20,8 +20,7 @@ struct lua_value;
  */
 template <>
 struct lua_value<const bool> {
-    static void insert(lua_State* state,
-                    const bool& value)
+    static void insert(lua_State* state, const bool& value)
     {
         lua_pushboolean(state, value);
     }
@@ -49,8 +48,7 @@ struct lua_value<bool> {
  */
 template <>
 struct lua_value<const long long> {
-    static void insert(lua_State* state,
-                    const long long& value)
+    static void insert(lua_State* state, const long long& value)
     {
         lua_pushinteger(state, value);
     }
@@ -78,8 +76,7 @@ struct lua_value<long long> {
  */
 template <>
 struct lua_value<const unsigned long long> {
-    static void insert(lua_State* state,
-                    const unsigned long long& value)
+    static void insert(lua_State* state, const unsigned long long& value)
     {
         lua_pushinteger(state, value);
     }
@@ -93,8 +90,7 @@ struct lua_value<const unsigned long long> {
  */
 template <>
 struct lua_value<unsigned long long> {
-    static void insert(lua_State* state,
-                    unsigned long long value)
+    static void insert(lua_State* state, unsigned long long value)
     {
         lua_pushinteger(state, value);
     }
@@ -108,8 +104,7 @@ struct lua_value<unsigned long long> {
  */
 template <>
 struct lua_value<const long> {
-    static void insert(lua_State* state,
-                    const long& value)
+    static void insert(lua_State* state, const long& value)
     {
         lua_pushinteger(state, value);
     }
@@ -137,8 +132,7 @@ struct lua_value<long> {
  */
 template <>
 struct lua_value<const unsigned long> {
-    static void insert(lua_State* state,
-                    const unsigned long& value)
+    static void insert(lua_State* state, const unsigned long& value)
     {
         lua_pushinteger(state, value);
     }
@@ -152,8 +146,7 @@ struct lua_value<const unsigned long> {
  */
 template <>
 struct lua_value<unsigned long> {
-    static void insert(lua_State* state,
-                    unsigned long value)
+    static void insert(lua_State* state, unsigned long value)
     {
         lua_pushinteger(state, value);
     }
@@ -195,8 +188,7 @@ struct lua_value<int> {
  */
 template <>
 struct lua_value<const unsigned int> {
-    static void insert(lua_State* state,
-                    const unsigned int& value)
+    static void insert(lua_State* state, const unsigned int& value)
     {
         lua_pushinteger(state, value);
     }
@@ -210,8 +202,7 @@ struct lua_value<const unsigned int> {
  */
 template <>
 struct lua_value<unsigned int> {
-    static void insert(lua_State* state,
-                    unsigned int value)
+    static void insert(lua_State* state, unsigned int value)
     {
         lua_pushinteger(state, value);
     }
@@ -225,8 +216,7 @@ struct lua_value<unsigned int> {
  */
 template <>
 struct lua_value<const short> {
-    static void insert(lua_State* state,
-                    const short& value)
+    static void insert(lua_State* state, const short& value)
     {
         lua_pushinteger(state, value);
     }
@@ -240,7 +230,7 @@ struct lua_value<const short> {
  */
 template <>
 struct lua_value<short> {
-    static void insert(lua_State* state,  short value)
+    static void insert(lua_State* state, short value)
     {
         lua_pushinteger(state, value);
     }
@@ -254,8 +244,7 @@ struct lua_value<short> {
  */
 template <>
 struct lua_value<const unsigned short> {
-    static void insert(lua_State* state,
-                    const unsigned short& value)
+    static void insert(lua_State* state, const unsigned short& value)
     {
         lua_pushinteger(state, value);
     }
@@ -269,8 +258,7 @@ struct lua_value<const unsigned short> {
  */
 template <>
 struct lua_value<unsigned short> {
-    static void insert(lua_State* state,
-                    unsigned short value)
+    static void insert(lua_State* state, unsigned short value)
     {
         lua_pushinteger(state, value);
     }
@@ -284,8 +272,7 @@ struct lua_value<unsigned short> {
  */
 template <>
 struct lua_value<const float> {
-    static void insert(lua_State* state,
-                    const float& value)
+    static void insert(lua_State* state, const float& value)
     {
         lua_pushnumber(state, value);
     }
@@ -313,8 +300,7 @@ struct lua_value<float> {
  */
 template <>
 struct lua_value<const double> {
-    static void insert(lua_State* state,
-                    const double& value)
+    static void insert(lua_State* state, const double& value)
     {
         lua_pushnumber(state, value);
     }
@@ -338,23 +324,19 @@ struct lua_value<double> {
     }
 };
 /**
- * Specialization for std::nullptr_t, contains only insert and inserts the value to
- * nil
+ * Specialization for std::nullptr_t, contains only insert and inserts the value
+ * to nil
  */
 template <>
 struct lua_value<std::nullptr_t> {
-    static void insert(lua_State* state, std::nullptr_t)
-    {
-        lua_pushnil(state);
-    }
+    static void insert(lua_State* state, std::nullptr_t) { lua_pushnil(state); }
 };
 /**
  * Specialization for const std::string
  */
 template <>
 struct lua_value<const std::string> {
-    static void insert(lua_State* state,
-                    const std::string& value)
+    static void insert(lua_State* state, const std::string& value)
     {
         lua_pushlstring(state, value.c_str(), value.size());
     }
@@ -368,8 +350,7 @@ struct lua_value<const std::string> {
  */
 template <>
 struct lua_value<std::string> {
-    static void insert(lua_State* state,
-                    std::string value)
+    static void insert(lua_State* state, std::string value)
     {
         lua_pushlstring(state, value.c_str(), value.size());
     }
@@ -383,10 +364,9 @@ struct lua_value<std::string> {
  */
 template <>
 struct lua_value<const char> {
-    static void insert(lua_State* state,
-                    const char& value)
+    static void insert(lua_State* state, const char& value)
     {
-        lua_value<const std::string>::insert(state,  std::string{value});
+        lua_value<const std::string>::insert(state, std::string{value});
     }
     static char get(lua_State* state)
     {
@@ -398,7 +378,7 @@ struct lua_value<const char> {
  */
 template <>
 struct lua_value<char> {
-    static void insert(lua_State* state,  char value)
+    static void insert(lua_State* state, char value)
     {
         lua_value<std::string>::insert(state, std::string{value});
     }
