@@ -20,5 +20,5 @@ class lua_exception : public std::runtime_error
 
   private:
 };
-}
+}  // namespace luabz
 #endif
