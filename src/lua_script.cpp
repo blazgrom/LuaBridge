@@ -34,7 +34,7 @@ lua_script::lua_script(const std::string& file,
 }
 
 void lua_script::open(const std::string& file,
-                      std::vector<std::string> dependencies,
+                      const std::vector<std::string>& dependencies,
                       bool loadStandardLib)
 {
     if (!m_open) {
@@ -80,4 +80,4 @@ lua_value_ref lua_script::operator[](const std::string& name) const
 {
     return lua_value_ref{m_state, name};
 }
-}
+}  // namespace luabz

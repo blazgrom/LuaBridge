@@ -33,7 +33,7 @@ class lua_script
     lua_script(lua_script&& rhs) = default;
     lua_script& operator=(lua_script&& rhs) = default;
     void open(const std::string& file,
-              std::vector<std::string> dependencies = {},
+              const std::vector<std::string>& dependencies = {},
               bool loadStandardLib = false);
     void close() noexcept;
     bool change(const std::string& newFile) noexcept;
