@@ -46,5 +46,5 @@ void lua_state_factory::set_state_globaltable(lua_State* state)
     // Set the new global table
     lua_replace(state, LUA_GLOBALSINDEX);
 }
-}
-}
+}  // namespace detail
+}  // namespace luabz

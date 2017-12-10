@@ -18,5 +18,5 @@ void lua_error(const std::string& error_message)
                     "lua_error.txt file in order to find out more information");
 #endif
 }
-}
-}
+}  // namespace detail
+}  // namespace luabz

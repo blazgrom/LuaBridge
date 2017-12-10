@@ -56,6 +56,6 @@ class lua_state_factory
      */
     static void set_state_globaltable(lua_State* state);
 };
-}
-}
+}  // namespace detail
+}  // namespace luabz
 #endif

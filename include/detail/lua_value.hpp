@@ -387,6 +387,6 @@ struct lua_value<char> {
         return lua_value<std::string>::get(state)[0];
     }
 };
-}
-}
+}  // namespace detail
+}  // namespace luabz
 #endif
