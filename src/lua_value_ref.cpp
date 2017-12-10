@@ -65,7 +65,7 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs) const
     if (m_state != rhs.m_state) {
         lua_xmove(rhs.m_state, m_state, 1);
     }
-    bool result = lua_equal(m_state, lhs_index, rhs_index);
+    auto result = static_cast<bool>(lua_equal(m_state, lhs_index, rhs_index));
 
     return result;
 }
@@ -80,15 +80,14 @@ bool lua_value_ref::operator<(const lua_value_ref& rhs) const
     if (m_state != rhs.m_state) {
         lua_xmove(rhs.m_state, m_state, 1);
     }
-    bool result = lua_lessthan(m_state, lhs_index, rhs_index);
-
+    auto result =
+        static_cast<bool>(lua_lessthan(m_state, lhs_index, rhs_index));
     return result;
 }
 bool lua_value_ref::is_nil() const
 {
     load_lua_var();
-    bool result = static_cast<bool>(lua_isnil(m_state, top));
-    clear_used_stack_spaces();
+    auto result = static_cast<bool>(lua_isnil(m_state, top));
     return result;
 }
 /**
