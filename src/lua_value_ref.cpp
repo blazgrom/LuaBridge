@@ -1,11 +1,12 @@
 #include "lua_value_ref.hpp"
+#include <utility>
 #include "detail/lua_error.hpp"
 namespace luabz
 {
 const int lua_value_ref::top = -1;
 const char lua_value_ref::lua_table_field_delimeter = '.';
-lua_value_ref::lua_value_ref(lua_State* state, const std::string& name)
-  : m_state{state}, m_name{name}, used_stack_spaces{0}
+lua_value_ref::lua_value_ref(lua_State* state, std::string name)
+  : m_state{state}, m_name{std::move(name)}, used_stack_spaces{0}
 {
 }
 
@@ -181,4 +182,4 @@ void lua_value_ref::clear_used_stack_spaces() const
     lua_pop(m_state, used_stack_spaces);
     used_stack_spaces = 0;
 }
-}
+}  // namespace luabz

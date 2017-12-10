@@ -175,7 +175,7 @@ class lua_value_ref
     lua_value_ref operator[](const std::string& field_name) const;
 
   private:
-    lua_value_ref(lua_State* state, const std::string& name);
+    lua_value_ref(lua_State* state, std::string name);
     /**
      * determines if the variable that the this object represents is a lua table
      * field
@@ -233,5 +233,5 @@ class lua_value_ref
                                     ///< necessary even when accessing
                                     ///< fields on a const object
 };
-}
+}  // namespace luabz
 #endif
