@@ -16,11 +16,18 @@ option(ENABLE_CPPCHECK "Create cppcheck target" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analizer" OFF) 
 option(ENABLE_CODE_COVERAGE "Enable code coverage with lcov" OFF)
 
+
 #--------------------------
 #       Output locations
 #--------------------------
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
+set(REPORTS_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/reports)
+
+#--------------------------
+#       Export compile commands
+#--------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #--------------------------
 #       Include folder
