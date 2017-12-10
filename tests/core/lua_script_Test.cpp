@@ -26,3 +26,8 @@ TEST_F(lua_scriptF, ExecuteLuaCodeFromCppString)
     int variable = script["variable"];
     ASSERT_EQ(2, variable);
 }
+TEST_F(lua_scriptF,CheckIfVariablesIsNil)
+{
+    bool result=script["nil_var"].is_nil();
+    ASSERT_TRUE(result);
+}
