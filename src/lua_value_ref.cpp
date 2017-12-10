@@ -110,25 +110,26 @@ void lua_value_ref::load_lua_var() const
             if (field_reached) {
                 lua_getfield(m_state, top, field_name.c_str());
                 ++used_stack_spaces;
-                break;
-            } else {
-                // duplicate of line 90 -> 91
-                std::string parent_field_name =
-                    field_name.substr(0, delimeter_position);
-                field_name = field_name.substr(delimeter_position + 1);
-                lua_getfield(m_state, top, parent_field_name.c_str());
-                ++used_stack_spaces;
-                if (!lua_istable(m_state, top)) {
-                    luabz::detail::lua_error(
-                        parent_field_name +
-                        " is not a table, and cannot contain the following "
-                        "fields " +
-                        field_name + std::to_string(used_stack_spaces) + "\n" +
-                        "Original string: " + m_name + "\n");
-                }
+                return;
+            }
+            // duplicate of line 90 -> 91
+            std::string parent_field_name =
+                field_name.substr(0, delimeter_position);
+            field_name = field_name.substr(delimeter_position + 1);
+            lua_getfield(m_state, top, parent_field_name.c_str());
+            ++used_stack_spaces;
+            if (!lua_istable(m_state, top)) {
+                std::string error_message = parent_field_name;
+                error_message += " is not a table, and cannot contain the "
+                                 "following  fields ";
+                error_message += field_name;
+                error_message += std::to_string(used_stack_spaces);
+                error_message += "\nOriginal string: ";
+                error_message += m_name;
+                error_message += "\n";
+                luabz::detail::lua_error(error_message);
             }
         }
-        return;
     }
     lua_getfield(m_state, LUA_GLOBALSINDEX, m_name.c_str());
     ++used_stack_spaces;
