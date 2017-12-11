@@ -17,6 +17,15 @@ option(ENABLE_CLANG_TIDY "Enable clang-tidy static analizer" OFF)
 option(ENABLE_CODE_COVERAGE "Enable code coverage with lcov" OFF)
 
 
+#---------------------
+#       Definitions
+#---------------------
+if(USE_CPP_EXCEPTIONS)
+        add_definitions(-DLUABZ_USE_CPP_EXCEPTIONS)
+endif()
+#The following definition is used in order to construct the correct path
+#for the folder contain all lua scripts required by the tests, see lua_test_helpers.hpp
+add_definitions(-DLUABZ_PROJECT_FOLDER_PATH="${CMAKE_SOURCE_DIR}")
 #--------------------------
 #       Output locations
 #--------------------------
@@ -92,8 +101,6 @@ include_directories(${LUA_INCLUDE_DIR})
 #----------------------
 # Others
 #----------------------
-if(USE_CPP_EXCEPTIONS)
-        add_definitions(-DLUABZ_USE_CPP_EXCEPTIONS)
-endif()
+
 add_subdirectory(src)
 add_subdirectory(tests)
