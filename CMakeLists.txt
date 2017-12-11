@@ -38,9 +38,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 #       Google Test - Google Mock setup
 #------------------------------------------
 if(ENABLE_TEST)     
-        #This request Threads and threads genered CMakeFiles folder in the bin folder...
         include(googletestmock)
-        enable_testing()        
 endif()
 
 #-------------------------
