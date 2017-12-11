@@ -1,0 +1,1 @@
+# TODO (blazgrom) Explain the design decision, e.g Assertion and Exception, master state and slave state, and everything else  

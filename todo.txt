@@ -7,3 +7,4 @@ handle registation of dependencies
 review the design
 all the todo's in files
 Add documentation
+Add make test target
