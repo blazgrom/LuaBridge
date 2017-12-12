@@ -1,7 +1,7 @@
 #include "detail/lua_state_factory.hpp"
 #include <gtest/gtest.h>
-#include "../core/lua_test_helpers.hpp"
 #include <string>
+#include "../core/lua_test_helpers.hpp"
 
 TEST(lua_state_factory_Test, CallingFactoryTwiceOnTheSameFileReturnSameLuaState)
 {
@@ -12,8 +12,8 @@ TEST(lua_state_factory_Test, CallingFactoryTwiceOnTheSameFileReturnSameLuaState)
 }
 TEST(lua_state_factory_Test, TwoDifferentFileHaveDifferentStates)
 {
-    std::string file_a =  construct_script_path("luascript_test.lua");
-    std::string file_b =  construct_script_path("luascript_test2.lua");
+    std::string file_a = construct_script_path("luascript_test.lua");
+    std::string file_b = construct_script_path("luascript_test2.lua");
     lua_State* a = luabz::detail::lua_state_factory::create_state(file_a);
     lua_State* b = luabz::detail::lua_state_factory::create_state(file_b);
     ASSERT_TRUE(a != b);
