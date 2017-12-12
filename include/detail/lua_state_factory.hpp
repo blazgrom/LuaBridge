@@ -51,7 +51,7 @@ class lua_state_factory
      *
      * \param state The state for which we want to change the globaltable
      * \note Has the following logic \n
-     * 1 ) Insert the new global table and the metatable of the former
+     * 1 ) Insert the new global table and the metatable of the former \n
      * 2 ) Replace the current global table with the new global table
      */
     static void set_state_globaltable(lua_State* state);

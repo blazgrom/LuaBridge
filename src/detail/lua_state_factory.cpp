@@ -5,8 +5,20 @@ namespace luabz
 {
 namespace detail
 {
-static std::unordered_map<std::string, int> active_lua_states;
-static lua_State* master_state = luaL_newstate();
+static std::unordered_map<std::string, int> active_lua_states;  ///< Contains
+                                                                ///< all the lua
+                                                                ///< states
+                                                                ///< connected
+                                                                ///< to an
+                                                                ///< already
+                                                                ///< open lua
+                                                                ///< file
+static lua_State* master_state =
+    luaL_newstate();  ///< The master lua state, which repository is used to
+                      ///< store the other lua states. This state is necessary
+                      ///< because it's the only one that lua will not
+                      ///< automatically collect, so it's used to store the
+                      ///< other lua states
 /**
  * \todo \n
  * 1-When the file has already been loaded into a lua thread we should \n

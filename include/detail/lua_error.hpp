@@ -6,9 +6,9 @@ namespace luabz
 namespace detail
 {
 /**
- * \brief Reports an error generated from the lua c api
+ * \brief Reports an error generated in lua
  *
- * It can handle an error in two different ways \n
+ * It handles errors in two different ways \n
  * 1 - When the compiler flag USE_CPP_EXCEPTIONS is set on, it throws an
  * exception whenever there is an error \n 2 - When the compiler flag
  * USE_CPP_EXCEPTIONS is set off (default), it logs the error in a txt file
