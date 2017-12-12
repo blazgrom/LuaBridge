@@ -61,8 +61,8 @@ int main()
 * Lua 5.1.5
 #### Building
 1. mkdir build && cd build
-1. cmake ..
-1. make
+2. cmake ..
+3. make
 
 #### Building flags
 - ENABLE_TEST: Creates the 'make test' target, which build all the tests.
