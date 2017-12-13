@@ -29,8 +29,6 @@ lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
     if (m_state == rhs.m_state) {
         set_lua_var();
     } else {
-        // TODO:
-        // here we should transfer data from one stack to the other
         switch (lua_type(rhs.m_state, top)) {
             case LUA_TNIL:
                 lua_pushnil(m_state);
@@ -55,7 +53,13 @@ lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
     return *this;
 }
 /**
- * \todo Comment this function
+ * We have two cases when confronting two lua_value_ref variables \n
+ * 1) Both variable are on the same script side, in this case we just simple perform load_lua_var 
+ * on both variable and call lua_equal with the corresponding indices
+ * 2) The variables are on two different script file, in this case we first load the two variable then we
+ * perform a xmove which permits us to move data from one lua stack to another lua stack, data is moved from rhs
+ * into this.stack. Once we have performed the xmove we as always call lua_equal
+ * \todo Refactor duplication between this function and operator<()
  */
 bool lua_value_ref::operator==(const lua_value_ref& rhs) const
 {
@@ -64,13 +68,21 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs) const
     rhs.load_lua_var();
     if (m_state != rhs.m_state) {
         lua_xmove(rhs.m_state, m_state, 1);
+        ++used_stack_spaces;
     }
     auto result = static_cast<bool>(lua_equal(m_state, lhs_index, rhs_index));
-
+    clear_used_stack_spaces();
+    rhs.clear_used_stack_spaces();
     return result;
 }
 /**
- * \todo Comment this function
+ * We have two cases when confronting two lua_value_ref variables \n
+ * 1) Both variable are on the same script side, in this case we just simple perform load_lua_var 
+ * on both variable and call lua_lessthan with the corresponding indices
+ * 2) The variables are on two different script file, in this case we first load the two variable then we
+ * perform a xmove which permits us to move data from one lua stack to another lua stack, data is moved from rhs
+ * into this.stack. Once we have performed the xmove we as always call lua_lessthan
+ * \todo Refactor duplication between this function and operator=()
  */
 bool lua_value_ref::operator<(const lua_value_ref& rhs) const
 {
@@ -79,9 +91,12 @@ bool lua_value_ref::operator<(const lua_value_ref& rhs) const
     rhs.load_lua_var();
     if (m_state != rhs.m_state) {
         lua_xmove(rhs.m_state, m_state, 1);
+        ++used_stack_spaces;
     }
     auto result =
         static_cast<bool>(lua_lessthan(m_state, lhs_index, rhs_index));
+    clear_used_stack_spaces();
+    rhs.clear_used_stack_spaces();
     return result;
 }
 bool lua_value_ref::is_nil() const
@@ -99,13 +114,12 @@ void lua_value_ref::load_lua_var() const
     if (is_table_field()) {
         auto delimeter_position =
             m_name.find_first_of(lua_table_field_delimeter);
-        std::string table_name = m_name.substr(0, delimeter_position);
-        std::string field_name = m_name.substr(delimeter_position + 1);
+        std::string table_name = m_name.substr(0, delimeter_position); ///Duplication
+        std::string field_name = m_name.substr(delimeter_position + 1); ///Duplication
         lua_getglobal(m_state, table_name.c_str());
         ++used_stack_spaces;
         while (true) {
-            delimeter_position =
-                field_name.find_first_of(lua_table_field_delimeter);
+            delimeter_position = field_name.find_first_of(lua_table_field_delimeter);
             bool field_reached = delimeter_position == std::string::npos;
             if (field_reached) {
                 lua_getfield(m_state, top, field_name.c_str());
@@ -113,9 +127,8 @@ void lua_value_ref::load_lua_var() const
                 return;
             }
             // duplicate of line 90 -> 91
-            std::string parent_field_name =
-                field_name.substr(0, delimeter_position);
-            field_name = field_name.substr(delimeter_position + 1);
+            std::string parent_field_name = ield_name.substr(0, delimeter_position); ///Duplication
+            field_name = field_name.substr(delimeter_position + 1); ///Duplication
             lua_getfield(m_state, top, parent_field_name.c_str());
             ++used_stack_spaces;
             if (!lua_istable(m_state, top)) {
@@ -170,7 +183,7 @@ std::string lua_value_ref::get_field_name() const
     return m_name.substr(delimeter_position + 1);
 }
 /**
- * \details Pops from the stack N spaces where N is determine by the member
+ *  Pops from the stack N spaces where N is determine by the member
  * variable used_stack_spaces This function should be invoked after every
  * load_lua_variable inorder to cleanup the lua stack from values that are no
  * longer in used, if this is not done sooner or later the lua's stack would not
