@@ -5,7 +5,6 @@
 #include "lua_exception.hpp"
 namespace luabz
 {
-
 lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}
 lua_script::lua_script(const std::string& file, bool lua_stl)
   : m_state{detail::lua_state_factory::get_lua_state(file, lua_stl)},
@@ -26,8 +25,7 @@ void lua_script::close() noexcept
     // m_stack.destroy();
     // m_open = false;
 }
-void lua_script::change(const std::string& file_name,
-                        bool lua_stl) noexcept
+void lua_script::change(const std::string& file_name, bool lua_stl) noexcept
 {
     m_state = detail::lua_state_factory::get_lua_state(file_name, lua_stl);
     m_open = true;

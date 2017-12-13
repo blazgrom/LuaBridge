@@ -20,7 +20,6 @@ static lua_State* master_state =
                       ///< automatically collect, so it's used to store the
                       ///< other lua states
 
-
 lua_State* lua_state_factory::get_loaded_lua_state(const std::string& file_name)
 {
     auto lua_ref = active_lua_states[file_name];
@@ -31,10 +30,11 @@ lua_State* lua_state_factory::get_loaded_lua_state(const std::string& file_name)
         return state;
     }
     lua_error("Lua slave state not found");
-    return nullptr; 
+    return nullptr;
 }
 
-lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,bool load_std)
+lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,
+                                                   bool load_std)
 {
     lua_State* state = lua_newthread(master_state);
     auto lua_ref = luaL_ref(master_state, LUA_REGISTRYINDEX);
@@ -43,8 +43,7 @@ lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,
     if (luaL_dofile(state, file_name.c_str())) {
         lua_error(lua_tostring(state, -1));
     }
-    if(load_std)
-    {
+    if (load_std) {
         luaL_openlibs(state);
     }
     return state;
@@ -53,14 +52,14 @@ lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,
  * \todo Add tests for checking if loading of lua's standard library works
  */
 lua_State* lua_state_factory::get_lua_state(const std::string& file_name,
-                                           bool load_std)
+                                            bool load_std)
 {
     bool already_inserted =
         active_lua_states.find(file_name) != active_lua_states.end();
     if (already_inserted) {
-       return get_loaded_lua_state(file_name);
+        return get_loaded_lua_state(file_name);
     }
-   return create_new_lua_state(file_name,load_std);
+    return create_new_lua_state(file_name, load_std);
 }
 void lua_state_factory::set_state_globaltable(lua_State* state)
 {

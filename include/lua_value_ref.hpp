@@ -23,9 +23,9 @@ class lua_value_ref
     lua_value_ref& operator=(const lua_value_ref& rhs);
     /**
      * \brief Conversion from lua_value_ref to any type T
-     * \pre There must be a specialization of luabz::detail::lua_value with type T in order to
-     * be able to perform the conversion
-    */
+     * \pre There must be a specialization of luabz::detail::lua_value with type
+     * T in order to be able to perform the conversion
+     */
     template <typename T>
     operator T() const
     {
@@ -55,9 +55,9 @@ class lua_value_ref
     }
     /**
      * \brief Operator= between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T
-    */
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T
+     */
     template <typename T>
     bool operator==(const T& rhs) const
     {
@@ -66,12 +66,12 @@ class lua_value_ref
     }
     /**
      * \brief Operator= between lua_value_ref and lua_value_ref
-    */
+     */
     bool operator==(const lua_value_ref& rhs) const;
     /**
      * \brief Operator< between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T
      */
     template <typename T>
     bool operator<(const T& rhs) const
@@ -81,12 +81,12 @@ class lua_value_ref
     }
     /**
      * \brief Operator< between lua_value_ref and lua_value_ref
-    */
+     */
     bool operator<(const lua_value_ref& rhs) const;
     /**
      * \brief Inequality operator between lua_value_ref and any type T
      * \note Implemented in terms of operator==
-    */
+     */
     template <typename T>
     bool operator!=(const T& rhs) const
     {
@@ -94,10 +94,10 @@ class lua_value_ref
     }
     /**
      * \brief Operator> between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T\n
-     * The return type is the same as applying the operator on two variables of type T
-    */
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T\n The return type is the same as
+     * applying the operator on two variables of type T
+     */
     template <typename T>
     bool operator>(const T& rhs) const
     {
@@ -107,7 +107,7 @@ class lua_value_ref
     /**
      * \brief Operator<= between lua_value_ref and any type T
      * \note Implemented in terms of operator>
-    */
+     */
     template <typename T>
     bool operator<=(const T& rhs) const
     {
@@ -116,18 +116,18 @@ class lua_value_ref
     /**
      * \brief Operator>= between lua_value_ref and any type T
      * \note Implemented in terms of operator<
-    */
+     */
     template <typename T>
     bool operator>=(const T& rhs) const
     {
         return !(this->operator<(rhs));
     }
-   /**
+    /**
      * \brief Operator+ between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T\n
-     * The return type is the same as applying the operator on two variables of type T
-    */
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T\n The return type is the same as
+     * applying the operator on two variables of type T
+     */
     template <typename T>
     auto operator+(const T& rhs) const -> decltype(rhs + rhs)
     {
@@ -145,10 +145,10 @@ class lua_value_ref
     }
     /**
      * \brief Operator- between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T\n
-     * The return type is the same as applying the operator on two variables of type T
-    */
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T\n The return type is the same as
+     * applying the operator on two variables of type T
+     */
     template <typename T>
     auto operator-(const T& rhs) const -> decltype(rhs - rhs)
     {
@@ -166,10 +166,10 @@ class lua_value_ref
     }
     /**
      * \brief Operator/ between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T\n
-     * The return type is the same as applying the operator on two variables of type T
-    */
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T\n The return type is the same as
+     * applying the operator on two variables of type T
+     */
     template <typename T>
     auto operator/(const T& rhs) const -> decltype(rhs / rhs)
     {
@@ -185,12 +185,12 @@ class lua_value_ref
         this->operator=(static_cast<T>(this->operator/(rhs)));
         return *this;
     }
-   /**
+    /**
      * \brief Operator* between lua_value_ref and any type T
-     * \note Temporary variable of type T is created, this temporal represents the value of this
-     * converted to type T\n
-     * The return type is the same as applying the operator on two variables of type T
-    */
+     * \note Temporary variable of type T is created, this temporal represents
+     * the value of this converted to type T\n The return type is the same as
+     * applying the operator on two variables of type T
+     */
     template <typename T>
     auto operator*(const T& rhs) const -> decltype(rhs * rhs)
     {
@@ -247,15 +247,16 @@ class lua_value_ref
      */
     void operator*=(const lua_value_ref& rhs) = delete;
     /**
-     * \brief Checks if the value identified by the name of lua_value_ref is equal to
-     * lua's nil
+     * \brief Checks if the value identified by the name of lua_value_ref is
+     * equal to lua's nil
      */
     bool is_nil() const;
     /**
-     * \brief Access a the field identified by name inside the table identified by this
-     * lua_value_ref
+     * \brief Access a the field identified by name inside the table identified
+     * by this lua_value_ref
      */
     lua_value_ref operator[](const std::string& field_name) const;
+
   private:
     lua_value_ref(lua_State* state, std::string name);
     /**
@@ -281,7 +282,8 @@ class lua_value_ref
      */
     void clear_used_stack_spaces() const;
     /**
-     * \brief Extracts the name of the field if m_name contains the name field in a table e.g, TableA.Field will return Field
+     * \brief Extracts the name of the field if m_name contains the name field
+     * in a table e.g, TableA.Field will return Field
      * */
     std::string get_field_name() const;
     lua_State* m_state;  ///< A lua state which represents the file with which

@@ -38,11 +38,12 @@ class lua_state_factory
      * \param file_name The name of the lua file on which the new lua state
      * \param load_std Whether or not to load lua's std
      * operates
-     * \note The first type this function is called with file_name that has not yet been used,
-     * the file is loaded. All subsequent calls use the already loaded filestatic
+     * \note The first type this function is called with file_name that has not
+     * yet been used, the file is loaded. All subsequent calls use the already
+     * loaded filestatic
      */
     static lua_State* get_lua_state(const std::string& file_name,
-                                   bool load_std = false);
+                                    bool load_std = false);
 
   private:
     /**
@@ -54,13 +55,16 @@ class lua_state_factory
      */
     static void set_state_globaltable(lua_State* state);
     /**
-     * \brief Retrieves the lua script associated with file_name from master_state's registry
-    */
+     * \brief Retrieves the lua script associated with file_name from
+     * master_state's registry
+     */
     static lua_State* get_loaded_lua_state(const std::string& file_name);
     /**
-     * \brief Creates new lua_State which is associated with the script file file_name and inserts the lua_Sate in active_lua_states
-    */
-    static lua_State* create_new_lua_state(const std::string& file_name,bool load_std);
+     * \brief Creates new lua_State which is associated with the script file
+     * file_name and inserts the lua_Sate in active_lua_states
+     */
+    static lua_State* create_new_lua_state(const std::string& file_name,
+                                           bool load_std);
 };
 }  // namespace detail
 }  // namespace luabz
