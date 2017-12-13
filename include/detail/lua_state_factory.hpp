@@ -39,21 +39,28 @@ class lua_state_factory
      * \param load_std Whether or not to load lua's std
      * operates
      * \note The first type this function is called with file_name that has not yet been used,
-     * the file is loaded. All subsequent calls use the already loaded file
+     * the file is loaded. All subsequent calls use the already loaded filestatic
      */
     static lua_State* get_lua_state(const std::string& file_name,
                                    bool load_std = false);
 
   private:
-    /// Sets the global table of the new state
     /**
-     *
+     * \brief Sets the global table of the new state
      * \param state The state for which we want to change the globaltable
      * \note Has the following logic \n
      * 1 ) Insert the new global table and the metatable of the former \n
      * 2 ) Replace the current global table with the new global table
      */
     static void set_state_globaltable(lua_State* state);
+    /**
+     * \brief Retrieves the lua script associated with file_name from master_state's registry
+    */
+    static lua_State* get_loaded_lua_state(const std::string& file_name);
+    /**
+     * \brief Creates new lua_State which is associated with the script file file_name and inserts the lua_Sate in active_lua_states
+    */
+    static lua_State* create_new_lua_state(const std::string& file_name,bool load_std);
 };
 }  // namespace detail
 }  // namespace luabz
