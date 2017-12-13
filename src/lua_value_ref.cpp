@@ -19,37 +19,13 @@ lua_value_ref::lua_value_ref(const lua_value_ref& rhs)
  * If the variables use the same lua state we simple do getglobal setglobal in
  * order to copy the values. If the values are on two different states, we take
  * the value of rhs and push it into this->m_state and then we call setglobal
- * all while retaining the type of the value from rhs. \todo Handle the case
- * when rhs element is a table
- * \todo We should transfer data from one stack to the other
+ * all while retaining the type of the value from rhs. 
+ * \todo Implement this operator, see how are implemented operator < and operator=
  */
 lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
 {
-    rhs.load_lua_var();
-    if (m_state == rhs.m_state) {
-        set_lua_var();
-    } else {
-        switch (lua_type(rhs.m_state, top)) {
-            case LUA_TNIL:
-                lua_pushnil(m_state);
-                break;
-            case LUA_TBOOLEAN:
-                lua_pushboolean(m_state, lua_toboolean(rhs.m_state, top));
-                break;
-            case LUA_TNUMBER:
-                lua_pushnumber(m_state, lua_tonumber(rhs.m_state, top));
-                break;
-            case LUA_TSTRING:
-                lua_pushstring(m_state, lua_tostring(rhs.m_state, top));
-                break;
-            case LUA_TTABLE:
-                break;
-            case LUA_TFUNCTION:
-                lua_pushcfunction(m_state, lua_tocfunction(rhs.m_state, top));
-                break;
-        }
-        set_lua_var();
-    }
+    detail::lua_error("Operator= not implemented\n");
+   
     return *this;
 }
 /**
@@ -103,6 +79,7 @@ bool lua_value_ref::is_nil() const
 {
     load_lua_var();
     auto result = static_cast<bool>(lua_isnil(m_state, top));
+    clear_used_stack_spaces();
     return result;
 }
 /**
@@ -126,8 +103,7 @@ void lua_value_ref::load_lua_var() const
                 ++used_stack_spaces;
                 return;
             }
-            // duplicate of line 90 -> 91
-            std::string parent_field_name = ield_name.substr(0, delimeter_position); ///Duplication
+            std::string parent_field_name = field_name.substr(0, delimeter_position); ///Duplication
             field_name = field_name.substr(delimeter_position + 1); ///Duplication
             lua_getfield(m_state, top, parent_field_name.c_str());
             ++used_stack_spaces;
@@ -188,7 +164,8 @@ std::string lua_value_ref::get_field_name() const
  * load_lua_variable inorder to cleanup the lua stack from values that are no
  * longer in used, if this is not done sooner or later the lua's stack would not
  * have enought space and segmentation fault would be caused
- * \todo Decide exactly where the this function should be called
+ * \todo Find a better way for this function to be invoke, now every time load_lua_var is invoke
+ * I have to remember to invoke this at the end
  */
 void lua_value_ref::clear_used_stack_spaces() const
 {
