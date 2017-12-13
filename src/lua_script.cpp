@@ -5,8 +5,7 @@
 #include "lua_exception.hpp"
 namespace luabz
 {
-// TODO :
-// Implement all empty functions
+
 lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}
 lua_script::lua_script(const std::string& file, bool lua_stl)
   : m_state{detail::lua_state_factory::create_state(file, lua_stl)},
