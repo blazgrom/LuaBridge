@@ -16,6 +16,9 @@ class lua_exception : public std::runtime_error
   public:
     explicit lua_exception(const std::string& msg);
     explicit lua_exception(const char* msg);
+    /**
+     * \brief Returns a string describing the error
+     */
     const char* what() const noexcept override;
 
   private:
