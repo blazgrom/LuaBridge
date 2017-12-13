@@ -35,14 +35,13 @@ class lua_state_factory
      *
      * \note Every new lua_thread is pushed onto the registry in order \n
      * to not allow GC from Lua
-     * \todo maybe rename this function because create_state may be ambiguos
-     * seen that the function doesn't create \n a state when we are calling it
-     * two times with the same name
      * \param file_name The name of the lua file on which the new lua state
      * \param load_std Whether or not to load lua's std
      * operates
+     * \note The first type this function is called with file_name that has not yet been used,
+     * the file is loaded. All subsequent calls use the already loaded file
      */
-    static lua_State* create_state(const std::string& file_name,
+    static lua_State* get_lua_state(const std::string& file_name,
                                    bool load_std = false);
 
   private:

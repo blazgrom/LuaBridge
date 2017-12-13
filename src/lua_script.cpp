@@ -8,7 +8,7 @@ namespace luabz
 
 lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}
 lua_script::lua_script(const std::string& file, bool lua_stl)
-  : m_state{detail::lua_state_factory::create_state(file, lua_stl)},
+  : m_state{detail::lua_state_factory::get_lua_state(file, lua_stl)},
     m_fileName{file},
     m_open{true}
 {
@@ -16,7 +16,7 @@ lua_script::lua_script(const std::string& file, bool lua_stl)
 void lua_script::open(const std::string& file_name, bool lua_stl)
 {
     if (!m_open) {
-        m_state = detail::lua_state_factory::create_state(file_name, lua_stl);
+        m_state = detail::lua_state_factory::get_lua_state(file_name, lua_stl);
         m_open = true;
         m_fileName = file_name;
     }
@@ -29,7 +29,7 @@ void lua_script::close() noexcept
 void lua_script::change(const std::string& file_name,
                         bool lua_stl) noexcept
 {
-    m_state = detail::lua_state_factory::create_state(file_name, lua_stl);
+    m_state = detail::lua_state_factory::get_lua_state(file_name, lua_stl);
     m_open = true;
     m_fileName = file_name;
 }
