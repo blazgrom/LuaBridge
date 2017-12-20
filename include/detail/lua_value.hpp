@@ -582,6 +582,18 @@ struct lua_value<char> {
         return lua_value<std::string>::get(state)[0];
     }
 };
+/**
+ * \brief Specialization for lua_CFunction
+ */
+template <>
+struct lua_value<lua_CFunction> {
+    static void insert(lua_State* state,
+                       lua_CFunction function,
+                       unsigned int upvalues_count)
+    {
+        lua_pushcclosure(state, function, upvalues_count);
+    }
+};
 }  // namespace detail
 }  // namespace luabz
 #endif
