@@ -5,6 +5,7 @@ namespace luabz
 {
 const int lua_value_ref::top = -1;
 const char lua_value_ref::lua_table_field_delimeter = '.';
+std::vector<std::function<int(lua_State*)>> lua_value_ref::registeredFunctions;
 lua_value_ref::lua_value_ref(lua_State* state, std::string name)
   : m_state{state}, m_name{std::move(name)}, used_stack_spaces{0}
 {
@@ -126,7 +127,7 @@ void lua_value_ref::load_lua_var() const
                 error_message += "\nOriginal string: ";
                 error_message += m_name;
                 error_message += "\n";
-                luabz::detail::lua_error(error_message);
+                detail::lua_error(error_message);
             }
         }
     }
