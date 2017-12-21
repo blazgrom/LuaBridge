@@ -63,96 +63,89 @@ class lua_value_ref
         clear_used_stack_spaces();
         return *this;
     }
-    // WIP
+    /**
+     * Registers a C++ std::function that later on can be called from lua code or though 
+     * lua_value_ref
+     * \param user_f The function that you want to be called
+    */
     template <class ReturnType, class... Args>
-    lua_value_ref& operator=(std::function<ReturnType(Args...)>& f)
+    lua_value_ref& operator=(std::function<ReturnType(Args...)> user_f)
     {
-        // WARNING: Not thread safe, we are accessing a static variable
-        registeredFunctions.emplace_back([this, f](lua_State*) -> int {
-            // Invoke the function only if we have the correct number of
-            // arguments on the stack
-            if (lua_gettop(m_state) == sizeof...(Args)) {
-                std::tuple<ReturnType,Args...> t{};
-                return call_registered_function(f,t);
-            }
-            return 0;
-        });
-        register_function();
+        registeredFunctions.emplace_back(
+            [ this, user_function = std::move(user_f) ](lua_State*)->int {
+                bool correct_number_of_arguments =
+                    (lua_gettop(m_state) == sizeof...(Args));
+                if (correct_number_of_arguments) {
+                    std::tuple<ReturnType, Args...> t{};
+                    return call_registered_function(user_function, t);
+                }
+                // 0 Indicates to Lua that the function wasn't invoke and there
+                // are no return values
+                return 0;
+            });
+        auto inserted_function_position = registeredFunctions.size() - 1;
+        register_function(inserted_function_position);
         return *this;
     }
-    // WIP
+    /**
+     * \brief Calls a registered function, it also extracts function's parameters from the\n
+     * lua stack and insert the return value of the function into the stack
+    */
+    template <class T, class ReturnType, class... Args>
+    int call_registered_function(T& user_f, std::tuple<ReturnType, Args...>&)
+    {
+        Utils::variadric_index<Args...> index_generator;
+        auto result = user_f(detail::lua_value<Args>(
+            m_state, (index_generator.get_index() + 1) * -1)...);
+        lua_pop(m_state, static_cast<int>(sizeof...(Args)));
+        detail::lua_value<decltype(result)>::insert(m_state, result);
+        return 1;
+    }
+    /**
+     * \brief Calls a lua function or a C++ function assign to lua variable
+     * \param args The arguments that are passed to the function
+     * \todo Generate the name randomly
+     */
     template <typename... Args>
     lua_value_ref operator()(Args&&... args)
     {
         load_lua_var();
-        insert_parameters(std::forward<Args>(args)...);
+        insert_function_parameters(std::forward<Args>(args)...);
+        used_stack_spaces += sizeof...(Args);
         const int input_count = sizeof...(Args);
         const int output_count = 1;
         if (lua_pcall(m_state, input_count, output_count, 0) != 0) {
             detail::lua_error(lua_tostring(m_state, -1));
         }
-        auto return_value_name=m_name+"_return_value";
+        auto return_value_name = m_name + "_return_value";
         lua_setfield(m_state, LUA_GLOBALSINDEX, return_value_name.c_str());
         clear_used_stack_spaces();
-        return lua_value_ref(m_state,return_value_name);
+        return lua_value_ref(m_state, return_value_name);
     }
-    // WIP
-    //Note: values pushed though this function are never popped, fix it
+    /**
+     * Insert the function parameters when we are invoking a function though a lua_value_ref
+     * \param value The first argument of the function
+     * \param args All the other parameters
+    */
     template <class T, class... Args>
-    void insert_parameters(T&& value, Args&&... args)
+    void insert_function_parameters(T&& value, Args&&... args)
     {
         detail::lua_value<T>::insert(m_state, value);
-        insert_parameters(args...);
+        insert_function_parameters(std::forward<Args>(args)...);
     }
-    // WIP
+    /**
+     * \brief "Specialization" for when we want to insert one function parameter
+    */
     template <class T>
-    void insert_parameters(T&& value)
+    void insert_function_parameters(T&& value)
     {
         detail::lua_value<T>::insert(m_state, value);
     }
-    void insert_parameters()
-    {
-        return;
-    }
-    // WIP
-    void register_function()
-    {
-        // Note:
-        // The index at which the function is saved in the static C++ vector
-        // becomes an upvalue for the function
-        load_lua_var();
-        std::size_t position_index = registeredFunctions.size() - 1;
-        lua_pushinteger(m_state, position_index);
-        lua_CFunction new_value = [](lua_State* functionState) -> int {
-            auto functionIndex = lua_tointeger(
-                functionState, lua_upvalueindex(1));  // retrieve  upvalue
-            auto& function = registeredFunctions.at(functionIndex);
-            return function(functionState);
-        };
-        unsigned int upvalues_count = 1;
-        detail::lua_value<lua_CFunction>::insert(m_state, new_value,
-                                                 upvalues_count);
-        set_lua_var();
-        clear_used_stack_spaces();
-    }
-    // WIP
-    template <class T, class R, class... Args>
-    int call_registered_function(T& user_f,std::tuple<R,Args...>)
-    {
-        // TODO: Find solution for the following problem
-        // auto result =
-        // user_f(m_stack.get_element<Args>((index_generator.get_index()
-        // + 1)*-1)...);  This solution works under Microsoft  compiler and GCC
-        // compiler
-        Utils::variadric_index<Args...> index_generator;
-        //This should call detail::lua_value<Args> with an index 
-        auto result = user_f(m_stack.get_element<Args>(
-             (index_generator.get_index() + 1) * -1)...);
-        lua_pop(m_state, sizeof...(Args));
-        detail::lua_value<decltype(result)>::insert(m_state,result);
-        return 1;
-    }
-
+    /**
+     * \brief "Specialization" for when we want to insert no function paramaters, this function simply returns
+     * \sa insert_prameters(T&& value, Args&&... args)
+    */
+    void insert_function_parameters() { return; }
     /**
      * \brief Operator= between lua_value_ref and any type T
      * \note Temporary variable of type T is created, this temporal represents
@@ -386,6 +379,12 @@ class lua_value_ref
      * in a table e.g, TableA.Field will return Field
      * */
     std::string get_field_name() const;
+    /**
+     * Assigns lua_CFunction to the variable identified by m_name.
+     * This lua_CFunctions calls the function at index function_position_index inside registeredFunctions when called.
+     * \param function_position_index the position of the function you want to call inside registeredFunctions
+    */
+    void register_function(std::size_t function_position_index);
     lua_State* m_state;  ///< A lua state which represents the file with which
                          ///< the script was opened
     const std::string m_name;  ///< The name of the lua variable which the

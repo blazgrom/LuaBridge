@@ -187,4 +187,22 @@ void lua_value_ref::clear_used_stack_spaces() const
     lua_pop(m_state, used_stack_spaces);
     used_stack_spaces = 0;
 }
+/**
+ * \note The index at which the function is saved inside registredFunctions becomes
+ * an upvalue of the lua_CFunction
+*/
+void lua_value_ref::register_function(std::size_t function_position_index)
+{
+    load_lua_var();
+    detail::lua_value<decltype(function_position_index)>::insert(m_state,function_position_index);
+    lua_CFunction new_value = [](lua_State* functionState) -> int {
+        int functionIndex = lua_tointeger(
+            functionState, lua_upvalueindex(1));  // retrieve  upvalue
+        auto& function = registeredFunctions.at(functionIndex);
+        return function(functionState);
+    };
+    detail::lua_value<lua_CFunction>::insert(m_state, new_value, 1);
+    set_lua_var();
+    clear_used_stack_spaces();
+}
 }  // namespace luabz
