@@ -40,7 +40,7 @@ class lua_value_ref
     operator T() const
     {
         load_lua_var();
-        T result = detail::lua_value<T>::get(m_state);
+        T result = detail::lua_value<T>::get(m_state, -1);
         clear_used_stack_spaces();
         return result;
     }

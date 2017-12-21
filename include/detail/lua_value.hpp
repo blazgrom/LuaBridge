@@ -11,10 +11,10 @@ namespace detail
  * stack. \pre Every specialization has to provide a static member function
  * called "insert" which accepts \n lua_State* and addional parameter which can
  * be anything. \pre Every specialization has to provice a static member
- * function called "get" accepting lua_State and which convert and returns the
- * \n top element of the stack to the desired type. \note If one of the required
- * function is not provided you will not be the corresponding functionality with
- * the new type.
+ * function called "get" accepting lua_State and stack_index and which convert
+ * and returns the \n top element of the stack to the desired type. \note If one
+ * of the required function is not provided you will not be the corresponding
+ * functionality with the new type.
  */
 template <class T>
 struct lua_value;
@@ -35,9 +35,9 @@ struct lua_value<const bool> {
     /**
      *  Contains all the logic of how a Lua boolean is converted tp C++ boolean
      */
-    static bool get(lua_State* state)
+    static bool get(lua_State* state, int stack_index)
     {
-        return static_cast<bool>(lua_toboolean(state, -1));
+        return static_cast<bool>(lua_toboolean(state, stack_index));
     }
 };
 /**
@@ -55,9 +55,9 @@ struct lua_value<bool> {
     /**
      * Contains all the logic of how a Lua boolean is converted to C++ boolean
      */
-    static bool get(lua_State* state)
+    static bool get(lua_State* state, int stack_index)
     {
-        return static_cast<bool>(lua_toboolean(state, -1));
+        return static_cast<bool>(lua_toboolean(state, stack_index));
     }
 };
 /**
@@ -76,9 +76,9 @@ struct lua_value<const long long> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++ long long
      */
-    static long long get(lua_State* state)
+    static long long get(lua_State* state, int stack_index)
     {
-        return static_cast<long long>(luaL_checklong(state, -1));
+        return static_cast<long long>(luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -98,9 +98,9 @@ struct lua_value<long long> {
      *  Contains all the logic of how a Lua number is converted to  C++ long
      * long
      */
-    static long long get(lua_State* state)
+    static long long get(lua_State* state, int stack_index)
     {
-        return static_cast<long long>(luaL_checklong(state, -1));
+        return static_cast<long long>(luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -120,9 +120,10 @@ struct lua_value<const unsigned long long> {
      *  Contains all the logic of how a Lua number is converted to  C++ unsigned
      * long long
      */
-    static unsigned long long get(lua_State* state)
+    static unsigned long long get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned long long>(luaL_checklong(state, -1));
+        return static_cast<unsigned long long>(
+            luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -142,9 +143,10 @@ struct lua_value<unsigned long long> {
      *  Contains all the logic of how a Lua number is converted to  C++ unsigned
      * long long
      */
-    static unsigned long long get(lua_State* state)
+    static unsigned long long get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned long long>(luaL_checklong(state, -1));
+        return static_cast<unsigned long long>(
+            luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -163,9 +165,9 @@ struct lua_value<const long> {
     /**
      *  Contains all the logic of how a Lua number is converted to  C++   long
      */
-    static long get(lua_State* state)
+    static long get(lua_State* state, int stack_index)
     {
-        return static_cast<long>(luaL_checklong(state, -1));
+        return static_cast<long>(luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -183,9 +185,9 @@ struct lua_value<long> {
     /**
      *  Contains all the logic of how a Lua number is converted to  C++   long
      */
-    static long get(lua_State* state)
+    static long get(lua_State* state, int stack_index)
     {
-        return static_cast<long>(luaL_checklong(state, -1));
+        return static_cast<long>(luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -205,9 +207,9 @@ struct lua_value<const unsigned long> {
      * Contains all the logic of how a Lua number is converted to  C++
      * unsigned long
      */
-    static unsigned long get(lua_State* state)
+    static unsigned long get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned long>(luaL_checklong(state, -1));
+        return static_cast<unsigned long>(luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -227,9 +229,9 @@ struct lua_value<unsigned long> {
      * Contains all the logic of how a Lua number is converted to  C++
      * unsigned long
      */
-    static unsigned long get(lua_State* state)
+    static unsigned long get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned long>(luaL_checklong(state, -1));
+        return static_cast<unsigned long>(luaL_checklong(state, stack_index));
     }
 };
 /**
@@ -248,9 +250,9 @@ struct lua_value<const int> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++   int
      */
-    static int get(lua_State* state)
+    static int get(lua_State* state, int stack_index)
     {
-        return static_cast<int>(luaL_checkint(state, -1));
+        return static_cast<int>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -268,9 +270,9 @@ struct lua_value<int> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++   int
      */
-    static int get(lua_State* state)
+    static int get(lua_State* state, int stack_index)
     {
-        return static_cast<int>(luaL_checkint(state, -1));
+        return static_cast<int>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -290,9 +292,9 @@ struct lua_value<const unsigned int> {
      * Contains all the logic of how a Lua number is converted to  C++  unsigned
      * int
      */
-    static unsigned int get(lua_State* state)
+    static unsigned int get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned int>(luaL_checkint(state, -1));
+        return static_cast<unsigned int>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -312,9 +314,9 @@ struct lua_value<unsigned int> {
      * Contains all the logic of how a Lua number is converted to  C++  unsigned
      * int
      */
-    static unsigned int get(lua_State* state)
+    static unsigned int get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned int>(luaL_checkint(state, -1));
+        return static_cast<unsigned int>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -333,9 +335,9 @@ struct lua_value<const short> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  short
      */
-    static short get(lua_State* state)
+    static short get(lua_State* state, int stack_index)
     {
-        return static_cast<short>(luaL_checkint(state, -1));
+        return static_cast<short>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -353,9 +355,9 @@ struct lua_value<short> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  short
      */
-    static short get(lua_State* state)
+    static short get(lua_State* state, int stack_index)
     {
-        return static_cast<short>(luaL_checkint(state, -1));
+        return static_cast<short>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -375,9 +377,9 @@ struct lua_value<const unsigned short> {
      * Contains all the logic of how a Lua number is converted to  C++  unsigned
      * short
      */
-    static unsigned short get(lua_State* state)
+    static unsigned short get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned short>(luaL_checkint(state, -1));
+        return static_cast<unsigned short>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -397,9 +399,9 @@ struct lua_value<unsigned short> {
      * Contains all the logic of how a Lua number is converted to  C++  unsigned
      * short
      */
-    static unsigned short get(lua_State* state)
+    static unsigned short get(lua_State* state, int stack_index)
     {
-        return static_cast<unsigned short>(luaL_checkint(state, -1));
+        return static_cast<unsigned short>(luaL_checkint(state, stack_index));
     }
 };
 /**
@@ -418,9 +420,9 @@ struct lua_value<const float> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  float
      */
-    static float get(lua_State* state)
+    static float get(lua_State* state, int stack_index)
     {
-        return static_cast<float>(lua_tonumber(state, -1));
+        return static_cast<float>(lua_tonumber(state, stack_index));
     }
 };
 /**
@@ -438,9 +440,9 @@ struct lua_value<float> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  float
      */
-    static float get(lua_State* state)
+    static float get(lua_State* state, int stack_index)
     {
-        return static_cast<float>(lua_tonumber(state, -1));
+        return static_cast<float>(lua_tonumber(state, stack_index));
     }
 };
 /**
@@ -459,9 +461,9 @@ struct lua_value<const double> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  double
      */
-    static double get(lua_State* state)
+    static double get(lua_State* state, int stack_index)
     {
-        return static_cast<double>(lua_tonumber(state, -1));
+        return static_cast<double>(lua_tonumber(state, stack_index));
     }
 };
 /**
@@ -479,9 +481,9 @@ struct lua_value<double> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  double
      */
-    static double get(lua_State* state)
+    static double get(lua_State* state, int stack_index)
     {
-        return static_cast<double>(lua_tonumber(state, -1));
+        return static_cast<double>(lua_tonumber(state, stack_index));
     }
 };
 /**
@@ -514,9 +516,9 @@ struct lua_value<const std::string> {
      * Contains all the logic of how a Lua number is converted to  C++
      * std::string
      */
-    static std::string get(lua_State* state)
+    static std::string get(lua_State* state, int stack_index)
     {
-        return static_cast<std::string>(lua_tostring(state, -1));
+        return static_cast<std::string>(lua_tostring(state, stack_index));
     }
 };
 /**
@@ -536,9 +538,9 @@ struct lua_value<std::string> {
      * Contains all the logic of how a Lua number is converted to  C++
      * std::string
      */
-    static std::string get(lua_State* state)
+    static std::string get(lua_State* state, int stack_index)
     {
-        return static_cast<std::string>(lua_tostring(state, -1));
+        return static_cast<std::string>(lua_tostring(state, stack_index));
     }
 };
 /**
@@ -557,9 +559,9 @@ struct lua_value<const char> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  char
      */
-    static char get(lua_State* state)
+    static char get(lua_State* state, int stack_index)
     {
-        return lua_value<const std::string>::get(state)[0];
+        return lua_value<const std::string>::get(state, stack_index)[0];
     }
 };
 /**
@@ -577,9 +579,9 @@ struct lua_value<char> {
     /**
      * Contains all the logic of how a Lua number is converted to  C++  char
      */
-    static char get(lua_State* state)
+    static char get(lua_State* state, int stack_index)
     {
-        return lua_value<std::string>::get(state)[0];
+        return lua_value<std::string>::get(state, stack_index)[0];
     }
 };
 /**
