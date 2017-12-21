@@ -14,7 +14,10 @@ class lua_value_Function : public ::testing::Test
         script.open(lua_script_file);
     }
 };
-TEST_F(lua_value_Function, AssignStdFunction)
+//TODO:
+//Add tests with parameters and different return types
+//Call lua function, not registered function
+TEST_F(lua_value_Function, AssignAndCallStdFunction)
 {
     auto result = false;
     std::function<int()> f = [&]() {
