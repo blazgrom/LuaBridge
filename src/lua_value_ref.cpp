@@ -150,6 +150,10 @@ void lua_value_ref::set_lua_var()
 }
 lua_value_ref lua_value_ref::operator[](const std::string& field_name) const
 {
+    return this->operator[](field_name.c_str());   
+}
+lua_value_ref lua_value_ref::operator[](const char* field_name) const
+{
     load_lua_var();
     if (!lua_istable(m_state, top)) {
         luabz::detail::lua_error("What you are trying to access is not a lua "

@@ -356,7 +356,7 @@ class lua_value_ref
      * by this lua_value_ref
      */
     lua_value_ref operator[](const std::string& field_name) const;
-
+    lua_value_ref operator[](const char* field_name) const;
   private:
     lua_value_ref(lua_State* state, std::string name);
     /**
