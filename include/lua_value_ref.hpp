@@ -90,6 +90,11 @@ class lua_value_ref
         register_function(inserted_function_position);
         return *this;
     }
+    template <class ReturnType, class... Args>
+    lua_value_ref& operator=(ReturnType (*user_f)(Args...))
+    {
+        return this->operator=(std::function<ReturnType(Args...)>(user_f));
+    }
     /**
      * \brief Calls a registered function, it also extracts function's
      * parameters from the\n lua stack and insert the return value of the
@@ -105,6 +110,7 @@ class lua_value_ref
         detail::lua_value<decltype(result)>::insert(m_state, result);
         return 1;
     }
+    
     /**
      * \brief Calls a lua function or a C++ function assign to lua variable
      * \param args The arguments that are passed to the function

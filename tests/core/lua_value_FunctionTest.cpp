@@ -28,3 +28,13 @@ TEST_F(lua_value_Function, AssignAndCallStdFunction)
     int return_value = script["stdfunction"]();
     ASSERT_TRUE(return_value == 100);
 }
+int normal_function()
+{
+    return 77;
+}
+TEST_F(lua_value_Function,AssignAndCallNormalFunction)
+{
+    script["normal_function"]=normal_function;
+    int return_value=script["normal_function"]();
+    ASSERT_TRUE(return_value==77);
+}
