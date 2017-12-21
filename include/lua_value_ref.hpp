@@ -10,8 +10,9 @@
 #include "detail/lua_error.hpp"
 #include "detail/lua_value.hpp"
 /**
- * \todo This include should not used relative path, but just Utils/variadic_index
-*/
+ * \todo This include should not used relative path, but just
+ * Utils/variadic_index
+ */
 #include "../Utils/variadic_index.hpp"
 namespace luabz
 {
@@ -25,7 +26,9 @@ class lua_value_ref
                                      ///< because we want the only way to create
                                      ///< lua_value_ref to be through a
                                      ///< lua_script
-    static std::vector<std::function<int(lua_State*)>> registeredFunctions;
+    static std::vector<std::function<int(lua_State*)>>
+        registeredFunctions;  ///< Contains all C++ registered function that can
+                              ///< be called through lua or lua_value_ref
 
   public:
     lua_value_ref(const lua_value_ref& rhs);
@@ -64,10 +67,10 @@ class lua_value_ref
         return *this;
     }
     /**
-     * Registers a C++ std::function that later on can be called from lua code or though 
-     * lua_value_ref
-     * \param user_f The function that you want to be called
-    */
+     * Registers a C++ std::function that later on can be called from lua code
+     * or though lua_value_ref \param user_f The function that you want to be
+     * called
+     */
     template <class ReturnType, class... Args>
     lua_value_ref& operator=(std::function<ReturnType(Args...)> user_f)
     {
@@ -88,9 +91,10 @@ class lua_value_ref
         return *this;
     }
     /**
-     * \brief Calls a registered function, it also extracts function's parameters from the\n
-     * lua stack and insert the return value of the function into the stack
-    */
+     * \brief Calls a registered function, it also extracts function's
+     * parameters from the\n lua stack and insert the return value of the
+     * function into the stack
+     */
     template <class T, class ReturnType, class... Args>
     int call_registered_function(T& user_f, std::tuple<ReturnType, Args...>&)
     {
@@ -123,10 +127,10 @@ class lua_value_ref
         return lua_value_ref(m_state, return_value_name);
     }
     /**
-     * Insert the function parameters when we are invoking a function though a lua_value_ref
-     * \param value The first argument of the function
-     * \param args All the other parameters
-    */
+     * Insert the function parameters when we are invoking a function though a
+     * lua_value_ref \param value The first argument of the function \param args
+     * All the other parameters
+     */
     template <class T, class... Args>
     void insert_function_parameters(T&& value, Args&&... args)
     {
@@ -135,16 +139,17 @@ class lua_value_ref
     }
     /**
      * \brief "Specialization" for when we want to insert one function parameter
-    */
+     */
     template <class T>
     void insert_function_parameters(T&& value)
     {
         detail::lua_value<T>::insert(m_state, value);
     }
     /**
-     * \brief "Specialization" for when we want to insert no function paramaters, this function simply returns
-     * \sa insert_prameters(T&& value, Args&&... args)
-    */
+     * \brief "Specialization" for when we want to insert no function
+     * paramaters, this function simply returns \sa insert_prameters(T&& value,
+     * Args&&... args)
+     */
     void insert_function_parameters() { return; }
     /**
      * \brief Operator= between lua_value_ref and any type T
@@ -350,6 +355,7 @@ class lua_value_ref
      */
     lua_value_ref operator[](const std::string& field_name) const;
     lua_value_ref operator[](const char* field_name) const;
+
   private:
     lua_value_ref(lua_State* state, std::string name);
     /**
@@ -381,9 +387,10 @@ class lua_value_ref
     std::string get_field_name() const;
     /**
      * Assigns lua_CFunction to the variable identified by m_name.
-     * This lua_CFunctions calls the function at index function_position_index inside registeredFunctions when called.
-     * \param function_position_index the position of the function you want to call inside registeredFunctions
-    */
+     * This lua_CFunctions calls the function at index function_position_index
+     * inside registeredFunctions when called. \param function_position_index
+     * the position of the function you want to call inside registeredFunctions
+     */
     void register_function(std::size_t function_position_index);
     lua_State* m_state;  ///< A lua state which represents the file with which
                          ///< the script was opened

@@ -1,8 +1,9 @@
-#include "lua_script.hpp"
-#include <algorithm>
 #include "detail/lua_error.hpp"
 #include "detail/lua_state_factory.hpp"
 #include "lua_exception.hpp"
+#include "lua_script.hpp"
+#include <algorithm>
+
 namespace luabz
 {
 lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}

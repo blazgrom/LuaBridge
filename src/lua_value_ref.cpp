@@ -1,6 +1,7 @@
 #include "lua_value_ref.hpp"
-#include <utility>
 #include "detail/lua_error.hpp"
+#include <utility>
+
 namespace luabz
 {
 const int lua_value_ref::top = -1;
@@ -150,7 +151,7 @@ void lua_value_ref::set_lua_var()
 }
 lua_value_ref lua_value_ref::operator[](const std::string& field_name) const
 {
-    return this->operator[](field_name.c_str());   
+    return this->operator[](field_name.c_str());
 }
 lua_value_ref lua_value_ref::operator[](const char* field_name) const
 {
@@ -188,13 +189,14 @@ void lua_value_ref::clear_used_stack_spaces() const
     used_stack_spaces = 0;
 }
 /**
- * \note The index at which the function is saved inside registredFunctions becomes
- * an upvalue of the lua_CFunction
-*/
+ * \note The index at which the function is saved inside registredFunctions
+ * becomes an upvalue of the lua_CFunction
+ */
 void lua_value_ref::register_function(std::size_t function_position_index)
 {
     load_lua_var();
-    detail::lua_value<decltype(function_position_index)>::insert(m_state,function_position_index);
+    detail::lua_value<decltype(function_position_index)>::insert(
+        m_state, function_position_index);
     lua_CFunction new_value = [](lua_State* functionState) -> int {
         int functionIndex = lua_tointeger(
             functionState, lua_upvalueindex(1));  // retrieve  upvalue

@@ -42,6 +42,8 @@ class lua_script
     /**
      * \brief Closes the lua stack associated with the lua file
      * \todo Decide how to implement it
+     * \todo When the stack is closed remember to clear the registered C++
+     * functions
      */
     void close() noexcept;
     /**
