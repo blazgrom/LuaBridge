@@ -7,6 +7,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include "../Utils/callable_traits.hpp"
 #include "detail/lua_error.hpp"
 #include "detail/lua_value.hpp"
 /**
@@ -66,20 +67,46 @@ class lua_value_ref
         clear_used_stack_spaces();
         return *this;
     }
+/**
+     *  Registers a C++ lambda that later on can be called from lua code
+     * or though lua_value_ref \param user_f The function that you want to be
+     * called
+    */
+    template <class T>
+    lua_value_ref& calls(T user_f)
+    {
+        using namespace Utils;
+        registeredFunctions.emplace_back(
+        [this, user_function = std::move(user_f)]
+        (lua_State*) mutable->int {
+            bool correct_number_of_arguments =
+                (lua_gettop(m_state) == callable_traits<T>::args_count);
+            if (correct_number_of_arguments) {
+                std::pair<callable_return_type<T>, callable_arg_types<T>> t{};
+                return call_registered_function(user_function, t);
+            }
+            return 0;
+        });
+        auto inserted_function_position = registeredFunctions.size() - 1;
+        register_function(inserted_function_position);
+        return *this;
+    }
     /**
      * Registers a C++ std::function that later on can be called from lua code
      * or though lua_value_ref \param user_f The function that you want to be
      * called
+     * \todo Decide if all the 'calls' function should return a reference to
+     * this
      */
     template <class ReturnType, class... Args>
-    lua_value_ref& operator=(std::function<ReturnType(Args...)> user_f)
+    lua_value_ref& calls(std::function<ReturnType(Args...)> user_f)
     {
         registeredFunctions.emplace_back(
             [ this, user_function = std::move(user_f) ](lua_State*)->int {
                 bool correct_number_of_arguments =
                     (lua_gettop(m_state) == sizeof...(Args));
                 if (correct_number_of_arguments) {
-                    std::tuple<ReturnType, Args...> t{};
+                    std::pair<ReturnType, std::tuple<Args...>> t{};
                     return call_registered_function(user_function, t);
                 }
                 // 0 Indicates to Lua that the function wasn't invoke and there
@@ -90,10 +117,15 @@ class lua_value_ref
         register_function(inserted_function_position);
         return *this;
     }
+    /**
+     *  Registers a C++ function pointer that later on can be called from lua code
+     * or though lua_value_ref \param user_f The function that you want to be
+     * called
+    */
     template <class ReturnType, class... Args>
     lua_value_ref& operator=(ReturnType (*user_f)(Args...))
     {
-        return this->operator=(std::function<ReturnType(Args...)>(user_f));
+        return calls(std::function<ReturnType(Args...)>(user_f));
     }
     /**
      * \brief Calls a registered function, it also extracts function's
@@ -101,16 +133,16 @@ class lua_value_ref
      * function into the stack
      */
     template <class T, class ReturnType, class... Args>
-    int call_registered_function(T& user_f, std::tuple<ReturnType, Args...>&)
+    int call_registered_function(T& user_f, std::pair<ReturnType,std::tuple<Args...>>&)
     {
         Utils::variadric_index<Args...> index_generator;
-        auto result = user_f(detail::lua_value<Args>(
+        auto result = user_f(detail::lua_value<Args>::get(
             m_state, (index_generator.get_index() + 1) * -1)...);
         lua_pop(m_state, static_cast<int>(sizeof...(Args)));
         detail::lua_value<decltype(result)>::insert(m_state, result);
         return 1;
     }
-    
+
     /**
      * \brief Calls a lua function or a C++ function assign to lua variable
      * \param args The arguments that are passed to the function
