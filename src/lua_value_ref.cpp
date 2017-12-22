@@ -1,6 +1,6 @@
 #include "lua_value_ref.hpp"
-#include "detail/lua_error.hpp"
 #include <utility>
+#include "detail/lua_error.hpp"
 
 namespace luabz
 {

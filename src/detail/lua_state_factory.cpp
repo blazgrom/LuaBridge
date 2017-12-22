@@ -1,6 +1,6 @@
-#include "detail/lua_error.hpp"
 #include "detail/lua_state_factory.hpp"
 #include <unordered_map>
+#include "detail/lua_error.hpp"
 namespace luabz
 {
 namespace detail
