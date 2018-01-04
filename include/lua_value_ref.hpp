@@ -72,7 +72,7 @@ class lua_value_ref
      * or though lua_value_ref \param user_f The function that you want to be
      * called
     */
-    template <class T>
+    template <typename T>
     lua_value_ref& calls(T user_f)
     {
         using namespace Utils;
@@ -98,7 +98,7 @@ class lua_value_ref
      * \todo Decide if all the 'calls' function should return a reference to
      * this
      */
-    template <class ReturnType, class... Args>
+    template <typename ReturnType, typename... Args>
     lua_value_ref& calls(std::function<ReturnType(Args...)> user_f)
     {
         registeredFunctions.emplace_back(
@@ -122,7 +122,7 @@ class lua_value_ref
      * or though lua_value_ref \param user_f The function that you want to be
      * called
     */
-    template <class ReturnType, class... Args>
+    template <typename ReturnType, typename... Args>
     lua_value_ref& operator=(ReturnType (*user_f)(Args...))
     {
         return calls(std::function<ReturnType(Args...)>(user_f));
@@ -132,7 +132,7 @@ class lua_value_ref
      * parameters from the\n lua stack and insert the return value of the
      * function into the stack
      */
-    template <class T, class ReturnType, class... Args>
+    template <typename T, typename ReturnType, typename... Args>
     int call_registered_function(T& user_f, std::pair<ReturnType,std::tuple<Args...>>&)
     {
         Utils::variadric_index<Args...> index_generator;
@@ -170,7 +170,7 @@ class lua_value_ref
      * lua_value_ref \param value The first argument of the function \param args
      * All the other parameters
      */
-    template <class T, class... Args>
+    template <typename T, typename... Args>
     void insert_function_parameters(T&& value, Args&&... args)
     {
         detail::lua_value<T>::insert(m_state, value);
@@ -179,7 +179,7 @@ class lua_value_ref
     /**
      * \brief "Specialization" for when we want to insert one function parameter
      */
-    template <class T>
+    template <typename T>
     void insert_function_parameters(T&& value)
     {
         detail::lua_value<T>::insert(m_state, value);
