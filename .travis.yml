@@ -17,6 +17,7 @@ before_install:
 install: 
   # Lua
   - sudo apt-get install lua5.1
+  - sudo apt-get install lua5.1-dev
   # C++14
   - sudo apt-get install -qq g++-7
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
