@@ -25,7 +25,7 @@ if [ $? -ne 0 ]; then
 	# Terminate script and outputs 3
     exit 3
 fi
-
+cd ../bin
 ./luabz_tests
 workingprocess "All tests compile and pass."
 
