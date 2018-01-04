@@ -322,3 +322,5 @@ lib/
 docs/
 #Data
 data/
+#Error
+lua_error.txt

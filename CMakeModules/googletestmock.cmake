@@ -1,8 +1,4 @@
-#-----------------------------
-#   Enable testing
-#-----------------------------
-enable_testing()  
-
+enable_testing()
 #-----------------------------
 #   Initial setup
 #-----------------------------
@@ -38,6 +34,7 @@ set_target_properties(libgtest PROPERTIES
 "IMPORTED_LOCATION" "${binary_dir}/googlemock/gtest/libgtest.a"
 "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
+set_target_properties(libgtest PROPERTIES COMPILE_FLAGS "-Dgtest_disable_pthreads=OFF")
 #----------------------------------------------
 #
 #
@@ -50,6 +47,7 @@ set_target_properties(libgtest_main PROPERTIES
 "IMPORTED_LOCATION" "${binary_dir}/googlemock/gtest/libgtest_main.a"
 "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
+set_target_properties(libgtest_main PROPERTIES COMPILE_FLAGS "-Dgtest_disable_pthreads=OFF")
 
 
 #---------------------------------------------
@@ -62,6 +60,7 @@ add_dependencies(libgmock gtest)
 set_target_properties(libgmock PROPERTIES
 "IMPORTED_LOCATION" "${binary_dir}/googlemock/libgmock.a"
 "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
+
 )
 
 #---------------------------------

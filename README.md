@@ -1,88 +1,126 @@
-## LuaBz - Binding between C++ and Lua
+## luabz - C++ bindings to Lua
 
-Feature list:
- * Getting/Setting variable's value
- * Registering C++ functions
- * Calling a function
- * User defined class support
+#### Getting a Lua variable's value
 
-
-```cpp
-  LuaBz script("test.lua");
-```
-#### Getting/Setting variable's value
-
-* Lua 
 ```lua
-  width=500.0
-  Position={x=100,y=100}
+--my_script.lua
+variable=1;
+mytable={
+  variable=2
+};
 ```
-* C++
 ```cpp
-  double width = script.get<double>("width");
-  int pos_x = script.get<int>("Position.x");
-  bool successWidth = script.set("width",newWidthValue);
-  bool successPositionX = script.set("Position.x",newAxisXValue);
+#include "lua_script.hpp"
+
+int main()
+{
+
+  luabz::lua_script my_script("my_script.lua")
+  int variable=my_script["variable"]; //Getting the value of a global Lua variable
+  int mytable_variable=my_script["my_table"]["variable"]; // Getting the value of a Lua table's field
+  return 0;
+}
 ```
-#### Registering C++ functions
-```cpp
-  //std::function
-  std::function<int(int, int)> func = [](int a, int b)->int { return a+b; };
-  script.register_function("func", func);
-  //lambda
-  script.register_function("lambda", [](int a, int b)->int { return a+b; });
-  //normal function
-  int f(int a,int b)
-  {
-    return a+b;
-  }
-  script.register_function("f",f);
-  //Function object
-  struct FunObj
-  {
-    int operator()(int a,int b)
-    {
-      return a+b;
-    }
-  };
-  script.register_function("FunctionObject",FunObj{})
-```
-#### Calling a function:
-##### No input params and no return values
-* Lua
+
+#### Setting a Lua variable's value
 ```lua
-	
-function helloWorld()
-  print "Hello World"
-end
-
-function multipleReturnValues()
-  return 1,2,3.0
-end
-
-function multipleInputNoResult(a,b,c)
-  local x=a+b+c
-  print x
-end
-
-function multipleInputMultipleResultValues(a,b,c)
-  return a,b,c
-end
+--my_script.lua
+variable=2;
+mytable={
+  variable=2
+};
 ```
-* C++
+
 ```cpp
-script.call(lua_function<void>("helloWorld"));
+#include "lua_script.hpp"
 
-auto result=script.call(lua_function<int,int,double>("multipleReturnValues"));
+int main()
+{
 
-script.call(lua_function<void>("multipleInputNoResult"), 1, 2, 3);
-
-auto secondresult = script.call(lua_function<int, int, int> test("multipleInputMultipleResultValues"), 1, 2, 3); 
+  luabz::lua_script my_script("my_script.lua")
+  my_script["variable"]=1;//Setting global varialbe
+  my_script["my_table"]["variable"]=1; // Setting the value of a Lua table's field
+  return 0;
+}
 ```
-#### User defined class support
- In order to use a user defined type with Lua you have to a type that has a c-tor that accepts a lua_table and a conversion from your type to a lua_table.
- For more info on lua_table see lua_table.hpp.
 
+#### Run any Lua code
+```cpp
+#include "lua_script.hpp"
+
+int main()
+{
+
+  luabz::lua_script my_script("my_script.lua")
+  my_script("Your Lua code");
+  return 0;
+}
+```
+
+#### Registering a std::function to be called from lua
+```cpp
+#include "lua_script.hpp"
+int main()
+{
+  luabz::lua_script my_script("my_script.lua")
+  std::function<int()> f = [&]() {
+        return 100;
+    };
+  my_script["std_function"].calls(f);
+  int result=script["std_function"](); //100
+  return 0;
+}
+```
+#### Registering a normal function to be called from lua
+```cpp
+#include "lua_script.hpp"
+int normal_function()
+{
+    return 77;
+}
+int main()
+{
+  luabz::lua_script my_script("my_script.lua")
+  my_script["normal_function"].calls(normal_function);
+  int result =script["normal_function"](); //77
+
+  return 0;
+}
+```
+
+#### Registering a C++ lambda to be called from lua
+```cpp
+#include "lua_script.hpp"
+int normal_function()
+{
+    return 77;
+}
+int main()
+{
+  luabz::lua_script my_script("my_script.lua")
+  script["lambda"].calls([](int a) mutable {
+      return a;
+  });
+  int result =script["lambda"](1000); //1000
+  return 0;
+}
+```
 #### Dependencies
-* Lua 5.1.5
+* Lua 
 * [Utils](https://github.com/blazgrom/Utils)
+#### Building
+1. mkdir build && cd build
+2. cmake ..
+3. make
+
+#### Building flags
+- ENABLE_TEST: Creates the 'make test' target, which build all the tests.
+- ENABLE_DOC: Creates the 'make doc' target, which generates doxygen documentation.
+- ENABLE_CLANG_FORMAT: Creates the 'make clang-format' target, which runs clang-format on the project. For more information on the styling see .clang-format.
+- ENABLE_CLANG_TIDY: Creates the 'make clang-tidy' target, which runs clang-tidy on the project.
+- ENABLE_CPPCHECK: Creates the 'make cppcheck' taget, which runs cppcheck on the project.
+- USE_CPP_EXCEPTIONS: Every time there is an error instead of false assertion and logging the error into a file an cpp exception will be throw.
+
+
+#### Notes
+For  loading script dependencies use [lua modules] (http://lua-users.org/wiki/ModulesTutorial)
