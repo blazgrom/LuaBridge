@@ -123,7 +123,7 @@ class lua_value_ref
      * called
     */
     template <typename ReturnType, typename... Args>
-    lua_value_ref& operator=(ReturnType (*user_f)(Args...))
+    lua_value_ref& calls(ReturnType (*user_f)(Args...))
     {
         return calls(std::function<ReturnType(Args...)>(user_f));
     }
