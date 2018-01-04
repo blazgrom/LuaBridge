@@ -1,6 +1,6 @@
 ## luabz - C++ bindings to Lua
 
-#### Getting a value of Lua variable
+#### Getting a Lua variable's value
 
 ```lua
 --my_script.lua
@@ -57,8 +57,57 @@ int main()
 }
 ```
 
+#### Registering a std::function to be called from lua
+```cpp
+#include "lua_script.hpp"
+int main()
+{
+  luabz::lua_script my_script("my_script.lua")
+  std::function<int()> f = [&]() {
+        return 100;
+    };
+  my_script["std_function"].calls(f);
+  int result=script["std_function"](); //100
+  return 0;
+}
+```
+#### Registering a normal function to be called from lua
+```cpp
+#include "lua_script.hpp"
+int normal_function()
+{
+    return 77;
+}
+int main()
+{
+  luabz::lua_script my_script("my_script.lua")
+  my_script["normal_function"].calls(normal_function);
+  int result =script["normal_function"](); //77
+
+  return 0;
+}
+```
+
+#### Registering a C++ lambda to be called from lua
+```cpp
+#include "lua_script.hpp"
+int normal_function()
+{
+    return 77;
+}
+int main()
+{
+  luabz::lua_script my_script("my_script.lua")
+  script["lambda"].calls([](int a) mutable {
+      return a;
+  });
+  int result =script["lambda"](1000); //1000
+  return 0;
+}
+```
 #### Dependencies
-* Lua 5.1.5
+* Lua 
+* [Utils](https://github.com/blazgrom/Utils)
 #### Building
 1. mkdir build && cd build
 2. cmake ..
@@ -72,8 +121,6 @@ int main()
 - ENABLE_CPPCHECK: Creates the 'make cppcheck' taget, which runs cppcheck on the project.
 - USE_CPP_EXCEPTIONS: Every time there is an error instead of false assertion and logging the error into a file an cpp exception will be throw.
 
-#### Design
-See design.md
 
 #### Notes
 For  loading script dependencies use [lua modules] (http://lua-users.org/wiki/ModulesTutorial)

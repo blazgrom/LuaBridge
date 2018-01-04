@@ -147,6 +147,7 @@ class lua_value_ref
      * \brief Calls a lua function or a C++ function assign to lua variable
      * \param args The arguments that are passed to the function
      * \todo Generate the name randomly
+     * \todo Check if what we want to call is a function
      */
     template <typename... Args>
     lua_value_ref operator()(Args&&... args)
