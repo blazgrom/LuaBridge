@@ -1,5 +1,5 @@
 ## luabz - C++ bindings to Lua
-
+[![Build Status](https://travis-ci.org/blazgrom/LuaBz.svg?branch=dev)](https://travis-ci.org/blazgrom/LuaBz)
 #### Getting a Lua variable's value
 
 ```lua
