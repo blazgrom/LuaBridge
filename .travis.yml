@@ -11,7 +11,7 @@ addons:
       - clang
 branches:
   only:
-    - dev
+    - master
 before_install:
   - sudo apt-get update -qq
 install: 
