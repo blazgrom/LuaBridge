@@ -1,4 +1,8 @@
 ## luabz - C++ bindings to Lua
+[![Build Status](https://travis-ci.org/blazgrom/LuaBz.svg?branch=dev)](https://travis-ci.org/blazgrom/LuaBz)
+
+[![codecov](https://codecov.io/gh/blazgrom/LuaBz/branch/dev/graph/badge.svg)](https://codecov.io/gh/blazgrom/LuaBz)
+
 
 #### Getting a Lua variable's value
 

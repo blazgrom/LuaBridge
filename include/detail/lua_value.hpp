@@ -16,7 +16,7 @@ namespace detail
  * of the required function is not provided you will not be the corresponding
  * functionality with the new type.
  */
-template <class T>
+template <typename T>
 struct lua_value;
 
 /**

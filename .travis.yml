@@ -1,0 +1,36 @@
+dist: trusty
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - cppcheck
+      - lcov
+      - clang
+branches:
+  only:
+    - dev
+before_install:
+  - sudo apt-get update -qq
+install: 
+  # Lua
+  - sudo apt-get install lua5.1
+  - sudo apt-get install lua5.1-dev
+  # C++14
+  - sudo apt-get install -qq g++-7
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+  # Codecov
+  - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-7 90
+  - clang-tidy -version
+script:
+  # Build project
+  - ./run_build.sh
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}
+  - lcov --directory . --capture --output-file coverage.info --no-external # capture coverage info
+  - lcov --remove coverage.info '/usr/*' --output-file coverage.info # filter out system
+  # Uploading report to CodeCov
+  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+  
