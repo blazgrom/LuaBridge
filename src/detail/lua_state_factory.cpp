@@ -48,9 +48,6 @@ lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,
     }
     return state;
 }
-/**
- * \todo Add tests for checking if loading of lua's standard library works
- */
 lua_State* lua_state_factory::get_lua_state(const std::string& file_name,
                                             bool load_std)
 {

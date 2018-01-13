@@ -7,14 +7,10 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-#include "../Utils/callable_traits.hpp"
 #include "detail/lua_error.hpp"
 #include "detail/lua_value.hpp"
-/**
- * \todo This include should not used relative path, but just
- * Utils/variadic_index
- */
-#include "../Utils/variadic_index.hpp"
+#include "callable_traits.hpp"
+#include "variadic_index.hpp"
 namespace luabz
 {
 class lua_script;
