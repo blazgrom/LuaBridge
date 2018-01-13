@@ -18,12 +18,16 @@ install:
   # Lua
   - sudo apt-get install lua5.1
   - sudo apt-get install lua5.1-dev
+  # GDB
+  - sudo apt-get install gdb
   # C++14
   - sudo apt-get install -qq g++-7
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
   # Codecov
   - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-7 90
   - clang-tidy -version
+before_script:
+  - ulimit -c unlimited -S       # enable core dumps
 script:
   # Build project
   - ./run_build.sh
@@ -33,4 +37,6 @@ after_success:
   - lcov --remove coverage.info '/usr/*' --output-file coverage.info # filter out system
   # Uploading report to CodeCov
   - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
-  
+after_failure:
+  - COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+  - if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" example -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
