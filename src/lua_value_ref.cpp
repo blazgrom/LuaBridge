@@ -91,19 +91,15 @@ bool lua_value_ref::is_nil() const
     clear_used_stack_spaces();
     return result;
 }
-/**
- * \todo Clear up how a variable is put on the stack see lines 100->101,
- * 107->108
- */
 void lua_value_ref::load_lua_var() const
 {
     if (is_table_field()) {
         auto delimeter_position =
             m_name.find_first_of(lua_table_field_delimeter);
         std::string table_name =
-            m_name.substr(0, delimeter_position);  /// Duplication
+            m_name.substr(0, delimeter_position);  
         std::string field_name =
-            m_name.substr(delimeter_position + 1);  /// Duplication
+            m_name.substr(delimeter_position + 1); 
         lua_getglobal(m_state, table_name.c_str());
         ++used_stack_spaces;
         while (true) {
@@ -116,9 +112,9 @@ void lua_value_ref::load_lua_var() const
                 return;
             }
             std::string parent_field_name =
-                field_name.substr(0, delimeter_position);  /// Duplication
+                field_name.substr(0, delimeter_position); 
             field_name =
-                field_name.substr(delimeter_position + 1);  /// Duplication
+                field_name.substr(delimeter_position + 1); 
             lua_getfield(m_state, top, parent_field_name.c_str());
             ++used_stack_spaces;
             if (!lua_istable(m_state, top)) {
