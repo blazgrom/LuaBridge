@@ -1,4 +1,6 @@
 #include "lua_value_ref.hpp"
+#include <chrono>
+#include <random>
 #include <utility>
 #include "detail/lua_error.hpp"
 
@@ -96,10 +98,8 @@ void lua_value_ref::load_lua_var() const
     if (is_table_field()) {
         auto delimeter_position =
             m_name.find_first_of(lua_table_field_delimeter);
-        std::string table_name =
-            m_name.substr(0, delimeter_position);  
-        std::string field_name =
-            m_name.substr(delimeter_position + 1); 
+        std::string table_name = m_name.substr(0, delimeter_position);
+        std::string field_name = m_name.substr(delimeter_position + 1);
         lua_getglobal(m_state, table_name.c_str());
         ++used_stack_spaces;
         while (true) {
@@ -112,9 +112,8 @@ void lua_value_ref::load_lua_var() const
                 return;
             }
             std::string parent_field_name =
-                field_name.substr(0, delimeter_position); 
-            field_name =
-                field_name.substr(delimeter_position + 1); 
+                field_name.substr(0, delimeter_position);
+            field_name = field_name.substr(delimeter_position + 1);
             lua_getfield(m_state, top, parent_field_name.c_str());
             ++used_stack_spaces;
             if (!lua_istable(m_state, top)) {
@@ -171,6 +170,15 @@ std::string lua_value_ref::get_field_name() const
 {
     auto delimeter_position = m_name.find_last_of(lua_table_field_delimeter);
     return m_name.substr(delimeter_position + 1);
+}
+std::string lua_value_ref::generate_return_value_name() const
+{
+    std::uniform_int_distribution<int> distribution;
+    auto seed = std::chrono::steady_clock::now().time_since_epoch().count();
+    std::default_random_engine dre(seed);
+    std::string generated_name = m_name + "_";
+    generated_name += std::to_string(distribution(dre));
+    return generated_name;
 }
 /**
  *  Pops from the stack N spaces where N is determine by the member
