@@ -6,13 +6,8 @@
 class lua_value_Test : public ::testing::Test
 {
   public:
-    luabz::lua_script script;
-    void SetUp() override
-    {
-        std::string lua_script_file =
-            construct_script_path("luascript_test.lua");
-        script.open(lua_script_file);
-    }
+        luabz::lua_script script{construct_script_path("luascript_test.lua")};
+
 };
 
 TEST_F(lua_value_Test,

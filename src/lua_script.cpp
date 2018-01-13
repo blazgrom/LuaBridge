@@ -13,12 +13,11 @@ lua_script::lua_script(const std::string& file, bool lua_stl)
     m_open{true}
 {
 }
-void lua_script::open(const std::string& file_name, bool lua_stl)
+void lua_script::open(bool load_lua_std)
 {
     if (!m_open) {
-        m_state = detail::lua_state_factory::get_lua_state(file_name, lua_stl);
+        m_state = detail::lua_state_factory::get_lua_state(m_fileName, load_lua_std);
         m_open = true;
-        m_fileName = file_name;
     }
 }
 void lua_script::close() noexcept
@@ -27,9 +26,9 @@ void lua_script::close() noexcept
     // m_open = false;
 }
 void lua_script::change(const std::string& file_name,
-                        bool load_lua_stl) noexcept
+                        bool load_lua_std) 
 {
-    m_state = detail::lua_state_factory::get_lua_state(file_name, load_lua_stl);
+    m_state = detail::lua_state_factory::get_lua_state(file_name, load_lua_std);
     m_open = true;
     m_fileName = file_name;
 }

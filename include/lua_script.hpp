@@ -35,10 +35,9 @@ class lua_script
      * Associates the object with a lua file
      * \note This function no-op if the constructor has been invoked with
      * parameters \n if you want to change the associated lua file use change
-     * \param file_name The name of the file that has to be opend
      * \param lua_stl Load lua's standard library
      */
-    void open(const std::string& file_name, bool lua_stl = false);
+    void open(bool lua_stl = false);
     /**
      * \brief Closes the lua stack associated with the lua file
      * \todo Decide how to implement it
@@ -51,7 +50,7 @@ class lua_script
      * \param file_name The name of the file that has to be opend
      * \param lua_stl Load lua's standard library
      */
-    void change(const std::string& file_name, bool lua_stl = false) noexcept;
+    void change(const std::string& file_name, bool lua_stl = false);
     /**
      * \brief Runs any piece of lua code on the file passed in input
      * \param lua_code The string contain lua code
