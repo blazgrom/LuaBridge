@@ -26,6 +26,29 @@ class lua_value_ref
     static std::vector<std::function<int(lua_State*)>>
         registeredFunctions;  ///< Contains all C++ registered function that can
                               ///< be called through lua or lua_value_ref
+    /**
+     * \brief RAII helper used to push to the top of the stack a specific
+     * lua_variable
+     */
+    struct lua_var_loader {
+        /**
+         * Pushes to the top of the stack a specific lua variable
+         * \param st The state in which the variable is present
+         * \param variable_name The name of the lua variable
+         * \param us Starting used stack space
+         */
+        lua_var_loader(lua_State* st,
+                       const std::string& variable_name,
+                       int& us);
+        /**
+         * Pops all the used stack spaces from the associated stack.
+         * \note All used stack space is cleared, even if not allocated by the
+         * loader.
+         */
+        ~lua_var_loader();
+        lua_State* state;
+        int& used_space;
+    };
 
   public:
     lua_value_ref(const lua_value_ref& rhs);
@@ -39,9 +62,8 @@ class lua_value_ref
     template <typename T>
     operator T() const
     {
-        load_lua_var();
+        lua_var_loader loader{m_state, m_name, used_stack_spaces};
         T result = detail::lua_value<T>::get(m_state, -1);
-        clear_used_stack_spaces();
         return result;
     }
     /**
@@ -57,10 +79,9 @@ class lua_value_ref
     template <typename T>
     lua_value_ref& operator=(const T& new_value)
     {
-        load_lua_var();
+        lua_var_loader loader{m_state, m_name, used_stack_spaces};
         detail::lua_value<T>::insert(m_state, new_value);
         set_lua_var();
-        clear_used_stack_spaces();
         return *this;
     }
     /**
@@ -143,7 +164,7 @@ class lua_value_ref
     template <typename... Args>
     lua_value_ref operator()(Args&&... args)
     {
-        load_lua_var();
+        lua_var_loader loader{m_state, m_name, used_stack_spaces};
         if (!lua_isfunction(m_state, -1)) {
             detail::lua_error("You are trying to call something that is not "
                               "neither Lua function nor C/C++ function");
@@ -157,7 +178,6 @@ class lua_value_ref
         }
         auto return_value_name = generate_return_value_name();
         lua_setfield(m_state, LUA_GLOBALSINDEX, return_value_name.c_str());
-        clear_used_stack_spaces();
         return lua_value_ref(m_state, return_value_name);
     }
     /**
@@ -409,23 +429,11 @@ class lua_value_ref
      */
     bool is_table_field() const;
     /**
-     * \brief Pushes to the top of the stack the lua variable identified by
-     * m_name
-     * \sa m_name
-     */
-    void load_lua_var() const;
-    /**
      * \brief Sets the lua variable to a new value
      * \pre The new value is already be on top of the lua stack
      * (m_state in this case).
      */
     void set_lua_var();
-    /**
-     * \brief Removes X element from the lua stack, where X is identified by
-     * used_stack_spaces;
-     * \sa used_stack_spaces
-     */
-    void clear_used_stack_spaces() const;
     /**
      * \brief Extracts the name of the field if m_name contains the name field
      * in a table e.g, TableA.Field will return Field

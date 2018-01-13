@@ -9,6 +9,54 @@ namespace luabz
 const int lua_value_ref::top = -1;
 const char lua_value_ref::lua_table_field_delimeter = '.';
 std::vector<std::function<int(lua_State*)>> lua_value_ref::registeredFunctions;
+
+lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
+                                              const std::string& variable_name,
+                                              int& us)
+  : state{st}, used_space{us}
+{
+    if (variable_name.find(lua_table_field_delimeter) != std::string::npos) {
+        auto delimeter_position =
+            variable_name.find_first_of(lua_table_field_delimeter);
+        std::string table_name = variable_name.substr(0, delimeter_position);
+        std::string field_name = variable_name.substr(delimeter_position + 1);
+        lua_getglobal(state, table_name.c_str());
+        ++used_space;
+        while (true) {
+            delimeter_position =
+                field_name.find_first_of(lua_table_field_delimeter);
+            bool field_reached = delimeter_position == std::string::npos;
+            if (field_reached) {
+                lua_getfield(state, top, field_name.c_str());
+                ++used_space;
+                return;
+            }
+            std::string parent_field_name =
+                field_name.substr(0, delimeter_position);
+            field_name = field_name.substr(delimeter_position + 1);
+            lua_getfield(state, top, parent_field_name.c_str());
+            ++used_space;
+            if (!lua_istable(state, top)) {
+                std::string error_message = parent_field_name;
+                error_message += " is not a table, and cannot contain the "
+                                 "following  fields ";
+                error_message += field_name;
+                error_message += std::to_string(used_space);
+                error_message += "\nOriginal string: ";
+                error_message += variable_name;
+                error_message += "\n";
+                detail::lua_error(error_message);
+            }
+        }
+    }
+    lua_getfield(state, LUA_GLOBALSINDEX, variable_name.c_str());
+    ++used_space;
+}
+lua_value_ref::lua_var_loader::~lua_var_loader()
+{
+    lua_pop(state, used_space);
+    used_space = 0;
+}
 lua_value_ref::lua_value_ref(lua_State* state, std::string name)
   : m_state{state}, m_name{std::move(name)}, used_stack_spaces{0}
 {
@@ -74,63 +122,21 @@ bool lua_value_ref::call_lua_operator(const lua_value_ref& rhs,
                                                           int index2)) const
 {
     int lhs_index = -2, rhs_index = -1;
-    load_lua_var();
-    rhs.load_lua_var();
+    lua_var_loader lhs_loader{m_state, m_name, used_stack_spaces};
+    lua_var_loader rhs_loader{rhs.m_state, rhs.m_name, rhs.used_stack_spaces};
     if (m_state != rhs.m_state) {
         lua_xmove(rhs.m_state, m_state, 1);
         ++used_stack_spaces;
     }
     auto result =
         static_cast<bool>(lua_operator(m_state, lhs_index, rhs_index));
-    clear_used_stack_spaces();
-    rhs.clear_used_stack_spaces();
     return result;
 }
 bool lua_value_ref::is_nil() const
 {
-    load_lua_var();
+    lua_var_loader lhs_loader{m_state, m_name, used_stack_spaces};
     auto result = static_cast<bool>(lua_isnil(m_state, top));
-    clear_used_stack_spaces();
     return result;
-}
-void lua_value_ref::load_lua_var() const
-{
-    if (is_table_field()) {
-        auto delimeter_position =
-            m_name.find_first_of(lua_table_field_delimeter);
-        std::string table_name = m_name.substr(0, delimeter_position);
-        std::string field_name = m_name.substr(delimeter_position + 1);
-        lua_getglobal(m_state, table_name.c_str());
-        ++used_stack_spaces;
-        while (true) {
-            delimeter_position =
-                field_name.find_first_of(lua_table_field_delimeter);
-            bool field_reached = delimeter_position == std::string::npos;
-            if (field_reached) {
-                lua_getfield(m_state, top, field_name.c_str());
-                ++used_stack_spaces;
-                return;
-            }
-            std::string parent_field_name =
-                field_name.substr(0, delimeter_position);
-            field_name = field_name.substr(delimeter_position + 1);
-            lua_getfield(m_state, top, parent_field_name.c_str());
-            ++used_stack_spaces;
-            if (!lua_istable(m_state, top)) {
-                std::string error_message = parent_field_name;
-                error_message += " is not a table, and cannot contain the "
-                                 "following  fields ";
-                error_message += field_name;
-                error_message += std::to_string(used_stack_spaces);
-                error_message += "\nOriginal string: ";
-                error_message += m_name;
-                error_message += "\n";
-                detail::lua_error(error_message);
-            }
-        }
-    }
-    lua_getfield(m_state, LUA_GLOBALSINDEX, m_name.c_str());
-    ++used_stack_spaces;
 }
 /**
  * \details Pops the top element from the state and sets the value of the
@@ -152,14 +158,13 @@ lua_value_ref lua_value_ref::operator[](const std::string& field_name) const
 }
 lua_value_ref lua_value_ref::operator[](const char* field_name) const
 {
-    load_lua_var();
+    lua_var_loader lhs_loader{m_state, m_name, used_stack_spaces};
     if (!lua_istable(m_state, top)) {
         luabz::detail::lua_error("What you are trying to access is not a lua "
                                  "table so it cannot be accessed as a table");
     }
     std::string full_name = m_name + lua_table_field_delimeter + field_name;
     lua_value_ref result(m_state, full_name);
-    clear_used_stack_spaces();
     return result;
 }
 bool lua_value_ref::is_table_field() const
@@ -181,26 +186,12 @@ std::string lua_value_ref::generate_return_value_name() const
     return generated_name;
 }
 /**
- *  Pops from the stack N spaces where N is determine by the member
- * variable used_stack_spaces This function should be invoked after every
- * load_lua_variable inorder to cleanup the lua stack from values that are no
- * longer in used, if this is not done sooner or later the lua's stack would not
- * have enought space and segmentation fault would be caused
- * \todo Find a better way for this function to be invoke, now every time
- * load_lua_var is invoke I have to remember to invoke this at the end
- */
-void lua_value_ref::clear_used_stack_spaces() const
-{
-    lua_pop(m_state, used_stack_spaces);
-    used_stack_spaces = 0;
-}
-/**
  * \note The index at which the function is saved inside registredFunctions
  * becomes an upvalue of the lua_CFunction
  */
 void lua_value_ref::register_function(std::size_t function_position_index)
 {
-    load_lua_var();
+    lua_var_loader lhs_loader{m_state, m_name, used_stack_spaces};
     detail::lua_value<decltype(function_position_index)>::insert(
         m_state, function_position_index);
     lua_CFunction new_value = [](lua_State* functionState) -> int {
@@ -211,6 +202,5 @@ void lua_value_ref::register_function(std::size_t function_position_index)
     };
     detail::lua_value<lua_CFunction>::insert(m_state, new_value, 1);
     set_lua_var();
-    clear_used_stack_spaces();
 }
 }  // namespace luabz

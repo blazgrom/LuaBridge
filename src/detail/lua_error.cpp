@@ -17,7 +17,7 @@ void lua_error(const std::string& error_message)
     static const char* assert_message = "A lua error was encountered, please "
                                         "check the lua_error.txt file in order "
                                         "to find out more information";
-    assert(false && assert_message);//NOLINT
+    assert(false && assert_message);  // NOLINT
 #endif
 }
 }  // namespace detail
