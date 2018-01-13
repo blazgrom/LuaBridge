@@ -34,13 +34,3 @@ TEST_F(lua_scriptF, CheckIfLuaStdIsCorrectlyLoaded)
     int variable = current_script["variable"];
     ASSERT_EQ(1213, variable);
 }
-TEST_F(lua_scriptF, CheckIfClosingAStateClearsAllDataAssociatedWithTheState)
-{
-    int a = 102;
-    script["simple_var"] = a;
-    //  script.close();
-    //  script.open();
-    //  script("simple_var_exists=simple_var==102");
-    bool simple_var_exists = script["simple_var_exists"];
-    ASSERT_FALSE(false);
-}

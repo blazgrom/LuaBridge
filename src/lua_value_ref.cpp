@@ -82,6 +82,20 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs) const
     return call_lua_operator(rhs, lua_equal);
 }
 /**
+ * We have two cases when confronting two lua_value_ref variables \n
+ * 1) Both variable are on the same script side, in this case we just simple
+ * perform load_lua_var on both variable and call lua_lessthan with the
+ * corresponding indices 2) The variables are on two different script file, in
+ * this case we first load the two variable then we perform a xmove which
+ * permits us to move data from one lua stack to another lua stack, data is
+ * moved from rhs into this.stack. Once we have performed the xmove we as always
+ * call lua_lessthan
+ */
+bool lua_value_ref::operator<(const lua_value_ref& rhs) const
+{
+    return call_lua_operator(rhs, lua_lessthan);
+}
+/**
  * Helper function for pushing the varaible associated by the this object and
  * the variable associated with the rhs object and performing a call to a
  * specific lua_operator on the previously loaded values.
