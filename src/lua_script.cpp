@@ -33,8 +33,8 @@ void lua_script::close()
             lua_value_ref::registered_functions.begin() +
             registered_function_pos);
     }
-    m_state = nullptr;
     detail::lua_state_factory::close_lua_state(m_fileName);
+    m_state = nullptr;
     m_open = false;
 }
 void lua_script::change(const std::string& file_name, bool load_lua_std)
