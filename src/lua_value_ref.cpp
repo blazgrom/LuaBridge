@@ -38,22 +38,11 @@ lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
  * this case we first load the two variable then we perform a xmove which
  * permits us to move data from one lua stack to another lua stack, data is
  * moved from rhs into this.stack. Once we have performed the xmove we as always
- * call lua_equal \todo Refactor duplication between this function and
- * operator<()
+ * call lua_equal
  */
 bool lua_value_ref::operator==(const lua_value_ref& rhs) const
 {
-    int lhs_index = -2, rhs_index = -1;
-    load_lua_var();
-    rhs.load_lua_var();
-    if (m_state != rhs.m_state) {
-        lua_xmove(rhs.m_state, m_state, 1);
-        ++used_stack_spaces;
-    }
-    auto result = static_cast<bool>(lua_equal(m_state, lhs_index, rhs_index));
-    clear_used_stack_spaces();
-    rhs.clear_used_stack_spaces();
-    return result;
+    return call_lua_operator(rhs, lua_equal);
 }
 /**
  * We have two cases when confronting two lua_value_ref variables \n
@@ -63,10 +52,24 @@ bool lua_value_ref::operator==(const lua_value_ref& rhs) const
  * this case we first load the two variable then we perform a xmove which
  * permits us to move data from one lua stack to another lua stack, data is
  * moved from rhs into this.stack. Once we have performed the xmove we as always
- * call lua_lessthan \todo Refactor duplication between this function and
- * operator=()
+ * call lua_lessthan
  */
 bool lua_value_ref::operator<(const lua_value_ref& rhs) const
+{
+    return call_lua_operator(rhs, lua_lessthan);
+}
+/**
+ * Helper function for pushing the varaible associated by the this object and
+ * the variable associated with the rhs object and performing a call to a
+ * specific lua_operator on the previously loaded values.
+ * \note All C++ operator should forward to this function when they want to
+ * perform a lua operator operation \param rhs The right hand side object we are
+ * comparing againts \param lua_operator The lua operator that must be called
+ */
+bool lua_value_ref::call_lua_operator(const lua_value_ref& rhs,
+                                      int (*lua_operator)(lua_State* l,
+                                                          int index1,
+                                                          int index2)) const
 {
     int lhs_index = -2, rhs_index = -1;
     load_lua_var();
@@ -76,7 +79,7 @@ bool lua_value_ref::operator<(const lua_value_ref& rhs) const
         ++used_stack_spaces;
     }
     auto result =
-        static_cast<bool>(lua_lessthan(m_state, lhs_index, rhs_index));
+        static_cast<bool>(lua_operator(m_state, lhs_index, rhs_index));
     clear_used_stack_spaces();
     rhs.clear_used_stack_spaces();
     return result;

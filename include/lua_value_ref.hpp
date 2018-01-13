@@ -7,9 +7,9 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include "callable_traits.hpp"
 #include "detail/lua_error.hpp"
 #include "detail/lua_value.hpp"
-#include "callable_traits.hpp"
 #include "variadic_index.hpp"
 namespace luabz
 {
@@ -421,6 +421,16 @@ class lua_value_ref
      * in a table e.g, TableA.Field will return Field
      * */
     std::string get_field_name() const;
+
+    /**
+     * Helper function for pushing the varaible associated by the this object
+     * and the variable associated with the rhs object and performing a call to
+     * a specific lua_operator on the previously loaded values
+     */
+    bool call_lua_operator(const lua_value_ref& rhs,
+                           int (*lua_operator)(lua_State* l,
+                                               int index1,
+                                               int index2)) const;
     /**
      * Assigns lua_CFunction to the variable identified by m_name.
      * This lua_CFunctions calls the function at index function_position_index
