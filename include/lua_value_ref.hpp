@@ -69,7 +69,7 @@ class lua_value_ref
      * called
      */
     template <typename T>
-    lua_value_ref& calls(T user_f)
+    void calls(T user_f)
     {
         using namespace Utils;
         registeredFunctions.emplace_back([
@@ -85,17 +85,14 @@ class lua_value_ref
         });
         auto inserted_function_position = registeredFunctions.size() - 1;
         register_function(inserted_function_position);
-        return *this;
     }
     /**
      * Registers a C++ std::function that later on can be called from lua code
      * or though lua_value_ref \param user_f The function that you want to be
      * called
-     * \todo Decide if all the 'calls' function should return a reference to
-     * this
      */
     template <typename ReturnType, typename... Args>
-    lua_value_ref& calls(std::function<ReturnType(Args...)> user_f)
+    void calls(std::function<ReturnType(Args...)> user_f)
     {
         registeredFunctions.emplace_back(
             [ this, user_function = std::move(user_f) ](lua_State*)->int {
@@ -111,7 +108,6 @@ class lua_value_ref
             });
         auto inserted_function_position = registeredFunctions.size() - 1;
         register_function(inserted_function_position);
-        return *this;
     }
     /**
      *  Registers a C++ function pointer that later on can be called from lua
@@ -119,9 +115,9 @@ class lua_value_ref
      * be called
      */
     template <typename ReturnType, typename... Args>
-    lua_value_ref& calls(ReturnType (*user_f)(Args...))
+    void calls(ReturnType (*user_f)(Args...))
     {
-        return calls(std::function<ReturnType(Args...)>(user_f));
+        calls(std::function<ReturnType(Args...)>(user_f));
     }
     /**
      * \brief Calls a registered function, it also extracts function's
