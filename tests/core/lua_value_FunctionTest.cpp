@@ -11,7 +11,6 @@ class lua_value_Function : public ::testing::Test
   
 };
 // TODO:
-// Add tests with parameters and different return types
 // Call lua function, not registered function
 TEST_F(lua_value_Function, AssignAndCallStdFunction)
 {
