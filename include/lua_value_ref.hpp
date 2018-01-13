@@ -68,13 +68,12 @@ class lua_value_ref
     }
     /**
      * \brief Operator for setting the value of the lua variable
-     * \todo Find a better way of doing the set of a variable, right now we have
-     * to load the variable even if the variable is global. Another thing that
-     * should be corrected is the case of when we are setting the value of
-     * field, seen that we use load_lua_var it pushed all the element on the
-     * path to the variable, onto the lua stack, however the last push is not
-     * necessary because we are pushing the field while the field is not needed
-     * in order to perform set put only to perform get
+     * \note In order to handle global variables and table fields with the same
+     * function, we perform an unnecessary load when assigning a value to a 
+     * global variable. Also when performing an assignment to table's field the last
+     * object we load into the stack is the field inself. This means that the table tahat contains the field
+     * will always be one position under the field e.g. 
+     * If our field is at index -1, the table of the field will be at position -2.
      */
     template <typename T>
     lua_value_ref& operator=(const T& new_value)

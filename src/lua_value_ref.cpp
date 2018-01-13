@@ -140,14 +140,16 @@ bool lua_value_ref::is_nil() const
 }
 /**
  * \details Pops the top element from the state and sets the value of the
- * variable identified by m_name to the popped value
- * \todo Find a way not to use -3 here, we have to use -3 here because when we
- * are setting a table field we load the complete path of the field thus the
- * fields is at index -2 and the table is at index -3
+ * variable identified by m_name to the popped value.
+ * \sa operator=(const T& new_value)
+ * \note The object_table_index represent the index of any user defined table for which 
+ * we want to set a field to a particular value. See operator=(const T& new_value) for why the 
+ * value is -3
  */
 void lua_value_ref::set_lua_var()
 {
-    int lua_table_index = (is_table_field()) ? -3 : LUA_GLOBALSINDEX;
+    static const int object_table_index=-3;
+    int lua_table_index = (is_table_field()) ? object_table_index : LUA_GLOBALSINDEX;
     std::string lua_variable_name =
         (is_table_field()) ? get_field_name() : m_name;
     lua_setfield(m_state, lua_table_index, lua_variable_name.c_str());
