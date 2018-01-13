@@ -8,8 +8,8 @@ namespace luabz
 {
 const int lua_value_ref::top = -1;
 const char lua_value_ref::lua_table_field_delimeter = '.';
-std::vector<std::function<int(lua_State*)>> lua_value_ref::registeredFunctions;
-
+std::vector<std::function<int(lua_State*)>> lua_value_ref::registered_functions;
+std::unordered_map<lua_State*,std::vector<int>> lua_value_ref::file_registered_functions;
 lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
                                               const std::string& variable_name,
                                               int& us)
@@ -199,7 +199,7 @@ void lua_value_ref::register_function(std::size_t function_position_index)
     lua_CFunction new_value = [](lua_State* functionState) -> int {
         int functionIndex = lua_tointeger(
             functionState, lua_upvalueindex(1));  // retrieve  upvalue
-        auto& function = registeredFunctions.at(functionIndex);
+        auto& function = registered_functions.at(functionIndex);
         return function(functionState);
     };
     detail::lua_value<lua_CFunction>::insert(m_state, new_value, 1);
