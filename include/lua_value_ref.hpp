@@ -1,14 +1,14 @@
 #ifndef LUABZ_LUA_VAL_EXPR_HPP
 #define LUABZ_LUA_VAL_EXPR_HPP
+#include <cassert>
 #include <cstddef>
 #include <functional>
 #include <lua.hpp>
-#include <unordered_map>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <cassert>
 #include "callable_traits.hpp"
 #include "detail/lua_error.hpp"
 #include "detail/lua_value.hpp"
@@ -26,9 +26,10 @@ class lua_value_ref
                                      ///< lua_value_ref to be through a
                                      ///< lua_script
     static std::vector<std::function<int(lua_State*)>>
-        registered_functions;  ///< Contains all C++ registered function that can
-                              ///< be called through lua or lua_value_ref
-    static std::unordered_map<lua_State*,std::vector<int>> file_registered_functions;
+        registered_functions;  ///< Contains all C++ registered function that
+                               ///< can be called through lua or lua_value_ref
+    static std::unordered_map<lua_State*, std::vector<int>>
+        file_registered_functions;
     /**
      * \brief RAII helper used to push to the top of the stack a specific
      * lua_variable
@@ -56,7 +57,21 @@ class lua_value_ref
   public:
     lua_value_ref(const lua_value_ref& rhs);
     ~lua_value_ref() = default;
-    lua_value_ref& operator=(const lua_value_ref& rhs);
+    /**
+     * \detail The copy c-tor is deleted because: The original was to permit to
+     * assign one lua variable to another lua variable through  C++ however,
+     * this is not possible because when we have variable from two different
+     * states we are forced to pass the data though C++, however in order for
+     * that to work any lua type must be representable in C++. AS we know table
+     * are one of the types that cannot be represented cleanly in C++. As
+     * already said the previous idea doesn't work for table, however it works
+     * for when the types of the two variables are something like string or
+     * number. Seen that most powerful feature of Lua is it's table i've decided
+     * to not give possibility to directly assign one lua variable to another
+     * lua variable through lua_value_ref. A useful workaround can be
+     * script("variableA=variableB").
+     */
+    lua_value_ref& operator=(const lua_value_ref& rhs) = delete;
     /**
      * \brief Conversion from lua_value_ref to any type T
      * \pre There must be a specialization of luabz::detail::lua_value with type
@@ -72,11 +87,12 @@ class lua_value_ref
     /**
      * \brief Operator for setting the value of the lua variable
      * \note In order to handle global variables and table fields with the same
-     * function, we perform an unnecessary load when assigning a value to a 
-     * global variable. Also when performing an assignment to table's field the last
-     * object we load into the stack is the field inself. This means that the table tahat contains the field
-     * will always be one position under the field e.g. 
-     * If our field is at index -1, the table of the field will be at position -2.
+     * function, we perform an unnecessary load when assigning a value to a
+     * global variable. Also when performing an assignment to table's field the
+     * last object we load into the stack is the field inself. This means that
+     * the table tahat contains the field will always be one position under the
+     * field e.g. If our field is at index -1, the table of the field will be at
+     * position -2.
      */
     template <typename T>
     lua_value_ref& operator=(const T& new_value)
@@ -107,7 +123,8 @@ class lua_value_ref
             return 0;
         });
         auto inserted_function_position = registered_functions.size() - 1;
-        file_registered_functions[m_state].push_back(inserted_function_position);
+        file_registered_functions[m_state].push_back(
+            inserted_function_position);
         register_function(inserted_function_position);
     }
     /**
@@ -131,7 +148,8 @@ class lua_value_ref
                 return 0;
             });
         auto inserted_function_position = registered_functions.size() - 1;
-        file_registered_functions[m_state].push_back(inserted_function_position);
+        file_registered_functions[m_state].push_back(
+            inserted_function_position);
         register_function(inserted_function_position);
     }
     /**

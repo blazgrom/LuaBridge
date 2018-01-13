@@ -39,7 +39,7 @@ class lua_script
      */
     void open(bool load_lua_std = false);
     /**
-     * \brief Closes the lua stack associated with the lua file 
+     * \brief Closes the lua stack associated with the lua file
      */
     void close();
     /**

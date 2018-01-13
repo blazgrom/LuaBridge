@@ -38,9 +38,9 @@ TEST_F(lua_scriptF, CheckIfClosingAStateClearsAllDataAssociatedWithTheState)
 {
     int a = 102;
     script["simple_var"] = a;
-  //  script.close();
-  //  script.open();
-  //  script("simple_var_exists=simple_var==102");
+    //  script.close();
+    //  script.open();
+    //  script("simple_var_exists=simple_var==102");
     bool simple_var_exists = script["simple_var_exists"];
     ASSERT_FALSE(false);
 }

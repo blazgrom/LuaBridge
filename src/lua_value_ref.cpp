@@ -9,7 +9,8 @@ namespace luabz
 const int lua_value_ref::top = -1;
 const char lua_value_ref::lua_table_field_delimeter = '.';
 std::vector<std::function<int(lua_State*)>> lua_value_ref::registered_functions;
-std::unordered_map<lua_State*,std::vector<int>> lua_value_ref::file_registered_functions;
+std::unordered_map<lua_State*, std::vector<int>>
+    lua_value_ref::file_registered_functions;
 lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
                                               const std::string& variable_name,
                                               int& us)
@@ -67,20 +68,6 @@ lua_value_ref::lua_value_ref(const lua_value_ref& rhs)
 {
 }
 /**
- * \details The copy operation uses the following logic:
- * If the variables use the same lua state we simple do getglobal setglobal in
- * order to copy the values. If the values are on two different states, we take
- * the value of rhs and push it into this->m_state and then we call setglobal
- * all while retaining the type of the value from rhs.
- * \todo Implement this operator, see how are implemented operator < and
- * operator=
- */
-lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
-{
-    detail::lua_error("Operator= not implemented\n");
-    return *this;
-}
-/**
  * We have two cases when confronting two lua_value_ref variables \n
  * 1) Both variable are on the same script side, in this case we just simple
  * perform load_lua_var on both variable and call lua_equal with the
@@ -93,20 +80,6 @@ lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
 bool lua_value_ref::operator==(const lua_value_ref& rhs) const
 {
     return call_lua_operator(rhs, lua_equal);
-}
-/**
- * We have two cases when confronting two lua_value_ref variables \n
- * 1) Both variable are on the same script side, in this case we just simple
- * perform load_lua_var on both variable and call lua_lessthan with the
- * corresponding indices 2) The variables are on two different script file, in
- * this case we first load the two variable then we perform a xmove which
- * permits us to move data from one lua stack to another lua stack, data is
- * moved from rhs into this.stack. Once we have performed the xmove we as always
- * call lua_lessthan
- */
-bool lua_value_ref::operator<(const lua_value_ref& rhs) const
-{
-    return call_lua_operator(rhs, lua_lessthan);
 }
 /**
  * Helper function for pushing the varaible associated by the this object and
@@ -142,14 +115,15 @@ bool lua_value_ref::is_nil() const
  * \details Pops the top element from the state and sets the value of the
  * variable identified by m_name to the popped value.
  * \sa operator=(const T& new_value)
- * \note The object_table_index represent the index of any user defined table for which 
- * we want to set a field to a particular value. See operator=(const T& new_value) for why the 
- * value is -3
+ * \note The object_table_index represent the index of any user defined table
+ * for which we want to set a field to a particular value. See operator=(const
+ * T& new_value) for why the value is -3
  */
 void lua_value_ref::set_lua_var()
 {
-    static const int object_table_index=-3;
-    int lua_table_index = (is_table_field()) ? object_table_index : LUA_GLOBALSINDEX;
+    static const int object_table_index = -3;
+    int lua_table_index =
+        (is_table_field()) ? object_table_index : LUA_GLOBALSINDEX;
     std::string lua_variable_name =
         (is_table_field()) ? get_field_name() : m_name;
     lua_setfield(m_state, lua_table_index, lua_variable_name.c_str());

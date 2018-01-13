@@ -4,6 +4,7 @@
 #include "lua_exception.hpp"
 #include <algorithm>
 #include <utility>
+
 namespace luabz
 {
 lua_script::lua_script() : m_state{nullptr}, m_fileName{""}, m_open{false} {}
@@ -23,17 +24,18 @@ void lua_script::open(bool load_lua_std)
 }
 void lua_script::close()
 {
-    //Remove registered C++ functions
-    auto file_registered_functions=std::move(lua_value_ref::file_registered_functions[m_state]);
+    // Remove registered C++ functions
+    auto file_registered_functions =
+        std::move(lua_value_ref::file_registered_functions[m_state]);
     lua_value_ref::file_registered_functions.erase(m_state);
-    for(auto registered_function_pos:file_registered_functions)
-    {
-        lua_value_ref::registered_functions.erase(lua_value_ref::registered_functions.begin()+registered_function_pos);
+    for (auto registered_function_pos : file_registered_functions) {
+        lua_value_ref::registered_functions.erase(
+            lua_value_ref::registered_functions.begin() +
+            registered_function_pos);
     }
     m_state = nullptr;
     detail::lua_state_factory::close_lua_state(m_fileName);
     m_open = false;
-    
 }
 void lua_script::change(const std::string& file_name, bool load_lua_std)
 {
