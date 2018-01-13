@@ -30,6 +30,9 @@ cd ../bin
 if [ $? -eq 0 ]; then
     workingprocess "All tests compile and pass."
 else
+    ls -lha
+    COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+    if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" example -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
     exit -1;
 fi
 
