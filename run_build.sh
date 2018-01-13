@@ -14,7 +14,7 @@ allert () { echo -e "${RED}$1${NC}"; }
 # Building project
 mkdir -p build
 cd build
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
 make -j8
 # Checks if last comand didn't output 0
 # $? checks what last command outputed
@@ -25,9 +25,8 @@ if [ $? -ne 0 ]; then
 	# Terminate script and outputs 3
     exit 3
 fi
-make test
-#cd ../bin
-#./luabz_tests
+cd ../bin
+./luabz_tests
 if [ $? -eq 0 ]; then
     workingprocess "All tests compile and pass."
 else
@@ -41,7 +40,7 @@ fi
 #cppcheck  --suppress=missingIncludeSystem --force --enable=all --std=c++11 --language=c++ -i gtest --quiet --error-exitcode=1  . 
 
 workingprocess "Running clang-tidy"
-#cd ../build
+cd ../build
 make clang-tidy > output.txt
 if [[ -n $(grep "warning: " output.txt) ]] || [[ -n $(grep "error: " output.txt) ]]; then
      echo "You must pass the clang tidy checks before submitting a pull request"
