@@ -35,15 +35,14 @@ workingprocess "All tests compile and pass."
 #cd ..
 #cppcheck  --suppress=missingIncludeSystem --force --enable=all --std=c++11 --language=c++ -i gtest --quiet --error-exitcode=1  . 
 
-#Uncomment if you want to run clang-tidy
-#workingprocess "Running clang-tidy"
-#cd build
-#make clang-tidy > output.txt
-#if [[ -n $(grep "warning: " output.txt) ]] || [[ -n $(grep "error: " output.txt) ]]; then
-#      echo "You must pass the clang tidy checks before submitting a pull request"
-#      echo ""
-#      grep --color -E '^|warning: |error: ' output.txt
-#      exit -1;
-#  else
-#      echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
-#fi
+workingprocess "Running clang-tidy"
+cd build
+make clang-tidy > output.txt
+if [[ -n $(grep "warning: " output.txt) ]] || [[ -n $(grep "error: " output.txt) ]]; then
+     echo "You must pass the clang tidy checks before submitting a pull request"
+     echo ""
+     grep --color -E '^|warning: |error: ' output.txt
+     exit -1;
+ else
+     echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
+fi
