@@ -3,7 +3,6 @@
 #include <chrono>
 #include <random>
 #include <utility>
-#include <cstdio>
 
 namespace luabz
 {
@@ -29,10 +28,6 @@ lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
                 field_name.find_first_of(lua_table_field_delimeter);
             bool field_reached = delimeter_position == std::string::npos;
             if (field_reached) {
-                if(state==nullptr)
-                {
-                    printf("%s \n %p",field_name.c_str(),state);
-                }
                 lua_getfield(state, top, field_name.c_str());
                 ++used_space;
                 return;
