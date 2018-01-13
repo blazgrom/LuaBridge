@@ -32,7 +32,7 @@ if [ $? -eq 0 ]; then
 else
     ls -lha
     COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
-    if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" example -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
+    if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" ./luabz_tests -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
     exit -1;
 fi
 
