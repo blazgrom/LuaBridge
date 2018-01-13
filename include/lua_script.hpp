@@ -40,8 +40,6 @@ class lua_script
     void open(bool load_lua_std = false);
     /**
      * \brief Closes the lua stack associated with the lua file
-     * \todo When the stack is closed remember to clear the registered C++
-     * functions
      */
     void close();
     /**

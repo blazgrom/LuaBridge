@@ -3,10 +3,12 @@
 #include <cstddef>
 #include <functional>
 #include <lua.hpp>
+#include <unordered_map>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <cassert>
 #include "callable_traits.hpp"
 #include "detail/lua_error.hpp"
 #include "detail/lua_value.hpp"
@@ -24,8 +26,9 @@ class lua_value_ref
                                      ///< lua_value_ref to be through a
                                      ///< lua_script
     static std::vector<std::function<int(lua_State*)>>
-        registeredFunctions;  ///< Contains all C++ registered function that can
+        registered_functions;  ///< Contains all C++ registered function that can
                               ///< be called through lua or lua_value_ref
+    static std::unordered_map<lua_State*,std::vector<int>> file_registered_functions;
     /**
      * \brief RAII helper used to push to the top of the stack a specific
      * lua_variable
@@ -92,7 +95,7 @@ class lua_value_ref
     void calls(T user_f)
     {
         using namespace Utils;
-        registeredFunctions.emplace_back([
+        registered_functions.emplace_back([
             this, user_function = std::move(user_f)
         ](lua_State*) mutable->int {
             bool correct_number_of_arguments =
@@ -103,7 +106,8 @@ class lua_value_ref
             }
             return 0;
         });
-        auto inserted_function_position = registeredFunctions.size() - 1;
+        auto inserted_function_position = registered_functions.size() - 1;
+        file_registered_functions[m_state].push_back(inserted_function_position);
         register_function(inserted_function_position);
     }
     /**
@@ -114,7 +118,7 @@ class lua_value_ref
     template <typename ReturnType, typename... Args>
     void calls(std::function<ReturnType(Args...)> user_f)
     {
-        registeredFunctions.emplace_back(
+        registered_functions.emplace_back(
             [ this, user_function = std::move(user_f) ](lua_State*)->int {
                 bool correct_number_of_arguments =
                     (lua_gettop(m_state) == sizeof...(Args));
@@ -126,7 +130,8 @@ class lua_value_ref
                 // are no return values
                 return 0;
             });
-        auto inserted_function_position = registeredFunctions.size() - 1;
+        auto inserted_function_position = registered_functions.size() - 1;
+        file_registered_functions[m_state].push_back(inserted_function_position);
         register_function(inserted_function_position);
     }
     /**
@@ -451,8 +456,8 @@ class lua_value_ref
     /**
      * Assigns lua_CFunction to the variable identified by m_name.
      * This lua_CFunctions calls the function at index function_position_index
-     * inside registeredFunctions when called. \param function_position_index
-     * the position of the function you want to call inside registeredFunctions
+     * inside registered_functions when called. \param function_position_index
+     * the position of the function you want to call inside registered_functions
      */
     void register_function(std::size_t function_position_index);
     lua_State* m_state;  ///< A lua state which represents the file with which
