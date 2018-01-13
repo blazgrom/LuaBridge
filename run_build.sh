@@ -25,8 +25,9 @@ if [ $? -ne 0 ]; then
 	# Terminate script and outputs 3
     exit 3
 fi
-cd ../bin
-./luabz_tests
+make test
+#cd ../bin
+#./luabz_tests
 if [ $? -eq 0 ]; then
     workingprocess "All tests compile and pass."
 else
@@ -40,7 +41,7 @@ fi
 #cppcheck  --suppress=missingIncludeSystem --force --enable=all --std=c++11 --language=c++ -i gtest --quiet --error-exitcode=1  . 
 
 workingprocess "Running clang-tidy"
-cd ../build
+#cd ../build
 make clang-tidy > output.txt
 if [[ -n $(grep "warning: " output.txt) ]] || [[ -n $(grep "error: " output.txt) ]]; then
      echo "You must pass the clang tidy checks before submitting a pull request"
