@@ -20,10 +20,11 @@ void lua_script::open(bool load_lua_std)
         m_open = true;
     }
 }
-void lua_script::close() noexcept
+void lua_script::close() 
 {
-    // m_stack.destroy();
-    // m_open = false;
+    detail::lua_state_factory::close_lua_state(m_fileName);
+    m_open=false;
+    m_state=nullptr;
 }
 void lua_script::change(const std::string& file_name,
                         bool load_lua_std) 

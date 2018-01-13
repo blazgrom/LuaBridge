@@ -44,7 +44,7 @@ class lua_script
      * \todo When the stack is closed remember to clear the registered C++
      * functions
      */
-    void close() noexcept;
+    void close();
     /**
      * \brief Changes the lua file associated with the object
      * \param file_name The name of the file that has to be opend
