@@ -14,7 +14,7 @@ allert () { echo -e "${RED}$1${NC}"; }
 # Building project
 mkdir -p build
 cd build
-cmak -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
 make -j8
 # Checks if last comand didn't output 0
 # $? checks what last command outputed
