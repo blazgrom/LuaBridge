@@ -39,24 +39,22 @@ TEST_F(lua_value_Function, AssignAndCallNormalFunction)
     int return_value = script["normal_function"]();
     ASSERT_TRUE(return_value == 77);
 }
-TEST_F(lua_value_Function,AssignAndCallCapturelessLambda)
+TEST_F(lua_value_Function, AssignAndCallCapturelessLambda)
 {
-    script["lambda"].calls([]() mutable  {return 666;});
-    int return_value=script["lambda"]();
-    ASSERT_TRUE(return_value==666);
+    script["lambda"].calls([]() mutable { return 666; });
+    int return_value = script["lambda"]();
+    ASSERT_TRUE(return_value == 666);
 }
-TEST_F(lua_value_Function,AssignAndCallCaptureLambda)
+TEST_F(lua_value_Function, AssignAndCallCaptureLambda)
 {
-    int r=777;
-    script["lambda_capture"].calls([r]() mutable {return r;});
-    int return_value=script["lambda_capture"]();
-    ASSERT_TRUE(return_value==r);
+    int r = 777;
+    script["lambda_capture"].calls([r]() mutable { return r; });
+    int return_value = script["lambda_capture"]();
+    ASSERT_TRUE(return_value == r);
 }
-TEST_F(lua_value_Function,CallCapturelessLambdaWithArgument)
+TEST_F(lua_value_Function, CallCapturelessLambdaWithArgument)
 {
-    script["lambda"].calls([](int a) mutable {
-        return a;
-    });
-    int return_value=script["lambda"](1000);
-    ASSERT_TRUE(1000==return_value);
+    script["lambda"].calls([](int a) mutable { return a; });
+    int return_value = script["lambda"](1000);
+    ASSERT_TRUE(1000 == return_value);
 }

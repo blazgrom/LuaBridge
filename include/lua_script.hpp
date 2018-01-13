@@ -62,6 +62,10 @@ class lua_script
      * \param name The name of the lua variable
      */
     lua_value_ref operator[](const std::string& name) const;
+    /**
+     * \brief Opens all standard Lua libraries into the associated lua file
+     */
+    void open_std() const;
 };
 }
 

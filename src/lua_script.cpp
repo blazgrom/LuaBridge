@@ -26,9 +26,10 @@ void lua_script::close() noexcept
     // m_stack.destroy();
     // m_open = false;
 }
-void lua_script::change(const std::string& file_name, bool lua_stl) noexcept
+void lua_script::change(const std::string& file_name,
+                        bool load_lua_stl) noexcept
 {
-    m_state = detail::lua_state_factory::get_lua_state(file_name, lua_stl);
+    m_state = detail::lua_state_factory::get_lua_state(file_name, load_lua_stl);
     m_open = true;
     m_fileName = file_name;
 }
@@ -42,5 +43,9 @@ void lua_script::operator()(const std::string& lua_code) const
 lua_value_ref lua_script::operator[](const std::string& name) const
 {
     return lua_value_ref{m_state, name};
+}
+void lua_script::open_std() const
+{
+    detail::lua_state_factory::open_standard_library(m_fileName);
 }
 }  // namespace luabz

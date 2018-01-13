@@ -1,6 +1,6 @@
 #include "lua_script.hpp"
-#include "gtest/gtest.h"
 #include <string>
+#include "gtest/gtest.h"
 #include "lua_test_helpers.hpp"
 
 class lua_scriptF : public ::testing::Test
@@ -30,4 +30,13 @@ TEST_F(lua_scriptF, CheckIfVariablesIsNil)
 {
     bool result = script["nil_var"].is_nil();
     ASSERT_TRUE(result);
+}
+TEST_F(lua_scriptF, CheckIfLuaStdIsCorrectlyLoaded)
+{
+    luabz::lua_script current_script(
+        construct_script_path("luascript_test.lua"));
+    current_script.open_std();
+    current_script("variable=math.floor(1213.23)");
+    int variable = current_script["variable"];
+    ASSERT_EQ(1213, variable);
 }

@@ -28,7 +28,6 @@ lua_value_ref::lua_value_ref(const lua_value_ref& rhs)
 lua_value_ref& lua_value_ref::operator=(const lua_value_ref& rhs)
 {
     detail::lua_error("Operator= not implemented\n");
-
     return *this;
 }
 /**

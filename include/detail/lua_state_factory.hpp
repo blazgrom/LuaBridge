@@ -44,6 +44,13 @@ class lua_state_factory
      */
     static lua_State* get_lua_state(const std::string& file_name,
                                     bool load_std = false);
+    /**
+     * \brief Open all standard library on a lua file
+     * \param file_name The name of the lua file
+     * \pre There must be an already opened lua state asssociated with the
+     * file_name
+     */
+    static void open_standard_library(const std::string& file_name);
 
   private:
     /**

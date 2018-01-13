@@ -61,6 +61,12 @@ lua_State* lua_state_factory::get_lua_state(const std::string& file_name,
     }
     return create_new_lua_state(file_name, load_std);
 }
+void lua_state_factory::open_standard_library(const std::string& file_name)
+{
+    lua_State* m_state = get_loaded_lua_state(file_name);
+    luaL_openlibs(m_state);
+}
+
 void lua_state_factory::set_state_globaltable(lua_State* state)
 {
     // Insert the new global table

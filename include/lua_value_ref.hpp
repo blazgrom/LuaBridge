@@ -67,18 +67,18 @@ class lua_value_ref
         clear_used_stack_spaces();
         return *this;
     }
-/**
+    /**
      *  Registers a C++ lambda that later on can be called from lua code
      * or though lua_value_ref \param user_f The function that you want to be
      * called
-    */
+     */
     template <typename T>
     lua_value_ref& calls(T user_f)
     {
         using namespace Utils;
-        registeredFunctions.emplace_back(
-        [this, user_function = std::move(user_f)]
-        (lua_State*) mutable->int {
+        registeredFunctions.emplace_back([
+            this, user_function = std::move(user_f)
+        ](lua_State*) mutable->int {
             bool correct_number_of_arguments =
                 (lua_gettop(m_state) == callable_traits<T>::args_count);
             if (correct_number_of_arguments) {
@@ -118,10 +118,10 @@ class lua_value_ref
         return *this;
     }
     /**
-     *  Registers a C++ function pointer that later on can be called from lua code
-     * or though lua_value_ref \param user_f The function that you want to be
-     * called
-    */
+     *  Registers a C++ function pointer that later on can be called from lua
+     * code or though lua_value_ref \param user_f The function that you want to
+     * be called
+     */
     template <typename ReturnType, typename... Args>
     lua_value_ref& calls(ReturnType (*user_f)(Args...))
     {
@@ -133,7 +133,8 @@ class lua_value_ref
      * function into the stack
      */
     template <typename T, typename ReturnType, typename... Args>
-    int call_registered_function(T& user_f, std::pair<ReturnType,std::tuple<Args...>>&)
+    int call_registered_function(T& user_f,
+                                 std::pair<ReturnType, std::tuple<Args...>>&)
     {
         Utils::variadric_index<Args...> index_generator;
         auto result = user_f(detail::lua_value<Args>::get(
