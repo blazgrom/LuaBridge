@@ -140,12 +140,15 @@ class lua_value_ref
      * \brief Calls a lua function or a C++ function assign to lua variable
      * \param args The arguments that are passed to the function
      * \todo Generate the name randomly
-     * \todo Check if what we want to call is a function
      */
     template <typename... Args>
     lua_value_ref operator()(Args&&... args)
     {
         load_lua_var();
+        if(!lua_isfunction(m_state,-1))
+        {
+            detail::lua_error("You are trying to call something that is not neither Lua function nor C/C++ function");
+        }
         insert_function_parameters(std::forward<Args>(args)...);
         used_stack_spaces += sizeof...(Args);
         const int input_count = sizeof...(Args);
