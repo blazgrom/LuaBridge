@@ -1,18 +1,19 @@
 #include "detail/lua_state_factory.hpp"
-#include <unordered_map>
 #include "detail/lua_error.hpp"
+#include <unordered_map>
 namespace luabz
 {
 namespace detail
 {
-static std::unordered_map<std::string, lua_State*> active_lua_states;  ///< Contains
-                                                                ///< all the lua
-                                                                ///< states
-                                                                ///< connected
-                                                                ///< to an
-                                                                ///< already
-                                                                ///< open lua
-                                                                ///< file
+static std::unordered_map<std::string, lua_State*>
+    active_lua_states;  ///< Contains
+                        ///< all the lua
+                        ///< states
+                        ///< connected
+                        ///< to an
+                        ///< already
+                        ///< open lua
+                        ///< file
 lua_State* lua_state_factory::get_loaded_lua_state(const std::string& file_name)
 {
     return active_lua_states[file_name];
@@ -22,8 +23,7 @@ lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,
                                                    bool load_std)
 {
     lua_State* state = luaL_newstate();
-    if(state==NULL)
-    {
+    if (state == nullptr) {
         lua_error("Cannot create a new lua_State");
     }
     if (luaL_dofile(state, file_name.c_str())) {
@@ -32,7 +32,7 @@ lua_State* lua_state_factory::create_new_lua_state(const std::string& file_name,
     if (load_std) {
         luaL_openlibs(state);
     }
-    active_lua_states[file_name]=state;
+    active_lua_states[file_name] = state;
     return state;
 }
 lua_State* lua_state_factory::get_lua_state(const std::string& file_name,
@@ -52,7 +52,7 @@ void lua_state_factory::open_standard_library(const std::string& file_name)
 }
 void lua_state_factory::close_lua_state(const std::string& file_name)
 {
-    lua_State* state=get_loaded_lua_state(file_name);
+    lua_State* state = get_loaded_lua_state(file_name);
     lua_close(state);
     active_lua_states.erase(file_name);
 }

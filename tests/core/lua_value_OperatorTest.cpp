@@ -6,8 +6,7 @@
 class lua_value_Operator : public ::testing::Test
 {
   public:
-        luabz::lua_script script{construct_script_path("luascript_test.lua")};
-
+    luabz::lua_script script{construct_script_path("luascript_test.lua")};
 };
 TEST_F(lua_value_Operator, OperatorEqualsBetweenTwoLuaValuesFromSameFile)
 {

@@ -8,7 +8,6 @@ class lua_value_Function : public ::testing::Test
 {
   public:
     luabz::lua_script script{construct_script_path("luascript_test.lua")};
-  
 };
 // TODO:
 // Call lua function, not registered function

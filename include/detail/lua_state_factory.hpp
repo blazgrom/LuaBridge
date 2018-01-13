@@ -14,8 +14,8 @@ namespace detail
  *
  * The generation of new lua states uses the following logic.
  * For each lua file we want to open we create a new lua state. The state
- * is closed only when explicitly required by the lua_script object, this permits us to 
- * share the same lua file between multiple lua_script object.
+ * is closed only when explicitly required by the lua_script object, this
+ * permits us to share the same lua file between multiple lua_script object.
  */
 class lua_state_factory
 {
@@ -26,8 +26,8 @@ class lua_state_factory
      * \param file_name The name of the lua file on which the new lua state
      * \param load_std Whether or not to load lua's std
      * operates
-     * \note If there is an already opened lua state associated with file_name thats the one thats
-     * returned, otherwise a new lua state is created
+     * \note If there is an already opened lua state associated with file_name
+     * thats the one thats returned, otherwise a new lua state is created
      */
     static lua_State* get_lua_state(const std::string& file_name,
                                     bool load_std = false);
@@ -36,15 +36,17 @@ class lua_state_factory
      * \param file_name The name of the lua file
      * \pre There must be an already opened lua state asssociated with the
      * file_name
-     * \param file_name The name of the lua file inside which we want to open the standard library
+     * \param file_name The name of the lua file inside which we want to open
+     * the standard library
      */
     static void open_standard_library(const std::string& file_name);
     /**
-     * \brief Closes the lua_State associated with file_name, thus destroying all object in
-     * the givedn lua_State and frees all dynamica memory used by the state
-     * \pre There must be an already opened lua state asscociated with the file_name
-     * \param file_name The name of the file for which we want to close the lua state
-    */
+     * \brief Closes the lua_State associated with file_name, thus destroying
+     * all object in the givedn lua_State and frees all dynamica memory used by
+     * the state \pre There must be an already opened lua state asscociated with
+     * the file_name \param file_name The name of the file for which we want to
+     * close the lua state
+     */
     static void close_lua_state(const std::string& file_name);
 
   private:

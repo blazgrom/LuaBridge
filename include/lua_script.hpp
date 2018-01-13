@@ -37,7 +37,7 @@ class lua_script
      * parameters \n if you want to change the associated lua file use change
      * \param lua_stl Load lua's standard library
      */
-    void open(bool lua_stl = false);
+    void open(bool load_lua_std = false);
     /**
      * \brief Closes the lua stack associated with the lua file
      * \todo When the stack is closed remember to clear the registered C++
@@ -49,7 +49,7 @@ class lua_script
      * \param file_name The name of the file that has to be opend
      * \param lua_stl Load lua's standard library
      */
-    void change(const std::string& file_name, bool lua_stl = false);
+    void change(const std::string& file_name, bool load_lua_std = false);
     /**
      * \brief Runs any piece of lua code on the file passed in input
      * \param lua_code The string contain lua code

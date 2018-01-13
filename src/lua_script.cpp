@@ -1,8 +1,8 @@
 #include "lua_script.hpp"
-#include <algorithm>
 #include "detail/lua_error.hpp"
 #include "detail/lua_state_factory.hpp"
 #include "lua_exception.hpp"
+#include <algorithm>
 
 namespace luabz
 {
@@ -16,18 +16,18 @@ lua_script::lua_script(const std::string& file, bool lua_stl)
 void lua_script::open(bool load_lua_std)
 {
     if (!m_open) {
-        m_state = detail::lua_state_factory::get_lua_state(m_fileName, load_lua_std);
+        m_state =
+            detail::lua_state_factory::get_lua_state(m_fileName, load_lua_std);
         m_open = true;
     }
 }
-void lua_script::close() 
+void lua_script::close()
 {
     detail::lua_state_factory::close_lua_state(m_fileName);
-    m_open=false;
-    m_state=nullptr;
+    m_open = false;
+    m_state = nullptr;
 }
-void lua_script::change(const std::string& file_name,
-                        bool load_lua_std) 
+void lua_script::change(const std::string& file_name, bool load_lua_std)
 {
     m_state = detail::lua_state_factory::get_lua_state(file_name, load_lua_std);
     m_open = true;
