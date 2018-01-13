@@ -26,7 +26,8 @@ if [ $? -ne 0 ]; then
     exit 3
 fi
 cd ../bin
- ./luabz_tests
+./luabz_tests  --gtest_filter=lua_value_TableTest.*
+# ./luabz_tests
 if [ $? -eq 0 ]; then
     workingprocess "All tests compile and pass."
 else

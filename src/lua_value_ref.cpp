@@ -26,7 +26,7 @@ lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
         while (true) {
             delimeter_position =
                 field_name.find_first_of(lua_table_field_delimeter);
-            bool field_reached = delimeter_position == std::string::npos;
+            bool field_reached = (delimeter_position == std::string::npos);
             if (field_reached) {
                 lua_getfield(state, top, field_name.c_str());
                 ++used_space;
