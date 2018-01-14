@@ -110,7 +110,7 @@ int main()
 }
 ```
 #### Dependencies
-* Lua 
+* Lua 5.1
 * [Utils](https://github.com/blazgrom/Utils)
 #### Building
 1. mkdir build && cd build
