@@ -37,14 +37,14 @@ if [ $? -ne 0 ]; then
     exit 3
 fi
 cd ../bin
-run_tests lua_scriptF
-run_tests lua_value_Get
-run_tests lua_value_Operator
-run_tests lua_value_Set
-run_tests lua_value_TableTest
-run_tests lua_value_Test
-run_tests lua_value_Function
-
+# run_tests lua_scriptF
+# run_tests lua_value_Get
+# run_tests lua_value_Operator
+# run_tests lua_value_Set
+# run_tests lua_value_TableTest
+# run_tests lua_value_Test
+# run_tests lua_value_Function
+./luabz_tests
 
 #Uncomment if you want to run cppcheck
 #workingprocess "Running cppcheck"
