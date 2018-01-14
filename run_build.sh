@@ -10,7 +10,17 @@ error() { >&2 echo -e "${RED}$1${NC}"; }
 showinfo() { echo -e "${BG}$1${NC}"; }
 workingprocess() { echo -e "${BB}$1${NC}"; }
 allert () { echo -e "${RED}$1${NC}"; }
-
+function run_tests()
+{
+    ./luabz_tests --gtest_filter=$1.*
+    if [ $? -eq 0 ]; then
+    workingprocess "All tests compile and pass."
+    else
+        COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+        if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" ./luabz_tests -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
+        exit -1;
+    fi
+}
 # Building project
 mkdir -p build
 cd build
@@ -26,16 +36,14 @@ if [ $? -ne 0 ]; then
     exit 3
 fi
 cd ../bin
-#./luabz_tests  --gtest_filter=lua_value_TableTest.*
- ./luabz_tests
-if [ $? -eq 0 ]; then
-    workingprocess "All tests compile and pass."
-else
-    ls -lha
-    COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
-    if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" ./luabz_tests -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
-    exit -1;
-fi
+run_tests lua_value_TableTest
+run_tests lua_value_Test
+run_tests lua_value_FunctionTest
+run_tests lua_value_GetTest
+run_tests lua_value_OperatorTest
+run_tests lua_value_SetTest
+run_tests lua_script_Test
+
 
 #Uncomment if you want to run cppcheck
 #workingprocess "Running cppcheck"
