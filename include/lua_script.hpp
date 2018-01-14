@@ -1,5 +1,7 @@
 #ifndef LUABZ_LUA_SCRIPT_HPP
 #define LUABZ_LUA_SCRIPT_HPP
+#include "lua.hpp"
+#include "lua_value_ref.hpp"
 #include <cassert>
 #include <functional>
 #include <string>
@@ -7,8 +9,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "lua.hpp"
-#include "lua_value_ref.hpp"
 namespace luabz
 {
 /**

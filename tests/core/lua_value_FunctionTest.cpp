@@ -1,6 +1,6 @@
+#include "gtest/gtest.h"
 #include <functional>
 #include <string>
-#include "gtest/gtest.h"
 
 #include "lua_script.hpp"
 #include "lua_test_helpers.hpp"
@@ -8,18 +8,19 @@ class lua_value_Function : public ::testing::Test
 {
   public:
     luabz::lua_script script{construct_script_path("luascript_test.lua")};
+    void TearDown() override { script.close(); }
 };
 
-// TEST_F(lua_value_Function,
-//        AfterClosingTheLuaScriptTheRegisteredFunctionsAreRemoved)
-// {
-//     script["lambda"].calls([](int a) mutable { return a; });
-//     script.close();
-//     script.open();
-//     script["lambda"].calls([](int a) mutable { return a * 2; });
-//     int return_value = script["lambda"](1000);
-//     ASSERT_TRUE(2000 == return_value);
-// }
+TEST_F(lua_value_Function,
+       AfterClosingTheLuaScriptTheRegisteredFunctionsAreRemoved)
+{
+    script["lambda"].calls([](int a) mutable { return a; });
+    script.close();
+    script.open();
+    script["lambda"].calls([](int a) mutable { return a * 2; });
+    int return_value = script["lambda"](1000);
+    ASSERT_TRUE(2000 == return_value);
+}
 TEST_F(lua_value_Function, AssignAndCallStdFunction)
 {
     auto result = false;

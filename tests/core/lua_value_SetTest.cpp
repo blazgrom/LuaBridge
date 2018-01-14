@@ -1,12 +1,13 @@
-#include <string>
-#include "gtest/gtest.h"
 #include "lua_script.hpp"
 #include "lua_test_helpers.hpp"
+#include "gtest/gtest.h"
+#include <string>
 
 class lua_value_Set : public ::testing::Test
 {
   public:
     luabz::lua_script script{construct_script_path("luascript_test.lua")};
+    void TearDown() override { script.close(); }
 };
 TEST_F(lua_value_Set, LuaVarFromCppBool)
 {

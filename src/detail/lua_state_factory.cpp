@@ -54,6 +54,8 @@ void lua_state_factory::close_lua_state(const std::string& file_name)
 {
     lua_State* state = get_loaded_lua_state(file_name);
     lua_close(state);
+    state = nullptr;
+    active_lua_states[file_name] = state;
     active_lua_states.erase(file_name);
 }
 

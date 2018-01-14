@@ -24,7 +24,6 @@ void lua_script::open(bool load_lua_std)
 }
 void lua_script::close()
 {
-    
     detail::lua_state_factory::close_lua_state(m_fileName);
     // Remove registered C++ functions
     auto file_registered_functions =

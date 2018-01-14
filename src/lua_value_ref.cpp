@@ -14,7 +14,7 @@ std::unordered_map<lua_State*, std::vector<int>>
 lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
                                               const std::string& variable_name,
                                               int& us)
-  : state{st}, used_space{us}
+  : state{st}, used_space{us}, starting_used_space{us}
 {
     if (variable_name.find(lua_table_field_delimeter) != std::string::npos) {
         auto delimeter_position =
@@ -55,7 +55,7 @@ lua_value_ref::lua_var_loader::lua_var_loader(lua_State* st,
 }
 lua_value_ref::lua_var_loader::~lua_var_loader()
 {
-    lua_pop(state, used_space);
+    lua_pop(state, (used_space - starting_used_space));
     used_space = 0;
 }
 lua_value_ref::lua_value_ref(lua_State* state, std::string name)

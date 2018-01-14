@@ -13,19 +13,19 @@ allert () { echo -e "${RED}$1${NC}"; }
 function run_tests()
 {
     workingprocess "Running test"
-    ./luabz_tests --gtest_filter=$1.*
+    ./$1
     if [ $? -eq 0 ]; then
     workingprocess "All tests compile and pass."
     else
         COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
-        if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" ./luabz_tests -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
+        if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" ./$1 -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
         exit -1;
     fi
 }
 # Building project
 mkdir -p build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_CLANG_TIDY=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
 make -j8
 # Checks if last comand didn't output 0
 # $? checks what last command outputed
@@ -37,14 +37,7 @@ if [ $? -ne 0 ]; then
     exit 3
 fi
 cd ../bin
-# run_tests lua_scriptF
-# run_tests lua_value_Get
-# run_tests lua_value_Operator
-# run_tests lua_value_Set
-# run_tests lua_value_TableTest
-# run_tests lua_value_Test
-# run_tests lua_value_Function
-./luabz_tests
+run_tests luabz_tests
 
 #Uncomment if you want to run cppcheck
 #workingprocess "Running cppcheck"
