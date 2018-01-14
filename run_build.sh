@@ -12,6 +12,7 @@ workingprocess() { echo -e "${BB}$1${NC}"; }
 allert () { echo -e "${RED}$1${NC}"; }
 function run_tests()
 {
+    workingprocess "Running test"
     ./luabz_tests --gtest_filter=$1.*
     if [ $? -eq 0 ]; then
     workingprocess "All tests compile and pass."
@@ -36,13 +37,13 @@ if [ $? -ne 0 ]; then
     exit 3
 fi
 cd ../bin
+run_tests lua_scriptF
+run_tests lua_value_Function
+run_tests lua_value_Get
+run_tests lua_value_Operator
+run_tests lua_value_Set
 run_tests lua_value_TableTest
 run_tests lua_value_Test
-run_tests lua_value_FunctionTest
-run_tests lua_value_GetTest
-run_tests lua_value_OperatorTest
-run_tests lua_value_SetTest
-run_tests lua_script_Test
 
 
 #Uncomment if you want to run cppcheck
