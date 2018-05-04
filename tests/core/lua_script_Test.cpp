@@ -1,15 +1,15 @@
-#include "lua_script.hpp"
+#include "luabz.hpp"
 #include "lua_test_helpers.hpp"
 #include "gtest/gtest.h"
+#include <iostream>
 #include <string>
-
-class lua_scriptF : public ::testing::Test
+class scriptF : public ::testing::Test
 {
   public:
-    luabz::lua_script script{construct_script_path("luascript_test.lua")};
+    luabz::script script{construct_script_path("luascript_test.lua")};
     void TearDown() override { script.close(); }
 };
-TEST_F(lua_scriptF, ExecuteLuaCodeFromCppString)
+TEST_F(scriptF, ExecuteLuaCodeFromCppString)
 {
     std::string code = R"(variable=1;)"
                        R"(function increment(input) )"
@@ -21,17 +21,15 @@ TEST_F(lua_scriptF, ExecuteLuaCodeFromCppString)
     int variable = script["variable"];
     ASSERT_EQ(2, variable);
 }
-TEST_F(lua_scriptF, CheckIfVariablesIsNil)
+TEST_F(scriptF, CheckIfVariablesIsNil)
 {
     bool result = script["nil_var"].is_nil();
     ASSERT_TRUE(result);
 }
-TEST_F(lua_scriptF, CheckIfLuaStdIsCorrectlyLoaded)
+TEST_F(scriptF, CheckIfLuaStdIsCorrectlyLoaded)
 {
-    luabz::lua_script current_script(
-        construct_script_path("luascript_test.lua"));
-    current_script.open_std();
-    current_script("variable=math.floor(1213.23)");
-    int variable = current_script["variable"];
+    script.open_std();
+    script("variable=math.floor(1213.23)");
+    int variable = script["variable"];
     ASSERT_EQ(1213, variable);
 }

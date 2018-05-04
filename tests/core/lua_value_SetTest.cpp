@@ -1,32 +1,32 @@
-#include "lua_script.hpp"
+#include "luabz.hpp"
 #include "lua_test_helpers.hpp"
 #include "gtest/gtest.h"
 #include <string>
 
-class lua_value_Set : public ::testing::Test
+class value_Set : public ::testing::Test
 {
   public:
-    luabz::lua_script script{construct_script_path("luascript_test.lua")};
+    luabz::script script{construct_script_path("luascript_test.lua")};
     void TearDown() override { script.close(); }
 };
-TEST_F(lua_value_Set, LuaVarFromCppBool)
+TEST_F(value_Set, LuaVarFromCppBool)
 {
     script["boolt_var"] = false;
     ASSERT_FALSE(script["boolt_var"]);
 }
-TEST_F(lua_value_Set, LuaVarFromCppBoolExpression)
+TEST_F(value_Set, LuaVarFromCppBoolExpression)
 {
     script["boolt_var"] = (1 == 0);
     ASSERT_FALSE(script["boolt_var"]);
 }
-TEST_F(lua_value_Set, LuaVarFromCppString)
+TEST_F(value_Set, LuaVarFromCppString)
 {
     std::string new_value = "This is the new value for the lua string";
     script["string_var"] = new_value;
     std::string actual = script["string_var"];
     ASSERT_TRUE(new_value == actual);
 }
-TEST_F(lua_value_Set, LuaVarFromCppChar)
+TEST_F(value_Set, LuaVarFromCppChar)
 {
     char expected = 'Z';
     script["string_var"] = expected;
@@ -34,7 +34,7 @@ TEST_F(lua_value_Set, LuaVarFromCppChar)
     ASSERT_TRUE(expected == actual);
 }
 
-TEST_F(lua_value_Set, LuaVarFromCppLongLong)
+TEST_F(value_Set, LuaVarFromCppLongLong)
 {
     long expected = 666;
     script["integer_var"] = expected;
@@ -42,14 +42,14 @@ TEST_F(lua_value_Set, LuaVarFromCppLongLong)
     ASSERT_EQ(expected, actual);
 }
 
-TEST_F(lua_value_Set, LuaVarFromCppUnsignedLongLong)
+TEST_F(value_Set, LuaVarFromCppUnsignedLongLong)
 {
     unsigned long long expected = 666;
     script["integer_var"] = expected;
     unsigned long long actual = script["integer_var"];
     ASSERT_EQ(expected, actual);
 }
-TEST_F(lua_value_Set, LuaVarFromCppLong)
+TEST_F(value_Set, LuaVarFromCppLong)
 {
     long expected = 666;
     script["integer_var"] = expected;
@@ -57,14 +57,14 @@ TEST_F(lua_value_Set, LuaVarFromCppLong)
     ASSERT_EQ(expected, actual);
 }
 
-TEST_F(lua_value_Set, LuaVarFromCppUnsignedLong)
+TEST_F(value_Set, LuaVarFromCppUnsignedLong)
 {
     unsigned long expected = 666;
     script["integer_var"] = expected;
     unsigned long actual = script["integer_var"];
     ASSERT_EQ(expected, actual);
 }
-TEST_F(lua_value_Set, LuaVarFromCppInteger)
+TEST_F(value_Set, LuaVarFromCppInteger)
 {
     int expected = 666;
     script["integer_var"] = expected;
@@ -72,7 +72,7 @@ TEST_F(lua_value_Set, LuaVarFromCppInteger)
     ASSERT_EQ(expected, actual);
 }
 
-TEST_F(lua_value_Set, LuaVarFromCppUnsignedInteger)
+TEST_F(value_Set, LuaVarFromCppUnsignedInteger)
 {
     unsigned int expected = 666;
     script["integer_var"] = expected;
@@ -80,35 +80,20 @@ TEST_F(lua_value_Set, LuaVarFromCppUnsignedInteger)
     ASSERT_EQ(expected, actual);
 }
 
-TEST_F(lua_value_Set, LuaVarFromCppShort)
-{
-    short expected = 666;
-    script["integer_var"] = expected;
-    short actual = script["integer_var"];
-    ASSERT_EQ(expected, actual);
-}
-
-TEST_F(lua_value_Set, LuaVarFromCppUnsignedShort)
-{
-    unsigned short expected = 666;
-    script["integer_var"] = expected;
-    unsigned short actual = script["integer_var"];
-    ASSERT_EQ(expected, actual);
-}
-TEST_F(lua_value_Set, LuaVarFromCppDouble)
+TEST_F(value_Set, LuaVarFromCppDouble)
 {
     script["double_var"] = 10.132265;
     double double_var = script["double_var"];
     ASSERT_DOUBLE_EQ(10.132265, double_var);
 }
-TEST_F(lua_value_Set, LuaVarFromCppFloat)
+TEST_F(value_Set, LuaVarFromCppFloat)
 {
     float expected = 10.132265f;
     script["double_var"] = expected;
     float actual = script["double_var"];
     ASSERT_FLOAT_EQ(expected, actual);
 }
-TEST_F(lua_value_Set, AssignNilToLuaVariable)
+TEST_F(value_Set, AssignNilToLuaVariable)
 {
     script["double_var"] = nullptr;
     ASSERT_TRUE(script["double_var"].is_nil());

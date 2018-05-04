@@ -14,12 +14,12 @@ mytable={
 };
 ```
 ```cpp
-#include "lua_script.hpp"
+#include "script.hpp"
 
 int main()
 {
 
-  luabz::lua_script my_script("my_script.lua")
+  luabz::script my_script("my_script.lua")
   int variable=my_script["variable"]; //Getting the value of a global Lua variable
   int mytable_variable=my_script["my_table"]["variable"]; // Getting the value of a Lua table's field
   return 0;
@@ -36,12 +36,12 @@ mytable={
 ```
 
 ```cpp
-#include "lua_script.hpp"
+#include "script.hpp"
 
 int main()
 {
 
-  luabz::lua_script my_script("my_script.lua")
+  luabz::script my_script("my_script.lua")
   my_script["variable"]=1;//Setting global varialbe
   my_script["my_table"]["variable"]=1; // Setting the value of a Lua table's field
   return 0;
@@ -50,12 +50,12 @@ int main()
 
 #### Run any Lua code
 ```cpp
-#include "lua_script.hpp"
+#include "script.hpp"
 
 int main()
 {
 
-  luabz::lua_script my_script("my_script.lua")
+  luabz::script my_script("my_script.lua")
   my_script("Your Lua code");
   return 0;
 }
@@ -63,29 +63,29 @@ int main()
 
 #### Registering a std::function to be called from lua
 ```cpp
-#include "lua_script.hpp"
+#include "script.hpp"
 int main()
 {
-  luabz::lua_script my_script("my_script.lua")
+  luabz::script my_script("my_script.lua")
   std::function<int()> f = [&]() {
         return 100;
     };
-  my_script["std_function"].calls(f);
+  my_script["std_function"].assign(f);
   int result=script["std_function"](); //100
   return 0;
 }
 ```
 #### Registering a normal function to be called from lua
 ```cpp
-#include "lua_script.hpp"
+#include "script.hpp"
 int normal_function()
 {
     return 77;
 }
 int main()
 {
-  luabz::lua_script my_script("my_script.lua")
-  my_script["normal_function"].calls(normal_function);
+  luabz::script my_script("my_script.lua")
+  my_script["normal_function"].assign(normal_function);
   int result =script["normal_function"](); //77
 
   return 0;
@@ -94,15 +94,15 @@ int main()
 
 #### Registering a C++ lambda to be called from lua
 ```cpp
-#include "lua_script.hpp"
+#include "script.hpp"
 int normal_function()
 {
     return 77;
 }
 int main()
 {
-  luabz::lua_script my_script("my_script.lua")
-  script["lambda"].calls([](int a) mutable {
+  luabz::script my_script("my_script.lua")
+  script["lambda"].assign([](int a) mutable {
       return a;
   });
   int result =script["lambda"](1000); //1000

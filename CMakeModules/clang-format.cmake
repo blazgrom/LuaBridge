@@ -1,6 +1,3 @@
-#----------------------
-#       Clang format
-#----------------------
 find_program(CLANG_F clang-format)
 if(CLANG_F)
     message(STATUS "clang-format - code formatting                      YES")

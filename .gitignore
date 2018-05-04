@@ -323,4 +323,4 @@ docs/
 #Data
 data/
 #Error
-lua_error.txt
+error.txt

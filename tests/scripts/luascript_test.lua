@@ -12,6 +12,13 @@ Position={
     z=3
 };
 
+function single_return (i)
+    return i;
+end
+function multiple_returns(a,b)
+    return a,b;
+end
+
 TableLevelOne={
     x=false,
     TableLevelTwo={

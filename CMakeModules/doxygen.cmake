@@ -1,6 +1,3 @@
-#--------------------
-#   Doxygen
-#--------------------
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     message(STATUS "Doxygen - documentation generator                YES ")

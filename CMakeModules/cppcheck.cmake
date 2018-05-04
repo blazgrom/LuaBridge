@@ -9,11 +9,7 @@ if(CPPCHECK_PATH)
     --force
     --suppress=missingIncludeSystem
     --library=windows,posix,gnu
-    -I ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include/*/*.h
-    ${CMAKE_SOURCE_DIR}/include/*/*.hpp    
-    ${CMAKE_SOURCE_DIR}/src/*.cpp
-    ${CMAKE_SOURCE_DIR}/src/*/*.cpp
+    -I ${CMAKE_SOURCE_DIR}/include/*.hpp ${CMAKE_SOURCE_DIR}/include/*/*.hpp
     2> result.xml &&
     cppcheck-htmlreport
     --source-encoding="iso8859-1"
