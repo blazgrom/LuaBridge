@@ -1,9 +1,8 @@
 #pragma once
-#include "callable_traits.hpp"
+#include "traits/callable_traits.hpp"
 #include "error.hpp"
 #include "value.hpp"
 #include "var_loader.hpp"
-#include "variadic_index.hpp"
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -85,7 +84,7 @@ class var_ref
      * position -2.
      */
     template <typename T>
-    var_ref& operator=(const T& new_value);
+    var_ref& operator=(T value);
 
     /**
      * \brief Operator= between var_ref and any type T
@@ -247,18 +246,18 @@ class var_ref
     template <typename... Results, std::size_t... I>
     std::tuple<Results...> get_function_result(std::index_sequence<I...>&&);
 };
-// assign
 
 template <typename T>
 void var_ref::assign(T user_f)
 {
-    using namespace Utils;
-    std::function<int(lua_State*)> f = [this, user_function =
-                                                  std::move(user_f)](lua_State*) mutable -> int {
+    using namespace utilitybz;
+    std::function<int(lua_State*)> f = [this, user_function =std::move(user_f)](lua_State*) {
+       
         constexpr std::size_t args_count = callable_traits<T>::args_count;
         bool correct_number_of_arguments = (lua_gettop(m_state) == args_count);
+
         if (correct_number_of_arguments) {
-            std::pair<callable_return_type<T>, callable_arg_types<T>> t{};
+            std::pair<callable_return_type_t<T>, callable_args_types_t<T>> t{};
             return call_registered_function(user_function, t,
                                             std::make_index_sequence<args_count>());
         }
@@ -270,10 +269,11 @@ void var_ref::assign(T user_f)
 template <typename Class, typename ReturnType, typename... Args>
 void var_ref::assign(Class* obj, ReturnType (Class::*member)(Args...))
 {
-    std::function<int(lua_State*)> f = [this, object = obj,
-                                        member_function = std::move(member)](lua_State*) -> int {
+    std::function<int(lua_State*)> f = [this, object = obj,member_function = std::move(member)](lua_State*){
+        
         constexpr std::size_t args_count = sizeof...(Args);
         bool correct_number_of_arguments = (lua_gettop(m_state) == args_count);
+        
         if (correct_number_of_arguments) {
             std::pair<ReturnType, std::tuple<Args...>> t{};
             return call_registered_function(object, member_function, t,
@@ -342,7 +342,7 @@ std::tuple<Results...> var_ref::call(Args&&... args)
 }
 
 template <typename T>
-var_ref& var_ref::operator=(const T& new_value)
+var_ref& var_ref::operator=(T new_value)
 {
     var_loader loader(m_state, m_name);
     value<T>::insert(m_state, new_value);
@@ -453,7 +453,6 @@ int var_ref::call_registered_function(T& user_f,
                                             std::pair<ReturnType, std::tuple<Args...>>&,
                                             std::index_sequence<I...>&&)
 {
-    Utils::variadric_index<Args...> index_generator;
     std::negate<int> negate;
     auto result = user_f(
         value<typename std::decay<Args>::type>::get(m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);

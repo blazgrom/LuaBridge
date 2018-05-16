@@ -43,6 +43,5 @@ endif()
 
 
 add_subdirectory(tests)
-add_subdirectory(benchmark)
 #Add support for iwyu
 #Replace googletest with catch

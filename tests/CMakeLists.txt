@@ -10,5 +10,5 @@ set_target_properties(${PROJECT_TESTS} PROPERTIES
                         CXX_STANDARD_REQUIRED YES
                         CXX_EXTENSIONS NO
                     )
-target_include_directories(${PROJECT_TESTS} PUBLIC "${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}/utilitybz"  ${LUA_INCLUDE_DIR})
+target_include_directories(${PROJECT_TESTS} PUBLIC "${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}/utilitybz/include"  ${LUA_INCLUDE_DIR})
 target_link_libraries(${PROJECT_TESTS}  ${LUA_LIBRARIES}  libgtest libgtest_main)
