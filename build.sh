@@ -27,6 +27,8 @@ mkdir -p build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_CLANG_TIDY=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  -DENABLE_CODE_COVERAGE=ON ..
 make -j8
+cd ../bin
+rm -f luabz
 # Checks if last comand didn't output 0
 # $? checks what last command outputed
 # If output is 0 then command is succesfuly executed
@@ -43,7 +45,7 @@ run_tests luabz_tests
 #workingprocess "Running cppcheck"
 #cppcheck --version
 #cd ..
-#cppcheck  --suppress=missingIncludeSystem --force --enable=all --std=c++11 --language=c++ -i gtest --quiet --error-exitcode=1  . 
+#cppcheck  --suppress=missingIncludeSystem --force --enable=all --std=c++11 --language=c++ -i gtest --quiet --error-exitcode=1  .
 
 workingprocess "Running clang-tidy"
 cd ../build

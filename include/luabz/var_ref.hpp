@@ -1,6 +1,6 @@
 #pragma once
-#include "traits/callable_traits.hpp"
 #include "error.hpp"
+#include "traits/callable_traits.hpp"
 #include "value.hpp"
 #include "var_loader.hpp"
 #include <chrono>
@@ -147,7 +147,7 @@ class var_ref
         var_loader loader(m_state, m_name);
         if (!lua_istable(m_state, -1)) {
             luabz::error("What you are trying to access is not a lua "
-                                     "table so it cannot be accessed as a table");
+                         "table so it cannot be accessed as a table");
         }
         std::string full_name = m_name + '.' + field_name;
         var_ref result(m_state, full_name);
@@ -233,7 +233,7 @@ class var_ref
 
     template <typename... Args>
     void call_lua_function(size_t output_count, Args&&... args);
-    
+
     // TODO:Find better way of doing this
     template <typename T, typename... Args>
     void insert_function_parameters(T&& value, Args&&... args);
@@ -251,8 +251,7 @@ template <typename T>
 void var_ref::assign(T user_f)
 {
     using namespace utilitybz;
-    std::function<int(lua_State*)> f = [this, user_function =std::move(user_f)](lua_State*) {
-       
+    std::function<int(lua_State*)> f = [this, user_function = std::move(user_f)](lua_State*) {
         constexpr std::size_t args_count = callable_traits<T>::args_count;
         bool correct_number_of_arguments = (lua_gettop(m_state) == args_count);
 
@@ -269,11 +268,11 @@ void var_ref::assign(T user_f)
 template <typename Class, typename ReturnType, typename... Args>
 void var_ref::assign(Class* obj, ReturnType (Class::*member)(Args...))
 {
-    std::function<int(lua_State*)> f = [this, object = obj,member_function = std::move(member)](lua_State*){
-        
+    std::function<int(lua_State*)> f = [this, object = obj,
+                                        member_function = std::move(member)](lua_State*) {
         constexpr std::size_t args_count = sizeof...(Args);
         bool correct_number_of_arguments = (lua_gettop(m_state) == args_count);
-        
+
         if (correct_number_of_arguments) {
             std::pair<ReturnType, std::tuple<Args...>> t{};
             return call_registered_function(object, member_function, t,
@@ -450,24 +449,24 @@ var_ref& var_ref::operator*=(const T& rhs)
 // Helpers
 template <typename T, typename ReturnType, typename... Args, std::size_t... I>
 int var_ref::call_registered_function(T& user_f,
-                                            std::pair<ReturnType, std::tuple<Args...>>&,
-                                            std::index_sequence<I...>&&)
+                                      std::pair<ReturnType, std::tuple<Args...>>&,
+                                      std::index_sequence<I...>&&)
 {
     std::negate<int> negate;
-    auto result = user_f(
-        value<typename std::decay<Args>::type>::get(m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);
+    auto result = user_f(value<typename std::decay<Args>::type>::get(
+        m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);
     value<decltype(result)>::insert(m_state, result);
     return 1;
 }
 template <typename C, typename F, typename ReturnType, typename... Args, std::size_t... I>
 int var_ref::call_registered_function(C obj,
-                                            F user_f,
-                                            std::pair<ReturnType, std::tuple<Args...>>&,
-                                            std::index_sequence<I...>&&)
+                                      F user_f,
+                                      std::pair<ReturnType, std::tuple<Args...>>&,
+                                      std::index_sequence<I...>&&)
 {
     std::negate<int> negate;
-    auto result = (obj->*user_f)(
-        value<typename std::decay<Args>::type>::get(m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);
+    auto result = (obj->*user_f)(value<typename std::decay<Args>::type>::get(
+        m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);
     value<decltype(result)>::insert(m_state, result);
     return 1;
 }
@@ -477,7 +476,7 @@ void var_ref::call_lua_function(size_t output_count, Args&&... args)
 {
     if (!lua_isfunction(m_state, -1)) {
         error("You are trying to call something that is not "
-                          "neither Lua function nor C/C++ function");
+              "neither Lua function nor C/C++ function");
     }
     constexpr int input_count = sizeof...(Args);
     insert_function_parameters(std::forward<Args>(args)...);
@@ -491,7 +490,7 @@ void var_ref::call_lua_function(size_t output_count, Args&&... args)
 template <typename T, typename... Args>
 void var_ref::insert_function_parameters(T&& value, Args&&... args)
 {
-    //TODO:Would this introduce temporaries?
+    // TODO:Would this introduce temporaries?
     luabz::value<typename std::decay<T>::type>::insert(m_state, value);
     insert_function_parameters(std::forward<Args>(args)...);
 }

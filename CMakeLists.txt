@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 set (PROJECT_NAME luabz)
-project(${PROJECT_NAME})
-set (CMAKE_CXX_STANDARD 14)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow  -pedantic ")
-set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
+project(${PROJECT_NAME} VERSION 1.0.0)
+set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 option(ENABLE_DOC "Build documentation with doxygen" OFF)
 option(USE_CPP_EXCEPTIONS "Use cpp exceptions in case of error, if set to OFF uses asserts in debug and logs the error to a file in release mode" OFF)
@@ -28,7 +26,6 @@ include(googletestmock)
 include(clang-format)
 include(clang-tidy)
 include(cppcheck)
-include(iwyu)
 
 if(ENABLE_DOC)
         include(doxygen)
@@ -41,7 +38,5 @@ endif()
 
 
 
-
+add_subdirectory(src)
 add_subdirectory(tests)
-#Add support for iwyu
-#Replace googletest with catch

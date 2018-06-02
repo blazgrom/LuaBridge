@@ -14,14 +14,14 @@ namespace luabz
  * USE_CPP_EXCEPTIONS is set off (default), it logs the error in a txt file
  * called error and executes an always false assert
  */
-//TODO:Improve error handling
+// TODO:Improve error handling
 inline void error(const std::string& error_message)
 {
 #ifdef USE_CPP_EXCEPTIONS
     throw luabz_exception(message);
 #else
-    std::printf("%s",error_message.c_str());
-   // std::terminate();
+    std::printf("%s", error_message.c_str());
+    // std::terminate();
 #endif
 }
 }  // namespace luabz

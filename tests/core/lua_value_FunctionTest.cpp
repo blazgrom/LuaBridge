@@ -1,10 +1,10 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <functional>
 #include <string>
 #include <tuple>
 
-#include "luabz.hpp"
 #include "lua_test_helpers.hpp"
+#include "luabz.hpp"
 class value_Function : public ::testing::Test
 {
   public:
@@ -14,11 +14,11 @@ class value_Function : public ::testing::Test
 
 TEST_F(value_Function, AfterClosingTheLuaScriptTheRegisteredFunctionsAreRemoved)
 {
-    script["lambda"].assign([](int a)  { return a; });
+    script["lambda"].assign([](int a) { return a; });
     script["lambda"](1);
     script.close();
     script.open();
-    script["lambda"].assign([](int a)  { return a * 2; });
+    script["lambda"].assign([](int a) { return a * 2; });
     int return_value = script["lambda"](1000);
     ASSERT_TRUE(2000 == return_value);
 }
@@ -45,14 +45,14 @@ TEST_F(value_Function, AssignAndCallNormalFunction)
 }
 TEST_F(value_Function, AssignAndCallCapturelessLambda)
 {
-    script["lambda"].assign([]()  { return 666; });
+    script["lambda"].assign([]() { return 666; });
     int return_value = script["lambda"]();
     ASSERT_TRUE(return_value == 666);
 }
 TEST_F(value_Function, AssignAndCallCaptureLambda)
 {
     int r = 777;
-    script["lambda_capture"].assign([r]()  { return r; });
+    script["lambda_capture"].assign([r]() { return r; });
     int return_value = script["lambda_capture"]();
     ASSERT_TRUE(return_value == r);
 }

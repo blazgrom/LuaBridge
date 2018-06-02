@@ -14,7 +14,7 @@ branches:
     - master
 before_install:
   - sudo apt-get update -qq
-install: 
+install:
   # Lua
   - sudo apt-get install lua5.1
   - sudo apt-get install lua5.1-dev
@@ -30,7 +30,7 @@ before_script:
   - ulimit -c unlimited -S       # enable core dumps
 script:
   # Build project
-  - ./build_project.sh
+  - ./build.sh
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - lcov --directory . --capture --output-file coverage.info --no-external # capture coverage info

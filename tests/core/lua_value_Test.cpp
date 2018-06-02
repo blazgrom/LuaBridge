@@ -1,6 +1,6 @@
-#include "luabz.hpp"
 #include "lua_test_helpers.hpp"
-#include "gtest/gtest.h"
+#include "luabz.hpp"
+#include <gtest/gtest.h>
 #include <string>
 
 class value_Test : public ::testing::Test

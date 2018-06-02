@@ -1,5 +1,5 @@
-#include "luabz.hpp"
 #include "../core/lua_test_helpers.hpp"
+#include "luabz.hpp"
 #include <gtest/gtest.h>
 #include <string>
 

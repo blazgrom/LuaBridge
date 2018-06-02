@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include "interface.hpp"
+#include <string>
 namespace luabz
 {
 /**
@@ -28,7 +28,10 @@ struct value<bool> {
 
 template <>
 struct value<long long> {
-    static void insert(lua_State* state, long long value) { interface::insert_integer(state, value); }
+    static void insert(lua_State* state, long long value)
+    {
+        interface::insert_integer(state, value);
+    }
 
     static long long get(lua_State* state, int stack_index)
     {
@@ -61,7 +64,10 @@ struct value<long> {
 
 template <>
 struct value<unsigned long> {
-    static void insert(lua_State* state, unsigned long value) { interface::insert_integer(state, value); }
+    static void insert(lua_State* state, unsigned long value)
+    {
+        interface::insert_integer(state, value);
+    }
 
     static unsigned long get(lua_State* state, int stack_index)
     {
@@ -81,7 +87,10 @@ struct value<int> {
 
 template <>
 struct value<unsigned int> {
-    static void insert(lua_State* state, unsigned int value) { interface::insert_integer(state, value); }
+    static void insert(lua_State* state, unsigned int value)
+    {
+        interface::insert_integer(state, value);
+    }
 
     static unsigned int get(lua_State* state, int stack_index)
     {
@@ -111,7 +120,7 @@ struct value<double> {
 
 template <>
 struct value<std::nullptr_t> {
-    static void insert(lua_State* state, std::nullptr_t) {lua_pushnil(state);}
+    static void insert(lua_State* state, std::nullptr_t) { lua_pushnil(state); }
 };
 
 template <>

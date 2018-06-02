@@ -1,7 +1,7 @@
 #pragma once
 #include "error.hpp"
-#include "state.hpp"
 #include "luabz_exception.hpp"
+#include "state.hpp"
 #include "var_ref.hpp"
 #include <algorithm>
 #include <lua.hpp>
@@ -24,9 +24,7 @@ class script
     script() : m_fileName{""}, m_state{nullptr}, m_isStateActive{false} {}
 
     explicit script(const std::string& file, bool load_lua_std = false)
-      : m_fileName{file},
-        m_state{state::get(file, load_lua_std)},
-        m_isStateActive{true}
+      : m_fileName{file}, m_state{state::get(file, load_lua_std)}, m_isStateActive{true}
     {
     }
 
@@ -37,7 +35,6 @@ class script
         // }
     };
 
-    
     script(const script& rhs) = delete;
 
     script& operator=(const script& rhs) = delete;
