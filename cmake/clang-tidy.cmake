@@ -8,7 +8,7 @@ if(CLANG_TIDY)
             COMMAND ${CLANG_TIDY}
             ${ALL_SOURCE_FILES}
             -checks=-*,bugprone-*,cppcoreguidelines-*,clang-analyzer-cplusplus*,misc-*,modernize-*,performance-*,readability-*,portability-*
-           # -warnings-as-errors=-*,bugprone-*,cppcoreguidelines-*,clang-analyzer-cplusplus*,misc-*,modernize-*,performance-*,readability-*,portability-*
+            #-warnings-as-errors=-*,bugprone-*,cppcoreguidelines-*,clang-analyzer-cplusplus*,misc-*,modernize-*,performance-*,readability-*,portability-*
             -header-filter=.*
             -p=.)
 else(CLANG_TIDY)
