@@ -28,7 +28,7 @@ struct interface {
         return luaL_checkstring(state, index);
     }
 
-    static void insert_bool(lua_State* state, bool value) { lua_pushboolean(state, value); }
+    static void insert_bool(lua_State* state, bool value) { lua_pushboolean(state, value ? 1 : 0); }
     /// TODO:This is missing enable if
     template <typename T>
     static void insert_integer(lua_State* state, T value)

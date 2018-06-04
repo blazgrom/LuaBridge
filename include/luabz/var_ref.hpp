@@ -64,7 +64,8 @@ class var_ref
     var_ref operator()(Args&&... args);
 
     template <typename... Results, typename... Args>
-    std::tuple<Results...> call(Args&&...);
+    std::tuple<Results...> call(Args&&.../*unused*/);
+
     /**
      * \brief Conversion from var_ref to any type T
      * \pre There must be a specialization of luabz::value with type
@@ -84,7 +85,7 @@ class var_ref
      * position -2.
      */
     template <typename T>
-    var_ref& operator=(T value);
+    var_ref& operator=(T new_value);
 
     /**
      * \brief Operator= between var_ref and any type T
@@ -112,25 +113,25 @@ class var_ref
     bool operator>=(const T& rhs) const;
 
     template <typename T>
-    auto operator+(const T& rhs) const -> decltype(rhs + rhs);
+    T operator+(const T& rhs) const;
 
     template <typename T>
     var_ref& operator+=(const T& rhs);
 
     template <typename T>
-    auto operator-(const T& rhs) const -> decltype(rhs - rhs);
+    T operator-(const T& rhs) const;
 
     template <typename T>
     var_ref& operator-=(const T& rhs);
 
     template <typename T>
-    auto operator/(const T& rhs) const -> decltype(rhs / rhs);
+    T operator/(const T& rhs) const;
 
     template <typename T>
     var_ref& operator/=(const T& rhs);
 
     template <typename T>
-    auto operator*(const T& rhs) const -> decltype(rhs * rhs);
+    T operator*(const T& rhs) const;
 
     template <typename T>
     var_ref& operator*=(const T& rhs);
@@ -217,8 +218,8 @@ class var_ref
      */
     template <typename T, typename ReturnType, typename... Args, std::size_t... I>
     int call_registered_function(T& user_f,
-                                 std::pair<ReturnType, std::tuple<Args...>>&,
-                                 std::index_sequence<I...>&&);
+                                 std::pair<ReturnType, std::tuple<Args...>>&/*unused*/,
+                                 std::index_sequence<I...>&&/*unused*/);
 
     /**
      * \brief assign a registered function, it also extracts function's
@@ -228,23 +229,23 @@ class var_ref
     template <typename C, typename F, typename ReturnType, typename... Args, std::size_t... I>
     int call_registered_function(C obj,
                                  F user_f,
-                                 std::pair<ReturnType, std::tuple<Args...>>&,
-                                 std::index_sequence<I...>&&);
+                                 std::pair<ReturnType, std::tuple<Args...>>&/*unused*/,
+                                 std::index_sequence<I...>&&/*unused*/);
 
     template <typename... Args>
     void call_lua_function(size_t output_count, Args&&... args);
 
     // TODO:Find better way of doing this
     template <typename T, typename... Args>
-    void insert_function_parameters(T&& value, Args&&... args);
+    void push_fn_param(T&& value, Args&&... args);
 
     template <typename T>
-    void insert_function_parameters(T&& value);
+    void push_fn_param(T&& value);
 
-    void insert_function_parameters() { return; }
+    void push_fn_param() { /*DO NOTHING*/ }
 
     template <typename... Results, std::size_t... I>
-    std::tuple<Results...> get_function_result(std::index_sequence<I...>&&);
+    std::tuple<Results...> get_fn_result(std::index_sequence<I...>&&/*unused*/);
 };
 
 template <typename T>
@@ -337,7 +338,7 @@ std::tuple<Results...> var_ref::call(Args&&... args)
     var_loader loader(m_state, m_name);
 
     call_lua_function(output_count, std::forward<Args>(args)...);
-    return get_function_result<Results...>(std::make_index_sequence<output_count>());
+    return get_fn_result<Results...>(std::make_index_sequence<output_count>());
 }
 
 template <typename T>
@@ -389,7 +390,7 @@ bool var_ref::operator>=(const T& rhs) const
 }
 
 template <typename T>
-auto var_ref::operator+(const T& rhs) const -> decltype(rhs + rhs)
+T var_ref::operator+(const T& rhs) const
 {
     T lhs = *this;
     return lhs + rhs;
@@ -405,7 +406,7 @@ var_ref& var_ref::operator+=(const T& rhs)
 }
 
 template <typename T>
-auto var_ref::operator-(const T& rhs) const -> decltype(rhs - rhs)
+T var_ref::operator-(const T& rhs) const
 {
     T lhs = *this;
     return lhs - rhs;
@@ -419,7 +420,7 @@ var_ref& var_ref::operator-=(const T& rhs)
 }
 
 template <typename T>
-auto var_ref::operator/(const T& rhs) const -> decltype(rhs / rhs)
+T var_ref::operator/(const T& rhs) const
 {
     T lhs = *this;
     return lhs / rhs;
@@ -433,7 +434,7 @@ var_ref& var_ref::operator/=(const T& rhs)
 }
 
 template <typename T>
-auto var_ref::operator*(const T& rhs) const -> decltype(rhs * rhs)
+T var_ref::operator*(const T& rhs) const
 {
     T lhs = *this;
     return lhs * rhs;
@@ -449,10 +450,10 @@ var_ref& var_ref::operator*=(const T& rhs)
 // Helpers
 template <typename T, typename ReturnType, typename... Args, std::size_t... I>
 int var_ref::call_registered_function(T& user_f,
-                                      std::pair<ReturnType, std::tuple<Args...>>&,
-                                      std::index_sequence<I...>&&)
+                                      std::pair<ReturnType, std::tuple<Args...>>&/*unused*/,
+                                      std::index_sequence<I...>&&/*unused*/)
 {
-    std::negate<int> negate;
+    std::negate<> negate;
     auto result = user_f(value<typename std::decay<Args>::type>::get(
         m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);
     value<decltype(result)>::insert(m_state, result);
@@ -461,14 +462,22 @@ int var_ref::call_registered_function(T& user_f,
 template <typename C, typename F, typename ReturnType, typename... Args, std::size_t... I>
 int var_ref::call_registered_function(C obj,
                                       F user_f,
-                                      std::pair<ReturnType, std::tuple<Args...>>&,
-                                      std::index_sequence<I...>&&)
+                                      std::pair<ReturnType, std::tuple<Args...>>&/*unused*/,
+                                      std::index_sequence<I...>&&/*unused*/)
 {
-    std::negate<int> negate;
+    std::negate<> negate;
     auto result = (obj->*user_f)(value<typename std::decay<Args>::type>::get(
         m_state, negate((sizeof...(Args) - static_cast<int>(I))))...);
     value<decltype(result)>::insert(m_state, result);
     return 1;
+}
+
+template <typename... Results, std::size_t... I>
+std::tuple<Results...> var_ref::get_fn_result(std::index_sequence<I...>&& /*unused*/)
+{
+    std::negate<> negate;
+    return std::make_tuple(value<typename std::decay<Results>::type>::get(
+        m_state, negate((sizeof...(Results) - static_cast<int>(I))))...);
 }
 
 template <typename... Args>
@@ -479,7 +488,7 @@ void var_ref::call_lua_function(size_t output_count, Args&&... args)
               "neither Lua function nor C/C++ function");
     }
     constexpr int input_count = sizeof...(Args);
-    insert_function_parameters(std::forward<Args>(args)...);
+    push_fn_param(std::forward<Args>(args)...);
     // Note: There is no need to increment used_stack_spaces for
     // the arguments because lua_pcall automatically pops them
     if (lua_pcall(m_state, input_count, output_count, 0) != 0) {
@@ -488,24 +497,17 @@ void var_ref::call_lua_function(size_t output_count, Args&&... args)
 }
 
 template <typename T, typename... Args>
-void var_ref::insert_function_parameters(T&& value, Args&&... args)
+void var_ref::push_fn_param(T&& value, Args&&... args)
 {
     // TODO:Would this introduce temporaries?
     luabz::value<typename std::decay<T>::type>::insert(m_state, value);
-    insert_function_parameters(std::forward<Args>(args)...);
+    push_fn_param(std::forward<Args>(args)...);
 }
 
 template <typename T>
-void var_ref::insert_function_parameters(T&& value)
+void var_ref::push_fn_param(T&& value)
 {
     luabz::value<typename std::decay<T>::type>::insert(m_state, value);
 }
 
-template <typename... Results, std::size_t... I>
-std::tuple<Results...> var_ref::get_function_result(std::index_sequence<I...>&&)
-{
-    std::negate<int> negate;
-    return std::make_tuple(value<typename std::decay<Results>::type>::get(
-        m_state, negate((sizeof...(Results) - static_cast<int>(I))))...);
-}
 }  // namespace luabz

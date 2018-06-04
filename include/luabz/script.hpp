@@ -28,12 +28,8 @@ class script
     {
     }
 
-    ~script(){
-        // TODO: Decide if this should close itself, and if this would impact the other code
-        // if(m_isStateActive){
-        //     close();
-        // }
-    };
+    // TODO: Decide if this should close itself, and if this would impact the other code
+    ~script() =default;
 
     script(const script& rhs) = delete;
 
